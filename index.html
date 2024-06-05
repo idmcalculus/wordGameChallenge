@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta title="Word Game Challenge" />
+    <meta charset="UTF-8">
+    <title>Word Game Challenge</title>
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -19,22 +20,14 @@
         </div>
         <div id="alphabetContainer"></div>
         <div class="wrapper" id="wrapper"></div>
+        <button id="resetGame" style="display: none;">Reset Game</button>
     </div>
     <!-- Alert Modal Structure -->
     <div id="alertModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <p id="alertMessage"></p>
-            <button id="alertConfirmButton">OK</button>
-        </div>
-    </div>
-    <!-- Confirm Modal Structure -->
-    <div id="confirmModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <p id="confirmMessage"></p>
-            <button id="confirmYesButton">Yes</button>
-            <button id="confirmNoButton">No</button>
+            <button id="alertResetButton">Reset Game</button>
         </div>
     </div>
     <script type="module" src="./js/app.js"></script>
