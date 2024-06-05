@@ -1,0 +1,185 @@
+body{
+	/* we can set the base font for the body*/
+	font-size:20px;
+}
+
+h1{
+	/* its always good to have a header*/
+	text-align:center;
+}
+
+.outerWrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	max-width: 800px;
+	margin: 0 auto;
+	padding: 100px;
+	font-family: Verdana, sans-serif;
+}
+
+.gameMeta {
+	display: flex;
+	justify-content: space-between;
+}
+
+.wrapper{
+	/* Give ourselves a little space */
+	margin: 40px auto;
+}
+
+.wordRow{
+	/* each turn will be a new row */
+	border-top:1px solid blue;
+	background-color:lightblue;
+	padding:3px;
+	margin:0;
+	text-align:center;
+	
+}
+
+.wordLetterBox{
+	/* each row will have 5 charcter guessing boxes */
+	border:1px solid black;
+	padding:3px;
+	margin:3px;
+	background-color:white;
+	width:1.5em;
+	height:1.5em;
+	text-align:center;
+	font-size:1em;
+	font-weight:heavy;
+	text-align:center;
+	text-transform: uppercase;
+}
+
+.contains{
+	/* if the letter is found in the target word we need to make it orange */
+	background-color:orange;
+}
+
+.notContains{
+	/* if the letter is NOT found in the target word we need to make it grey */
+	background-color:grey;
+}
+
+.correct{
+	/* if the letter is found in the target word at the correct place we need to make it green */
+	background-color:lightgreen;
+}
+
+.correct,
+.contains,
+.notContains {
+	animation: rotate 1s linear;
+}
+
+#gameHeader {
+	text-align: center;
+	font-size: 2em;
+	color: navy;
+}
+
+#wordLengthInput, #startGame {
+	font-size: 1.5em;
+	margin: 5px;
+}
+
+#wordLengthInput {
+	width: 60px;
+	padding: 5px 10px;
+	text-align: center;
+}
+
+#startGame {
+	background-color: lightblue;
+	border: none;
+	border-radius: 5px;
+	padding: 6px 12px;
+	margin-top: 30px;
+}
+
+#startGame:hover {
+	background-color: lightgray;
+	cursor: pointer;
+}
+
+#difficulty {
+	text-align: center;
+	font-size: 1.2em;
+	font-weight: bold;
+	margin-top: 10px;
+	display: none;
+}
+
+#alphabetContainer {
+	margin: 40px auto;
+	text-align: center;
+	border: 1px solid blue;
+	padding: 10px;
+	background-color: lightblue;
+	display: none
+}
+
+#alphabetContainer span {
+	border: 1px solid black;
+	padding: 5px;
+	margin: 5px;
+	text-align: center;
+	text-transform: uppercase;
+	transition: all 0.3s ease;
+}
+
+#alphabetContainer span.notGuessed {
+	background-color: #f0f0f0;
+	color: #333;
+}
+
+#alphabetContainer span.correct {
+	background-color: #adebad;
+	color: #1a531b;
+}
+
+#alphabetContainer span.notContains {
+	background-color: #f5a9a9;
+	color: #7a1c1c;
+}
+
+#alphabetContainer span.contains {
+	background-color: #faedcd;
+	color: #884c00;
+}
+
+#timerDisplay {
+	text-align: center;
+	font-size: 1.2em;
+	font-weight: bold;
+	color: darkblue;
+	margin: 20px 0;
+	display: none;
+}
+
+#highScoresList {
+	text-align: left;
+	font-size: 1em;
+	margin: 20px 0 20px 40px;
+	padding: 10px;
+	background-color: lightblue;
+	border: 1px solid blue;
+	display: none;
+}
+
+#highScoresList li {
+	padding: 10px;
+	list-style-type: none;
+}
+
+@keyframes rotate {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
