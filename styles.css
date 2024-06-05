@@ -204,7 +204,7 @@ h1{
     margin: 5% auto; 
     padding: 20px;
     border: 1px solid #888;
-    width: 80%; 
+    width: 50%; 
 }
 
 .close {
@@ -222,7 +222,6 @@ h1{
 }
 
 #alertConfirmButton, #confirmYesButton, #confirmNoButton {
-    background-color: #4CAF50;
     color: white;
     padding: 10px 20px;
     border: none;
@@ -230,6 +229,18 @@ h1{
     margin: 10px 5px;
 }
 
-#alertConfirmButton:hover, #confirmYesButton:hover, #confirmNoButton:hover {
+#alertConfirmButton, #confirmYesButton {
+    background-color: #4CAF50;
+}
+
+#confirmNoButton {
+    background-color: #f44336;
+}
+
+#alertConfirmButton:hover, #confirmYesButton:hover {
     background-color: #45a049;
+}
+
+#confirmNoButton:hover {
+	background-color: #b12f2f;
 }

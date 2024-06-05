@@ -60,7 +60,9 @@ export function showAlert(message, callback) {
     const alertModal = document.getElementById("alertModal");
 
     alertMessage.innerHTML = message;
-    alertModal.style.display = "block";
+    alertModal.style.display = "flex";
+	alertModal.style.alignItems = "center";
+	alertModal.style.justifyContent = "center";
     alertCallback = callback;
 }
 
@@ -69,6 +71,8 @@ export function showConfirm(message, callback) {
     const confirmModal = document.getElementById("confirmModal");
 
     confirmMessage.innerHTML = message;
-    confirmModal.style.display = "block";
+    confirmModal.style.display = "flex";
+	confirmModal.style.alignItems = "center";
+	confirmModal.style.justifyContent = "center";
     confirmCallback = callback;
 }
