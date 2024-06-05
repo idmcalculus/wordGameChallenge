@@ -1,4 +1,4 @@
-let alertCallback = null;
+/* let alertCallback = null;
 let confirmCallback = null;
 
 export function setupModals() {
@@ -75,4 +75,89 @@ export function showConfirm(message, callback) {
 	confirmModal.style.alignItems = "center";
 	confirmModal.style.justifyContent = "center";
     confirmCallback = callback;
+}
+ */
+
+let alertCallback = null;
+let confirmCallback = null;
+
+function setupModal(modalId, closeSelector, confirmButtonSelector, callbackType) {
+    const modal = document.getElementById(modalId);
+    const closeModal = document.querySelector(closeSelector);
+    const confirmButton = confirmButtonSelector ? document.getElementById(confirmButtonSelector) : null;
+
+    closeModal.onclick = () => {
+        modal.style.display = "none";
+    };
+
+    if (confirmButton) {
+        confirmButton.onclick = () => {
+            modal.style.display = "none";
+            if (callbackType === 'alert' && alertCallback) {
+                alertCallback();
+                alertCallback = null;
+            }
+        };
+    }
+
+    return modal;
+}
+
+function handleWindowClick(event, modal) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
+export function setupModals() {
+    const alertModal = setupModal("alertModal", "#alertModal .close", "alertConfirmButton", 'alert');
+    const confirmModal = setupModal("confirmModal", "#confirmModal .close", null, 'confirm');
+
+    const confirmYesButton = document.getElementById("confirmYesButton");
+    const confirmNoButton = document.getElementById("confirmNoButton");
+
+    confirmYesButton.onclick = () => {
+        confirmModal.style.display = "none";
+        if (confirmCallback) {
+            confirmCallback(true);
+            confirmCallback = null;
+        }
+    };
+
+    confirmNoButton.onclick = () => {
+        confirmModal.style.display = "none";
+        if (confirmCallback) {
+            confirmCallback(false);
+            confirmCallback = null;
+        }
+    };
+
+    window.onclick = (event) => {
+        handleWindowClick(event, alertModal);
+        handleWindowClick(event, confirmModal);
+    };
+}
+
+function showModal(modalId, messageId, message, callbackRef, callbackType, displayStyle = "flex") {
+    const modal = document.getElementById(modalId);
+    const messageElement = document.getElementById(messageId);
+
+    messageElement.innerHTML = message;
+    modal.style.display = displayStyle;
+    modal.style.alignItems = "center";
+    modal.style.justifyContent = "center";
+
+    if (callbackType === 'alert') {
+        alertCallback = callbackRef;
+    } else if (callbackType === 'confirm') {
+        confirmCallback = callbackRef;
+    }
+}
+
+export function showAlert(message, callback) {
+    showModal("alertModal", "alertMessage", message, callback, 'alert');
+}
+
+export function showConfirm(message, callback) {
+    showModal("confirmModal", "confirmMessage", message, callback, 'confirm');
 }
