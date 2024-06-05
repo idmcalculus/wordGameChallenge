@@ -1,3 +1,5 @@
+import { showAlert, showConfirm } from './modals.js';
+
 class WordGame {
     constructor() {
         this.possibleWords = [];
@@ -12,8 +14,6 @@ class WordGame {
         this.timerDisplay = null;
         this.timerId = null;
         this.highScores = JSON.parse(localStorage.getItem("highScores")) || [];
-        this.alertCallback = null;
-        this.confirmCallback = null;
 
         this.init();
     }
@@ -23,71 +23,6 @@ class WordGame {
             this.displayHighScores();
             this.play();
         });
-
-        // Modal elements
-        this.alertModal = document.getElementById("alertModal");
-        this.alertMessage = document.getElementById("alertMessage");
-        this.alertClose = document.querySelector("#alertModal .close");
-        this.alertConfirmButton = document.getElementById("alertConfirmButton");
-
-        this.confirmModal = document.getElementById("confirmModal");
-        this.confirmMessage = document.getElementById("confirmMessage");
-        this.confirmClose = document.querySelector("#confirmModal .close");
-        this.confirmYesButton = document.getElementById("confirmYesButton");
-        this.confirmNoButton = document.getElementById("confirmNoButton");
-
-        this.alertClose.onclick = () => {
-            this.alertModal.style.display = "none";
-        }
-
-        this.alertConfirmButton.onclick = () => {
-            this.alertModal.style.display = "none";
-            if (this.alertCallback) {
-                this.alertCallback();
-                this.alertCallback = null;
-            }
-        }
-
-        this.confirmClose.onclick = () => {
-            this.confirmModal.style.display = "none";
-        }
-
-        this.confirmYesButton.onclick = () => {
-            this.confirmModal.style.display = "none";
-            if (this.confirmCallback) {
-                this.confirmCallback(true);
-                this.confirmCallback = null;
-            }
-        }
-
-        this.confirmNoButton.onclick = () => {
-            this.confirmModal.style.display = "none";
-            if (this.confirmCallback) {
-                this.confirmCallback(false);
-                this.confirmCallback = null;
-            }
-        }
-
-        window.onclick = (event) => {
-            if (event.target == this.alertModal) {
-                this.alertModal.style.display = "none";
-            }
-            if (event.target == this.confirmModal) {
-                this.confirmModal.style.display = "none";
-            }
-        }
-    }
-
-    showAlert(message, callback) {
-        this.alertMessage.innerHTML = message;
-        this.alertModal.style.display = "flex";
-        this.alertCallback = callback;
-    }
-
-    showConfirm(message, callback) {
-        this.confirmMessage.innerHTML = message;
-        this.confirmModal.style.display = "flexburst";
-        this.confirmCallback = callback;
     }
 
     play() {
@@ -115,7 +50,7 @@ class WordGame {
         const wordLength = parseInt(wordLengthInput);
 
         if (isNaN(wordLength) || wordLength < 3 || wordLength > 10) {
-            this.showAlert("Please enter a valid number between 3 and 10", () => {
+            showAlert("Please enter a valid number between 3 and 10", () => {
                 this.resetGame();
             });
             return;
@@ -364,8 +299,8 @@ class WordGame {
         // Display the high scores
         this.displayHighScores();
 
-        this.showAlert(`Well done! You solved it in ${this.rowCount} attempts. The word was ${this.currentWord}`, () => {
-            this.showConfirm("Play again?", (confirmed) => {
+        showAlert(`Well done! You solved it in ${this.rowCount} attempts. The word was ${this.currentWord}`, () => {
+            showConfirm("Play again?", (confirmed) => {
                 if (confirmed) {
                     this.resetGame();
                 }
@@ -379,7 +314,7 @@ class WordGame {
         // Stop the timer
         clearInterval(this.timerId);
 
-        this.showAlert(`Sorry, you've reached the maximum number of attempts. The word was: ${this.currentWord}\nLet's try again.`, () => {
+        showAlert(`Sorry, you've reached the maximum number of attempts. The word was: ${this.currentWord}\nLet's try again.`, () => {
             this.resetGame();
         });
     }
@@ -422,9 +357,4 @@ class WordGame {
     }
 }
 
-// Instantiate the game when DOM is fully loaded
-window.addEventListener("DOMContentLoaded", (event) => {
-    new WordGame();
-});
-
-
+export default WordGame;

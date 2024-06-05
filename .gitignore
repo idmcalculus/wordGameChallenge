@@ -1,0 +1,4 @@
+# ignore ide files/folders
+.idea
+.nova
+.vscode
