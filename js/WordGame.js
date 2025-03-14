@@ -17,6 +17,8 @@ class WordGame {
         this.timerDisplay = null;
         this.timerId = null;
         this.highScores = JSON.parse(localStorage.getItem("highScores")) || [];
+        this.currentScorePage = 0;
+        this.scoresPerPage = 5;
 
         this.init();
     }
@@ -174,11 +176,28 @@ class WordGame {
         stopTimer(this.timerId);
 
         const timeTaken = Math.floor((new Date() - this.startTime) / 1000);
-        this.highScores.push(timeTaken);
-        this.highScores.sort((a, b) => a - b).splice(5);
+        
+        // Add score with timestamp and word info
+        this.highScores.push({
+            score: timeTaken,
+            word: this.currentWord,
+            wordLength: this.wordLength,
+            attempts: this.rowCount + 1,
+            date: new Date().toISOString()
+        });
+        
+        // Sort all scores by time (ascending)
+        this.highScores.sort((a, b) => {
+            // Handle both new format (object) and old format (number)
+            const scoreA = typeof a === 'object' ? a.score : a;
+            const scoreB = typeof b === 'object' ? b.score : b;
+            return scoreA - scoreB;
+        });
 
         localStorage.setItem('highScores', JSON.stringify(this.highScores));
 
+        // Reset to first page when adding a new score
+        this.currentScorePage = 0;
         this.displayHighScores();
 
         showAlert(`Well done! You solved it in ${this.rowCount + 1} attempts. The word was ${this.currentWord}`, () => {
@@ -200,11 +219,73 @@ class WordGame {
         const highScoresList = document.getElementById('highScoresList');
         highScoresList.innerHTML = `<h3 class="highScoresHeader"> High Scores </h3>`;
 
-        this.highScores.forEach((score, i) => {
+        // Calculate total pages
+        const totalScores = this.highScores.length;
+        const totalPages = Math.ceil(totalScores / this.scoresPerPage);
+        
+        // Ensure current page is valid
+        if (this.currentScorePage >= totalPages) {
+            this.currentScorePage = Math.max(0, totalPages - 1);
+        }
+        
+        // Calculate start and end indices for current page
+        const startIdx = this.currentScorePage * this.scoresPerPage;
+        const endIdx = Math.min(startIdx + this.scoresPerPage, totalScores);
+        
+        // Display scores for current page
+        for (let i = startIdx; i < endIdx; i++) {
+            const scoreData = this.highScores[i];
             let listItem = document.createElement("li");
-            listItem.textContent = `#${i + 1}: ${score} seconds`;
+            
+            // Handle both new format (object) and old format (number)
+            if (typeof scoreData === 'object') {
+                listItem.textContent = `#${i + 1}: ${scoreData.score} seconds`;
+                // Add tooltip with additional info
+                listItem.title = `Word: ${scoreData.word}, Length: ${scoreData.wordLength}, Attempts: ${scoreData.attempts}`;
+            } else {
+                listItem.textContent = `#${i + 1}: ${scoreData} seconds`;
+            }
+            
             highScoresList.appendChild(listItem);
-        });
+        }
+        
+        // Add navigation controls if there are multiple pages
+        if (totalPages > 1) {
+            const navContainer = document.createElement("div");
+            navContainer.className = "scores-nav";
+            
+            // Previous button
+            const prevBtn = document.createElement("button");
+            prevBtn.textContent = "← Prev";
+            prevBtn.disabled = this.currentScorePage === 0;
+            prevBtn.addEventListener("click", () => {
+                if (this.currentScorePage > 0) {
+                    this.currentScorePage--;
+                    this.displayHighScores();
+                }
+            });
+            
+            // Page indicator
+            const pageIndicator = document.createElement("span");
+            pageIndicator.textContent = `Page ${this.currentScorePage + 1} of ${totalPages}`;
+            pageIndicator.className = "page-indicator";
+            
+            // Next button
+            const nextBtn = document.createElement("button");
+            nextBtn.textContent = "Next →";
+            nextBtn.disabled = this.currentScorePage >= totalPages - 1;
+            nextBtn.addEventListener("click", () => {
+                if (this.currentScorePage < totalPages - 1) {
+                    this.currentScorePage++;
+                    this.displayHighScores();
+                }
+            });
+            
+            navContainer.appendChild(prevBtn);
+            navContainer.appendChild(pageIndicator);
+            navContainer.appendChild(nextBtn);
+            highScoresList.appendChild(navContainer);
+        }
 
         highScoresList.style.display = "block";
     }

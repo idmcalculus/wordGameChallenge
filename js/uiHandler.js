@@ -28,25 +28,61 @@ export function createRow(wordLength, checkRowLetters) {
         newInputBox.type = "text";
         newInputBox.classList.add('wordLetterBox');
         newInputBox.maxLength = 1;
+        newInputBox.autocomplete = "off";
+        newInputBox.autocorrect = "off";
+        newInputBox.autocapitalize = "off";
+        newInputBox.spellcheck = false;
 
-        newInputBox.addEventListener('input', () => {
+        // Handle input events for letter entry
+        newInputBox.addEventListener('input', (event) => {
+            // Normalize the input to lowercase
+            if (newInputBox.value) {
+                newInputBox.value = newInputBox.value.toLowerCase();
+            }
+            
+            // Validate the input is a letter
             if (!newInputBox.value.match(/^[a-z]$/i)) {
                 newInputBox.value = ''; // clear the box if not a letter
                 return;
             }
 
+            // Move focus to next input after valid entry
             if (newInputBox.value && i < wordLength - 1) {
-                newRow.children[i + 1].focus();
+                // Small timeout to ensure the focus change works on mobile
+                setTimeout(() => {
+                    newRow.children[i + 1].focus();
+                }, 10);
             }
+            
+            // Check if the row is complete
             checkRowLetters();
         });
 
+        // Handle keyboard navigation
         newInputBox.addEventListener('keydown', (event) => {
+            // Backspace to previous input
             if (event.key === "Backspace" && i > 0 && newInputBox.value === "") {
                 newRow.children[i - 1].value = "";
                 newRow.children[i - 1].focus();
                 event.preventDefault();
             }
+            
+            // Arrow key navigation
+            if (event.key === "ArrowLeft" && i > 0) {
+                newRow.children[i - 1].focus();
+                event.preventDefault();
+            }
+            if (event.key === "ArrowRight" && i < wordLength - 1) {
+                newRow.children[i + 1].focus();
+                event.preventDefault();
+            }
+        });
+        
+        // Touch-specific handling for mobile
+        newInputBox.addEventListener('touchend', (event) => {
+            // Prevent zoom on double-tap
+            event.preventDefault();
+            newInputBox.focus();
         });
 
         newRow.appendChild(newInputBox);
