@@ -14,12 +14,28 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
 - Interactive on-screen keyboard
 - Responsive design with smooth animations
 - Integration with Datamuse API for word dictionary
+- Progressive Web App (PWA) capabilities
+  - Works offline with service worker caching
+  - Installable on mobile and desktop devices
+- Production-grade optimizations
+  - Code splitting for faster loading
+  - Gzip compression for smaller file sizes
+  - Environment variable configuration
 
 ## Tech Stack 🛠️
 
 - Vanilla JavaScript (ES6+)
 - HTML5
 - CSS3
+- Webpack for bundling and optimization
+  - Code splitting for performance
+  - Asset optimization and compression
+  - Environment variables support
+- Progressive Web App (PWA) features
+  - Service Worker for offline functionality
+  - Installable web app with manifest
+- ESLint for code quality
+- Babel for JavaScript transpilation
 - [Datamuse API](https://www.datamuse.com/api/) for word dictionary
 
 ## Setup and Installation 🚀
@@ -30,21 +46,46 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
    cd wordGameChallenge
    ```
 
-2. Start a local server:
-   
-   Using Python (Python 3):
+2. Install dependencies:
    ```bash
-   python -m http.server 8000
-   ```
-   
-   Or using Node.js:
-   ```bash
-   npx http-server
+   npm install
    ```
 
-3. Open your browser and navigate to:
-   - Python: `http://localhost:8000`
-   - Node.js: `http://localhost:8080`
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   # Edit .env file with your configuration
+   ```
+
+4. Development mode:
+   ```bash
+   npm run dev
+   ```
+
+5. Production build:
+   ```bash
+   npm run build
+   ```
+
+6. Analyze bundle size (optional):
+   ```bash
+   npm run analyze
+   ```
+
+7. Lint code:
+   ```bash
+   npm run lint
+   # Or to automatically fix issues:
+   npm run lint:fix
+   ```
+
+8. Serve production build locally:
+   ```bash
+   npm run serve:dist
+   ```
+
+9. Open your browser and navigate to:
+   - `http://localhost:8080`
 
 ## How to Play 🎯
 
@@ -62,15 +103,28 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
 
 ```
 wordGameChallenge/
-├── index.html          # Main HTML file
-├── styles.css         # Styling
-├── js/
-│   ├── app.js         # Application entry point
-│   ├── WordGame.js    # Core game logic
-│   ├── apiHandler.js  # Word API integration
-│   ├── gameUtils.js   # Utility functions
-│   ├── modals.js      # Alert modal system
-│   └── uiHandler.js   # UI updates and rendering
+├── src/
+│   ├── index.html                  # Main HTML file
+│   ├── styles.css                  # Styling
+│   ├── manifest.json               # PWA manifest file
+│   ├── js/
+│   │   ├── app.js                  # Application entry point
+│   │   ├── WordGame.js             # Core game logic
+│   │   ├── apiHandler.js           # Word API integration
+│   │   ├── gameUtils.js            # Utility functions
+│   │   ├── modals.js               # Alert modal system
+│   │   ├── uiHandler.js            # UI updates and rendering
+│   │   └── serviceWorkerRegistration.js  # PWA service worker registration
+│   └── assets/
+│       ├── icons/                  # PWA icons
+│       └── favicon.ico             # Favicon
+├── dist/                           # Production build output
+├── webpack.config.js               # Webpack configuration
+├── package.json                    # Dependencies and scripts
+├── .babelrc                        # Babel configuration
+├── .eslintrc.js                    # ESLint configuration
+├── .env                            # Environment variables (production)
+├── .env.example                    # Environment variables template
 └── README.md
 ```
 

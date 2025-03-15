@@ -1,0 +1,21 @@
+// Import variables
+@use '../abstracts/variables' as v;
+
+// Animations
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes highlight-hint {
+  0%, 100% {
+    background-color: inherit;
+  }
+  50% {
+    background-color: v.$color-hint;
+  }
+}

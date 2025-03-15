@@ -1,0 +1,89 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// Hint Buttons Styles
+.hint-buttons-container {
+  @include m.flex-center;
+  gap: v.$spacing-xlarge;
+  margin: v.$spacing-large 0;
+  width: 100%;
+}
+
+.hint-button {
+  position: relative;
+  padding: v.$spacing-medium v.$spacing-xlarge;
+  border: none;
+  border-radius: v.$border-radius-small;
+  font-size: v.$font-size-base;
+  font-weight: v.$font-weight-bold;
+  cursor: pointer;
+  transition: background-color v.$animation-duration-medium, transform v.$animation-duration-short;
+  overflow: hidden;
+  min-width: 150px;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  &.cooldown {
+    background-color: v.$color-grey-dark;
+  }
+}
+
+.letter-hint {
+  background-color: v.$color-primary;
+  color: v.$color-white;
+  
+  &:hover:not(:disabled) {
+    background-color: v.$color-primary-dark;
+  }
+}
+
+.position-hint {
+  background-color: v.$color-secondary;
+  color: v.$color-white;
+  
+  &:hover:not(:disabled) {
+    background-color: v.$color-secondary-dark;
+  }
+}
+
+.inactive-hint {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+// Progress bar for cooldown
+.cooldown-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background-color: v.$color-cooldown;
+  width: 0%;
+  transition: width 0.05s linear;
+}
+
+// Style for inputs that received hints
+.hint-provided {
+  animation: highlight-hint 2s ease;
+}
+
+@keyframes highlight-hint {
+  0%, 100% {
+    background-color: inherit;
+  }
+  50% {
+    background-color: v.$color-hint;
+  }
+}

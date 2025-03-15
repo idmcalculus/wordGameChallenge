@@ -1,0 +1,83 @@
+// Color Variables
+// Primary Colors
+$color-primary: #4a90e2;
+$color-primary-dark: #3a80d2;
+$color-primary-light: #6aa5e8;
+
+// Secondary Colors
+$color-secondary: #9b59b6;
+$color-secondary-dark: #8e44ad;
+$color-secondary-light: #b07cc6;
+
+// Game Feedback Colors
+$color-correct: #adebad;        // Light green for correct letter in correct position
+$color-correct-dark: #1a531b;   // Dark green text for correct letter
+$color-contains: #faedcd;       // Light orange for letter in word but wrong position
+$color-contains-dark: #884c00;  // Dark orange text for contained letter
+$color-not-contains: #f5a9a9;   // Light red for letter not in word
+$color-not-contains-dark: #7a1c1c; // Dark red text for not contained letter
+
+// Neutral Colors
+$color-white: #ffffff;
+$color-black: #000000;
+$color-grey-light: #f0f0f0;
+$color-grey: #cccccc;
+$color-grey-dark: #777777;
+$color-text: #333333;
+
+// UI Colors
+$color-background: $color-white;
+$color-success: #28a745;
+$color-success-dark: #218838;
+$color-danger: #dc3545;
+$color-danger-dark: #c82333;
+$color-hint: #ffd700;           // Gold color for hint highlights
+$color-cooldown: #2ecc71;       // Green for cooldown progress
+
+// Game Element Colors
+$color-game-header: navy;
+$color-game-border: blue;
+$color-game-background: lightblue;
+
+// Typography
+$font-family-primary: Verdana, sans-serif;
+$font-size-base: 16px;
+$font-size-large: 1.5em;
+$font-size-xlarge: 2em;
+$font-size-small: 0.9em;
+$font-weight-normal: 400;
+$font-weight-bold: 600;
+
+// Spacing
+$spacing-xxsmall: 2px;
+$spacing-xsmall: 3px;
+$spacing-small: 5px;
+$spacing-medium: 10px;
+$spacing-large: 15px;
+$spacing-xlarge: 20px;
+$spacing-xxlarge: 40px;
+
+// Borders
+$border-radius-small: 4px;
+$border-radius-medium: 5px;
+$border-radius-large: 10px;
+$border-width: 1px;
+
+// Breakpoints
+$breakpoint-mobile: 480px;
+$breakpoint-tablet: 768px;
+
+// Dimensions
+$container-max-width: 800px;
+$letter-box-size: 1.5em;
+$letter-box-size-mobile: 1.2em;
+$alphabet-letter-size: 25px;
+$alphabet-letter-size-mobile: 18px;
+$modal-max-width: 300px;
+$highscores-max-height: 300px;
+
+// Animation
+$animation-duration-short: 0.2s;
+$animation-duration-medium: 0.3s;
+$animation-duration-long: 1s;
+$animation-timing-function: ease;

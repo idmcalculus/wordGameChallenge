@@ -1,0 +1,50 @@
+{
+  "name": "word-game-challenge",
+  "version": "1.0.0",
+  "description": "A word guessing game",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode production",
+    "dev": "webpack serve --mode development",
+    "start": "webpack serve --open",
+    "analyze": "ANALYZE=true webpack --mode production",
+    "build:dev": "webpack --mode development",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "serve:dist": "npx http-server dist -g -p 8080",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean"
+  },
+  "keywords": [
+    "word",
+    "game",
+    "challenge"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "@eslint/js": "^9.22.0",
+    "babel-loader": "^10.0.0",
+    "compression-webpack-plugin": "^11.1.0",
+    "copy-webpack-plugin": "^13.0.0",
+    "css-loader": "^7.1.2",
+    "dotenv-webpack": "^8.1.0",
+    "eslint": "^9.22.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-webpack-plugin": "^5.0.0",
+    "globals": "^16.0.0",
+    "html-webpack-plugin": "^5.6.3",
+    "mini-css-extract-plugin": "^2.9.2",
+    "sass": "^1.85.1",
+    "sass-loader": "^16.0.5",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.98.0",
+    "webpack-bundle-analyzer": "^4.10.2",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0",
+    "workbox-webpack-plugin": "^7.3.0"
+  }
+}

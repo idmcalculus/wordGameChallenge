@@ -1,0 +1,55 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+.outerWrapper {
+  @include m.container;
+  @include m.flex-column-center;
+  text-align: center;
+  font-family: v.$font-family-primary;
+}
+
+.gameMeta {
+  @include m.flex(row, center, center);
+  width: 100%;
+  flex-wrap: wrap;
+  gap: v.$spacing-xlarge;
+}
+
+.leftMeta {
+  @include m.flex-column-center;
+  width: 100%;
+  text-align: center;
+}
+
+.wrapper {
+  margin: v.$spacing-xxlarge auto;
+  @include m.flex-column-center;
+  width: 100%;
+}
+
+// Responsive adjustments
+@include m.respond-to(tablet) {
+  .outerWrapper {
+    padding: v.$spacing-large;
+  }
+  
+  .gameMeta {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .leftMeta {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@include m.respond-to(mobile) {
+  .outerWrapper {
+    padding: v.$spacing-medium;
+  }
+  
+  h1 {
+    font-size: 1.5em;
+  }
+}

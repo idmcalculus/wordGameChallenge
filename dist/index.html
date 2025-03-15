@@ -3,9 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="A modern, browser-based word guessing game with real-time feedback">
+    <meta name="theme-color" content="#4a90e2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Word Game">
+    <link rel="manifest" href="/manifest.json">
     <title>Word Game Challenge</title>
-    <link rel="stylesheet" href="./styles.css">
-</head>
+    <!-- CSS will be injected by webpack -->
+<script defer src="js/runtime.86fa4c131608f9325812.js"></script><script defer src="js/game-logic.98fbbe629c9d326243cf.js"></script><script defer src="js/main.b1e37df2956548e62988.js"></script></head>
 <body>
     <div class="outerWrapper" id="outerWrapper">
         <h1 id="gameHeader">Find the word &hellip;</h1>
@@ -31,6 +37,6 @@
             <button id="alertResetButton">Reset Game</button>
         </div>
     </div>
-    <script type="module" src="./js/app.js"></script>
+    <!-- JS will be injected by webpack -->
 </body>
 </html>

@@ -1,0 +1,143 @@
+@use 'variables' as v;
+
+// Flexbox mixins
+@mixin flex($direction: row, $justify: center, $align: center) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+}
+
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-column-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+// Button mixins
+@mixin button-base {
+  padding: v.$spacing-medium v.$spacing-xlarge;
+  border: none;
+  border-radius: v.$border-radius-medium;
+  font-size: v.$font-size-base;
+  cursor: pointer;
+  transition: background-color v.$animation-duration-medium, transform v.$animation-duration-short;
+}
+
+@mixin button-hover {
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+@mixin button-disabled {
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+// Typography mixins
+@mixin heading {
+  font-weight: v.$font-weight-bold;
+  color: v.$color-game-header;
+  text-align: center;
+}
+
+// Box shadow mixin
+@mixin box-shadow($opacity: 0.1) {
+  box-shadow: 0 2px 5px rgba(v.$color-black, $opacity);
+}
+
+// Media query mixins
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == mobile {
+    @media screen and (max-width: v.$breakpoint-mobile) {
+      @content;
+    }
+  } @else if $breakpoint == tablet {
+    @media screen and (max-width: v.$breakpoint-tablet) {
+      @content;
+    }
+  }
+}
+
+// Animation mixins
+@mixin rotate-animation {
+  animation: rotate v.$animation-duration-long linear;
+}
+
+@mixin highlight-animation {
+  animation: highlight-hint 2s ease;
+}
+
+// Container mixin
+@mixin container {
+  max-width: v.$container-max-width;
+  margin: 0 auto;
+  padding: v.$spacing-xlarge;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// Game element mixins
+@mixin game-container {
+  border: v.$border-width solid v.$color-game-border;
+  background-color: v.$color-game-background;
+  padding: v.$spacing-medium;
+  margin: v.$spacing-medium auto;
+  border-radius: v.$border-radius-small;
+}
+
+@mixin letter-box {
+  border: v.$border-width solid v.$color-black;
+  padding: v.$spacing-xsmall;
+  margin: v.$spacing-xsmall;
+  background-color: v.$color-white;
+  width: v.$letter-box-size;
+  height: v.$letter-box-size;
+  text-align: center;
+  font-size: 1em;
+  font-weight: v.$font-weight-bold;
+  text-transform: uppercase;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+// Modal mixins
+@mixin modal-overlay {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(v.$color-black, 0.4);
+  @include flex-center;
+}
+
+@mixin modal-content {
+  background-color: v.$color-white;
+  margin: auto;
+  padding: v.$spacing-xlarge;
+  border: v.$border-width solid #888;
+  width: 90%;
+  max-width: v.$modal-max-width;
+  border-radius: v.$border-radius-large;
+  text-align: center;
+  position: relative;
+  @include flex-column-center;
+}

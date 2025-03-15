@@ -1,0 +1,48 @@
+// Import variables and mixins
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// Reset and base styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-size: v.$font-size-base;
+  font-family: v.$font-family-primary;
+  color: v.$color-text;
+  background-color: v.$color-background;
+  @include m.flex-center;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @include m.heading;
+}
+
+button {
+  @include m.button-base;
+}
+
+input {
+  font-family: v.$font-family-primary;
+}
+
+p {
+  margin: v.$spacing-medium 0;
+}
+
+ul, ol {
+  list-style-position: inside;
+}
+
+a {
+  color: v.$color-primary;
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}

@@ -1,0 +1,146 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+.modal {
+  @include m.modal-overlay;
+  display: none;
+}
+
+.modal-content {
+  @include m.modal-content;
+}
+
+.how-to-play-btn {
+  @include m.button-base;
+  @include m.button-hover;
+  background-color: v.$color-primary;
+  color: v.$color-white;
+  margin: v.$spacing-medium auto;
+  display: block;
+  
+  &:hover {
+    background-color: v.$color-primary-dark;
+  }
+}
+
+.how-to-play-content {
+  text-align: left;
+  
+  h2 {
+    @include m.heading;
+    margin-bottom: v.$spacing-large;
+    width: 100%;
+  }
+}
+
+.rules-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: v.$spacing-medium;
+  width: 100%;
+  
+  /* Custom scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+  
+  ol, ul {
+    margin-left: v.$spacing-medium;
+    
+    li {
+      margin-bottom: v.$spacing-small;
+      line-height: 1.5;
+      font-size: v.$font-size-base;
+    }
+  }
+  
+  ul {
+    margin-top: v.$spacing-small;
+  }
+  
+  .green-highlight {
+    background-color: #4CAF50;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+  }
+  
+  .orange-highlight {
+    background-color: #FF9800;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+  }
+  
+  .grey-highlight {
+    background-color: #9E9E9E;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+  }
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: v.$font-weight-bold;
+  position: absolute;
+  top: v.$spacing-medium;
+  right: v.$spacing-medium;
+  line-height: 1;
+  
+  &:hover,
+  &:focus {
+    color: v.$color-black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+}
+
+#alertResetButton {
+  padding: v.$spacing-medium v.$spacing-xlarge;
+  border: none;
+  border-radius: v.$border-radius-medium;
+  color: v.$color-white;
+  font-size: v.$font-size-base;
+  cursor: pointer;
+  transition: background-color v.$animation-duration-medium ease;
+  background-color: v.$color-success;
+  margin-top: v.$spacing-medium;
+  
+  &:hover {
+    background-color: v.$color-success-dark;
+  }
+}
+
+@include m.respond-to(mobile) {
+  .modal-content {
+    width: 95%;
+    padding: v.$spacing-large;
+  }
+  
+  .how-to-play-btn {
+    width: 90%;
+    font-size: v.$font-size-base;
+    padding: v.$spacing-medium;
+  }
+  
+  .rules-container {
+    max-height: 70vh;
+  }
+}
