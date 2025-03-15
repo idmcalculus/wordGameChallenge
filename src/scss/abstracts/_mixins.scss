@@ -103,17 +103,21 @@
 @mixin letter-box {
   border: v.$border-width solid v.$color-black;
   padding: v.$spacing-xsmall;
-  margin: v.$spacing-xsmall;
+  margin: v.$spacing-small;
   background-color: v.$color-white;
   width: v.$letter-box-size;
   height: v.$letter-box-size;
   text-align: center;
-  font-size: 1em;
+  font-size: 1.2em;
+  line-height: 1.8em;
   font-weight: v.$font-weight-bold;
   text-transform: uppercase;
   touch-action: manipulation;
   -webkit-appearance: none;
   appearance: none;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
 }
 
 // Modal mixins

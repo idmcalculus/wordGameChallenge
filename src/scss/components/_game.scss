@@ -1,5 +1,6 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins' as m;
+@use 'sass:color';
 
 #gameHeader {
   font-size: v.$font-size-xlarge;
@@ -83,42 +84,83 @@
 #alphabetContainer {
   @include m.game-container;
   margin: v.$spacing-xlarge auto;
-  text-align: center;
-  display: none;
+  display: none !important; /* Initially hidden, only shown when game starts */
   width: 100%;
   max-width: 600px;
-  gap: v.$spacing-small;
   
-  span {
-    border: v.$border-width solid v.$color-black;
-    padding: v.$spacing-small;
-    margin: v.$spacing-small;
+  /* Container layout */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  /* Alphabet label styling */
+  .alphabet-label {
+    font-weight: v.$font-weight-bold;
+    font-size: v.$font-size-base;
+    margin-bottom: v.$spacing-medium;
+    color: v.$color-text;
     text-align: center;
-    text-transform: uppercase;
-    transition: all v.$animation-duration-medium ease;
-    @include m.flex-center;
-    display: inline-flex;
-    min-width: v.$alphabet-letter-size;
-    min-height: v.$alphabet-letter-size;
+  }
+  
+  /* Grid container for the letters */
+  .alphabet-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: v.$spacing-xsmall;
+    width: 95%; /* Slightly increased from 90% */
+    max-width: 520px;
+    margin: 0 auto;
+    justify-content: center;
+    align-items: center;
     
-    &.notGuessed {
-      background-color: v.$color-grey-light;
-      color: v.$color-text;
+    /* Letter spacer for centering the last row */
+    .letter-spacer {
+      visibility: hidden;
+      grid-column: span 1;
     }
     
-    &.correct {
-      background-color: v.$color-correct;
-      color: v.$color-correct-dark;
-    }
-    
-    &.notContains {
-      background-color: v.$color-not-contains;
-      color: v.$color-not-contains-dark;
-    }
-    
-    &.contains {
-      background-color: v.$color-contains;
-      color: v.$color-contains-dark;
+    span {
+      /* Non-button styling */
+      border: v.$border-width solid v.$color-grey;
+      border-radius: v.$border-radius-small;
+      padding: v.$spacing-xsmall; /* Reduced padding */
+      text-align: center;
+      text-transform: uppercase;
+      font-weight: v.$font-weight-bold;
+      font-size: 0.9rem; /* Smaller font size */
+      transition: all v.$animation-duration-medium ease;
+      @include m.flex-center;
+      cursor: default; /* Indicate it's not interactive */
+      
+      /* Ensure consistent sizing */
+      aspect-ratio: 1 / 1;
+      min-width: 32px; /* Slightly increased minimum width */
+      min-height: 32px; /* Slightly increased minimum height */
+      
+      &.notGuessed {
+        background-color: #f9f9f9;
+        color: v.$color-text;
+        border-color: #ddd;
+      }
+      
+      &.correct {
+        background-color: v.$color-correct;
+        color: v.$color-correct-dark;
+        border-color: color.adjust(v.$color-correct, $lightness: -10%);
+      }
+      
+      &.notContains {
+        background-color: #f2f2f2; /* Light gray */
+        color: #999; /* Faded text */
+        border-color: #ddd;
+      }
+      
+      &.contains {
+        background-color: v.$color-contains;
+        color: v.$color-contains-dark;
+        border-color: color.adjust(v.$color-contains, $lightness: -10%);
+      }
     }
   }
 }
@@ -148,11 +190,13 @@
   #alphabetContainer {
     padding: v.$spacing-small;
     
-    span {
-      padding: v.$spacing-xsmall;
-      margin: v.$spacing-xsmall;
-      min-width: 20px;
-      min-height: 20px;
+    .alphabet-grid {
+      gap: v.$spacing-xsmall;
+      
+      span {
+        padding: v.$spacing-xsmall;
+        font-size: 0.9em;
+      }
     }
   }
   
@@ -169,11 +213,20 @@
   }
   
   #alphabetContainer {
-    span {
-      padding: v.$spacing-xxsmall;
-      margin: v.$spacing-xxsmall;
-      min-width: v.$alphabet-letter-size-mobile;
-      min-height: v.$alphabet-letter-size-mobile;
+    padding: v.$spacing-small;
+    
+    .alphabet-label {
+      font-size: 0.9em;
+      margin-bottom: v.$spacing-small;
+    }
+    
+    .alphabet-grid {
+      gap: v.$spacing-xxsmall;
+      
+      span {
+        padding: v.$spacing-xxsmall;
+        font-size: 0.8em;
+      }
     }
   }
   

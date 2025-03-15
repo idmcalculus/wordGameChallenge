@@ -42,7 +42,7 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/wordGameChallenge.git
+   git clone https://github.com/idmcalculus/wordGameChallenge.git
    cd wordGameChallenge
    ```
 
@@ -91,13 +91,14 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
 
 1. Enter a word length between 3 and 10 letters
 2. Click "Start Game"
-3. Type your guess and press Enter or click to submit
-4. Get feedback through colors:
-   - Green: Correct letter in correct position
-   - Orange: Correct letter in wrong position
-   - Grey: Letter not in word
-5. You have 5 attempts to guess the word
-6. Try to beat your best time!
+3. Type your guess using your keyboard and press Enter or click to submit
+4. The on-screen alphabet grid is for feedback only, not for typing
+5. Get feedback through colors:
+   - 🟩 Green: Correct letter in correct position
+   - 🟧 Orange: Correct letter in wrong position
+   - ⬜ Grey: Letter not in word
+6. You have 5 attempts to guess the word
+7. Try to beat your best time!
 
 ## Project Structure 📁
 

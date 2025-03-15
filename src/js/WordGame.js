@@ -224,7 +224,6 @@ class WordGame {
     this.startTime = new Date();
     this.timerDisplay = document.getElementById('timerDisplay');
     this.timerId = startTimer(this.startTime, this.timerDisplay);
-    this.createAlphabetContainer();
 
     // Disable the start game button and word length input
     document.getElementById('startGame').disabled = true;
@@ -252,6 +251,14 @@ class WordGame {
       this.possibleWords = await fetchPossibleWords(pattern, this.wordLength);
       this.currentWord = this.possibleWords[Math.floor(Math.random() * this.possibleWords.length)];
       // console.log(this.currentWord);
+      
+      // Initialize the alphabet container after we have a word
+      this.createAlphabetContainer();
+      
+      // Show the alphabet container with !important override
+      const container = document.getElementById('alphabetContainer');
+      container.setAttribute('style', 'display: grid !important');
+      
       this.createRow();
     } catch (error) {
       console.error('Error:', error);
@@ -282,6 +289,12 @@ class WordGame {
   }
 
   updateAlphabetContainer(guessedLetter, letterClass) {
+    // Show the alphabet container when the first guess is made
+    const container = document.getElementById('alphabetContainer');
+    if (container.style.display === 'none' || container.style.display === '') {
+      container.style.display = 'grid';
+    }
+    
     updateAlphabetContainer(guessedLetter, letterClass, this.alphabet);
   }
 

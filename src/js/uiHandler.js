@@ -1,21 +1,92 @@
 export function createAlphabetContainer(alphabet) {
   const container = document.getElementById('alphabetContainer');
   container.innerHTML = '';  // Clear container
-
-  alphabet.forEach(letter => {
+  
+  // Add a title/label above the grid to clarify its purpose
+  const label = document.createElement('div');
+  label.classList.add('alphabet-label');
+  label.textContent = 'Letter Status';
+  container.appendChild(label);
+  
+  // Create a grid container for the letters
+  const gridContainer = document.createElement('div');
+  gridContainer.classList.add('alphabet-grid');
+  
+  // Create a more balanced layout
+  // First 3 rows with 7 letters each (21 letters)
+  const firstThreeRows = alphabet.slice(0, 21);
+  // Last row with 5 letters, centered
+  const lastRow = alphabet.slice(21);
+  
+  // Add first three rows (7 letters each)
+  firstThreeRows.forEach(letter => {
     const span = document.createElement('span');
     span.textContent = letter;
-    span.classList.add('notGuessed');  // Initial state: not guessed
-    container.appendChild(span);
+    span.classList.add('notGuessed');
+    span.setAttribute('aria-label', `Letter ${letter}, not yet guessed`);
+    gridContainer.appendChild(span);
   });
-  container.style.display = 'block';
+  
+  // Add spacer for centering last row if needed
+  if (lastRow.length < 7) {
+    const spacersNeeded = Math.floor((7 - lastRow.length) / 2);
+    
+    // Add left spacers
+    for (let i = 0; i < spacersNeeded; i++) {
+      const spacer = document.createElement('div');
+      spacer.classList.add('letter-spacer');
+      gridContainer.appendChild(spacer);
+    }
+    
+    // Add the remaining letters
+    lastRow.forEach(letter => {
+      const span = document.createElement('span');
+      span.textContent = letter;
+      span.classList.add('notGuessed');
+      span.setAttribute('aria-label', `Letter ${letter}, not yet guessed`);
+      gridContainer.appendChild(span);
+    });
+    
+    // Add right spacers
+    for (let i = 0; i < spacersNeeded; i++) {
+      const spacer = document.createElement('div');
+      spacer.classList.add('letter-spacer');
+      gridContainer.appendChild(spacer);
+    }
+  }
+  
+  container.appendChild(gridContainer);
+  // Don't display the container yet - it will be shown after the first guess
+  container.style.display = 'none';
 }
 
 export function updateAlphabetContainer(guessedLetter, letterClass, alphabet) {
-  const letterElement = document.querySelector(`#alphabetContainer span:nth-child(${alphabet.indexOf(guessedLetter) + 1})`);
-
+  const container = document.getElementById('alphabetContainer');
+  
+  // Show the container if it's not already visible
+  if (container.style.display === 'none') {
+    container.style.display = 'grid';
+  }
+  
+  // Find the letter in the grid container
+  const letterElement = document.querySelector(`#alphabetContainer .alphabet-grid span:nth-child(${alphabet.indexOf(guessedLetter) + 1})`);
+  
+  if (!letterElement) return; // Safety check
+  
   letterElement.className = ''; // Remove all classes
   letterElement.classList.add(letterClass);
+  
+  // Update the aria-label for accessibility
+  let status = 'unknown';
+  if (letterClass === 'correct') {
+    status = 'correct, in the right position';
+  } else if (letterClass === 'contains') {
+    status = 'in the word but wrong position';
+  } else if (letterClass === 'notContains') {
+    status = 'not in the word';
+  }
+  
+  letterElement.setAttribute('aria-label', `Letter ${guessedLetter}, ${status}`);
 }
 
 export function createRow(wordLength, checkRowLetters) {
@@ -79,9 +150,9 @@ export function createRow(wordLength, checkRowLetters) {
     });
         
     // Touch-specific handling for mobile
-    newInputBox.addEventListener('touchend', (event) => {
+    newInputBox.addEventListener('touchend', (e) => {
       // Prevent zoom on double-tap
-      event.preventDefault();
+      e.preventDefault();
       newInputBox.focus();
     });
 

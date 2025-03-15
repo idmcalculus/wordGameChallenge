@@ -69,8 +69,8 @@ $breakpoint-tablet: 768px;
 
 // Dimensions
 $container-max-width: 800px;
-$letter-box-size: 1.5em;
-$letter-box-size-mobile: 1.2em;
+$letter-box-size: 2.25em; /* Increased by 150% from 1.5em */
+$letter-box-size-mobile: 1.8em; /* Increased by 150% from 1.2em */
 $alphabet-letter-size: 25px;
 $alphabet-letter-size-mobile: 18px;
 $modal-max-width: 300px;
