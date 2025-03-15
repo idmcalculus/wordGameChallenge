@@ -404,7 +404,7 @@ class WordGame {
       return;
     }
     
-    const letterStates = {};         // Track the state of each letter (correct, contains, notContains)
+    const letterStates = {};         // Track the state of each letter in each position (correct, contains, notContains)
     const wordLetterCounts = {};    // Track remaining occurrences of each letter in the target word
     const alphabetLetterStates = {}; // Track the best state for each letter in the alphabet
     
@@ -423,13 +423,11 @@ class WordGame {
     
       if (enteredLetter === correctLetter) {
         inputBox.classList.add('correct'); // Visually mark as correct
-        letterStates[enteredLetter] = 'correct'; 
+        letterStates[i] = 'correct'; // Track this position as correct
         // Track this as the best state for this letter in the alphabet
         alphabetLetterStates[enteredLetter] = 'correct';
         totalCorrect++; // Increment total correct count
         wordLetterCounts[enteredLetter]--; // Decrement remaining count in the word
-      } else {
-        letterStates[enteredLetter] = (letterStates[enteredLetter] || 0) + 1; // Increment count for misplaced letter
       }
     }
     
@@ -438,19 +436,28 @@ class WordGame {
       let inputBox = this.currentRow.children[i];
       let enteredLetter = inputBox.value;
     
-      if (letterStates[enteredLetter] === 'correct') {
-        continue; // Letter is already marked as correct, so skip it
-      } else if (this.currentWord.includes(enteredLetter) && wordLetterCounts[enteredLetter] > 0) {
+      // Skip positions already marked as correct
+      if (letterStates[i] === 'correct') {
+        continue;
+      }
+      
+      // Check if the letter exists in the word and we haven't used all occurrences yet
+      if (this.currentWord.includes(enteredLetter) && wordLetterCounts[enteredLetter] > 0) {
         inputBox.classList.add('contains');
+        letterStates[i] = 'contains';
         // Only update alphabet state if we don't already have a better state (correct)
         if (!alphabetLetterStates[enteredLetter] || alphabetLetterStates[enteredLetter] !== 'correct') {
           alphabetLetterStates[enteredLetter] = 'contains';
         }
         wordLetterCounts[enteredLetter]--; // Decrement remaining count in the word
       } else {
+        // Either the letter is not in the word at all, or all occurrences have been accounted for
         inputBox.classList.add('notContains');
+        letterStates[i] = 'notContains';
         // Only update alphabet state if we don't already have a better state (correct or contains)
-        if (!alphabetLetterStates[enteredLetter]) {
+        if (!alphabetLetterStates[enteredLetter] && 
+            (!this.currentWord.includes(enteredLetter) || 
+             alphabetLetterStates[enteredLetter] !== 'contains')) {
           alphabetLetterStates[enteredLetter] = 'notContains';
         }
       }
