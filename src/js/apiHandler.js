@@ -46,3 +46,76 @@ export async function fetchPossibleWords(pattern, wordLength) {
     throw new Error(`Failed to fetch words: ${error.message}`);
   }
 }
+
+/**
+ * Validates if a word is a valid English word using Datamuse API
+ * @param {string} word - The word to validate
+ * @returns {Promise<boolean>} - True if the word is valid, false otherwise
+ */
+export async function validateWord(word) {
+  if (!word || word.trim() === '') {
+    return false;
+  }
+  
+  try {
+    // Create AbortController for timeout handling
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+    
+    // First try Datamuse API with exact spelling
+    const response = await fetch(`${API_URL}/words?sp=${word.toLowerCase()}&md=f&max=1`, {
+      signal: controller.signal
+    });
+    
+    // Clear the timeout
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new Error(`Network response error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // If we found an exact match with the same spelling, it's a valid word
+    if (data.length > 0 && data[0].word.toLowerCase() === word.toLowerCase()) {
+      return true;
+    }
+    
+    // If no exact match found with Datamuse, try backup validation with Free Dictionary API
+    return await validateWordWithFreeDictionary(word);
+    
+  } catch (error) {
+    console.error('Error validating word with Datamuse:', error);
+    // Fallback to Free Dictionary API if Datamuse fails
+    return await validateWordWithFreeDictionary(word);
+  }
+}
+
+/**
+ * Backup validation using Free Dictionary API
+ * @param {string} word - The word to validate
+ * @returns {Promise<boolean>} - True if the word is valid, false otherwise
+ */
+async function validateWordWithFreeDictionary(word) {
+  try {
+    // Create AbortController for timeout handling
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+    
+    // Free Dictionary API returns 404 for non-existent words
+    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`, {
+      signal: controller.signal
+    });
+    
+    // Clear the timeout
+    clearTimeout(timeoutId);
+    
+    // If response is OK, the word exists
+    return response.ok;
+    
+  } catch (error) {
+    console.error('Error validating word with Free Dictionary API:', error);
+    // If both APIs fail, we'll assume the word is valid to avoid blocking gameplay
+    return true;
+  }
+}

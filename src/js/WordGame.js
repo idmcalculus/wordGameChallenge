@@ -275,9 +275,15 @@ class WordGame {
     this.wordLength = parseInt(wordLengthInput);
         
     if (isNaN(this.wordLength) || this.wordLength < 3 || this.wordLength > 10) {
-      showAlert('Please enter a valid number between 3 and 10', () => {
+      // For game start page, show only the Reset Game button with styled alert
+      // Pass true as the fourth parameter to indicate this is a game start alert
+      showAlert(`<div class="failure-alert">
+        <span class="alert-icon">⚠️</span>
+        <h3>Invalid Input</h3>
+        <p>Please enter a valid number between 3 and 10</p>
+      </div>`, null, () => {
         this.resetGame();
-      });
+      }, true);
       return;
     }
 
@@ -355,14 +361,52 @@ class WordGame {
     // Hint buttons are now added once below the wrapper in the play method
   }
 
-  checkRowLetters() {
+  async checkRowLetters() {
     console.log('Check row letters called on row ' + this.currentRow.id);
     if (!this.testIsRowComplete()) {
       return;
     }
     
+    // Get the entered word from the current row
+    const inputs = Array.from(this.currentRow.getElementsByTagName('input'));
+    const enteredWord = inputs.map(input => input.value).join('');
+    
+    // Import validateWord function
+    const { validateWord } = await import('./apiHandler.js');
+    
+    // Check if the entered word is a valid English word
+    const isValidWord = await validateWord(enteredWord);
+    
+    if (!isValidWord) {
+      // Create try again callback - clears only the current row
+      const tryAgainCallback = () => {
+        // Clear the inputs in the current row
+        inputs.forEach(input => {
+          input.value = '';
+          input.classList.remove('correct', 'contains', 'notContains');
+        });
+        // Focus on the first input
+        inputs[0].focus();
+      };
+      
+      // Reset game callback - resets the entire game
+      const resetGameCallback = () => {
+        this.resetGame();
+      };
+      
+      // Show an alert with both Try Again and Reset Game buttons
+      showAlert(`<div class="invalid-word-alert">
+        <span class="alert-icon">⚠️</span>
+        <h3>Invalid Word</h3>
+        <p>"${enteredWord}" is not a valid English word.</p>
+        <p>Please try again with a valid word.</p>
+      </div>`, tryAgainCallback, resetGameCallback);
+      return;
+    }
+    
     const letterStates = {};         // Track the state of each letter (correct, contains, notContains)
     const wordLetterCounts = {};    // Track remaining occurrences of each letter in the target word
+    const alphabetLetterStates = {}; // Track the best state for each letter in the alphabet
     
     // Initialize wordLetterCounts with the frequency of each letter in the current word
     for (const letter of this.currentWord) {
@@ -379,8 +423,9 @@ class WordGame {
     
       if (enteredLetter === correctLetter) {
         inputBox.classList.add('correct'); // Visually mark as correct
-        this.updateAlphabetContainer(enteredLetter, 'correct'); // Update letter keyboard
         letterStates[enteredLetter] = 'correct'; 
+        // Track this as the best state for this letter in the alphabet
+        alphabetLetterStates[enteredLetter] = 'correct';
         totalCorrect++; // Increment total correct count
         wordLetterCounts[enteredLetter]--; // Decrement remaining count in the word
       } else {
@@ -397,12 +442,23 @@ class WordGame {
         continue; // Letter is already marked as correct, so skip it
       } else if (this.currentWord.includes(enteredLetter) && wordLetterCounts[enteredLetter] > 0) {
         inputBox.classList.add('contains');
-        this.updateAlphabetContainer(enteredLetter, 'contains');
+        // Only update alphabet state if we don't already have a better state (correct)
+        if (!alphabetLetterStates[enteredLetter] || alphabetLetterStates[enteredLetter] !== 'correct') {
+          alphabetLetterStates[enteredLetter] = 'contains';
+        }
         wordLetterCounts[enteredLetter]--; // Decrement remaining count in the word
       } else {
         inputBox.classList.add('notContains');
-        this.updateAlphabetContainer(enteredLetter, 'notContains');
+        // Only update alphabet state if we don't already have a better state (correct or contains)
+        if (!alphabetLetterStates[enteredLetter]) {
+          alphabetLetterStates[enteredLetter] = 'notContains';
+        }
       }
+    }
+    
+    // Update the alphabet container with the best state for each letter
+    for (const [letter, state] of Object.entries(alphabetLetterStates)) {
+      this.updateAlphabetContainer(letter, state);
     }
     
     Array.from(this.currentRow.children).forEach(input => input.disabled = true); // Disable inputs after checking
@@ -427,6 +483,7 @@ class WordGame {
       return false;
     }
 
+    // Check if all inputs have values
     return Array.from(this.currentRow.getElementsByTagName('input')).every(input => input.value);
   }
 
@@ -446,12 +503,30 @@ class WordGame {
       date: new Date().toISOString()
     });
         
-    // Sort all scores by time (ascending)
+    // Sort all scores by time, then attempts, then date (most recent first)
     this.highScores.sort((a, b) => {
       // Handle both new format (object) and old format (number)
       const scoreA = typeof a === 'object' ? a.score : a;
       const scoreB = typeof b === 'object' ? b.score : b;
-      return scoreA - scoreB;
+      
+      // First sort by time (ascending)
+      if (scoreA !== scoreB) {
+        return scoreA - scoreB;
+      }
+      
+      // If times are equal and both are objects with attempts, sort by attempts (ascending)
+      if (typeof a === 'object' && typeof b === 'object' && 'attempts' in a && 'attempts' in b) {
+        if (a.attempts !== b.attempts) {
+          return a.attempts - b.attempts;
+        }
+        
+        // If attempts are also equal, sort by date (most recent first)
+        if ('date' in a && 'date' in b) {
+          return new Date(b.date) - new Date(a.date);
+        }
+      }
+      
+      return 0; // Equal ranking if we can't determine further ordering
     });
 
     localStorage.setItem('highScores', JSON.stringify(this.highScores));
@@ -460,7 +535,13 @@ class WordGame {
     this.currentScorePage = 0;
     this.displayHighScores();
 
-    showAlert(`Well done! You solved it in ${timeTaken} seconds with ${this.rowCount + 1} attempts. The word was ${this.currentWord}`, () => {
+    // For game won, only show the Reset Game button (null for tryAgainCallback)
+    showAlert(`<div class="success-alert">
+      <span class="alert-icon">🎉</span>
+      <h3>Congratulations!</h3>
+      <p>Well done! You solved it in ${timeTaken} seconds with ${this.rowCount + 1} attempts.</p>
+      <p>The word was: <strong>${this.currentWord}</strong></p>
+    </div>`, null, () => {
       this.resetGame();
     });
   }
@@ -470,7 +551,13 @@ class WordGame {
 
     stopTimer(this.timerId);
 
-    showAlert(`Sorry, you've reached the maximum number of attempts. The word was: ${this.currentWord}`, () => {
+    // For game lost, show both Try Again and Reset Game buttons
+    showAlert(`<div class="failure-alert">
+      <span class="alert-icon">😕</span>
+      <h3>Game Over</h3>
+      <p>Sorry, you've reached the maximum number of attempts.</p>
+      <p>The word was: <strong>${this.currentWord}</strong></p>
+    </div>`, null, () => {
       this.resetGame();
     });
   }

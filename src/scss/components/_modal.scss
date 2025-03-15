@@ -115,6 +115,28 @@
   }
 }
 
+.alert-buttons {
+  display: flex;
+  justify-content: center;
+  gap: v.$spacing-medium;
+  margin-top: v.$spacing-medium;
+}
+
+#alertTryAgainButton {
+  padding: v.$spacing-medium v.$spacing-xlarge;
+  border: none;
+  border-radius: v.$border-radius-medium;
+  color: v.$color-white;
+  font-size: v.$font-size-base;
+  cursor: pointer;
+  transition: background-color v.$animation-duration-medium ease;
+  background-color: v.$color-primary;
+  
+  &:hover {
+    background-color: v.$color-primary-dark;
+  }
+}
+
 #alertResetButton {
   padding: v.$spacing-medium v.$spacing-xlarge;
   border: none;
@@ -124,10 +146,67 @@
   cursor: pointer;
   transition: background-color v.$animation-duration-medium ease;
   background-color: v.$color-success;
-  margin-top: v.$spacing-medium;
   
   &:hover {
     background-color: v.$color-success-dark;
+  }
+}
+
+// Styling for alert messages
+.invalid-word-alert, .success-alert, .failure-alert {
+  text-align: center;
+  padding: v.$spacing-medium;
+  border-radius: v.$border-radius-medium;
+  margin-bottom: v.$spacing-medium;
+  
+  .alert-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: v.$spacing-small;
+  }
+  
+  h3 {
+    margin: v.$spacing-small 0;
+    font-size: v.$font-size-large;
+  }
+  
+  p {
+    margin: v.$spacing-small 0;
+    font-size: v.$font-size-base;
+    
+    strong {
+      font-weight: v.$font-weight-bold;
+    }
+  }
+}
+
+// Invalid word alert (red theme)
+.invalid-word-alert {
+  background-color: #fff3f3;
+  border: 2px solid #ff6b6b;
+  
+  h3 {
+    color: #e74c3c;
+  }
+}
+
+// Success alert (green theme)
+.success-alert {
+  background-color: #f0fff0;
+  border: 2px solid #4CAF50;
+  
+  h3 {
+    color: #2e7d32;
+  }
+}
+
+// Failure alert (orange/yellow theme)
+.failure-alert {
+  background-color: #fffbf0;
+  border: 2px solid #FF9800;
+  
+  h3 {
+    color: #e65100;
   }
 }
 
@@ -145,5 +224,17 @@
   
   .rules-container {
     max-height: 70vh;
+  }
+  
+  .invalid-word-alert {
+    padding: v.$spacing-small;
+    
+    h3 {
+      font-size: v.$font-size-base;
+    }
+    
+    p {
+      font-size: v.$font-size-small;
+    }
   }
 }
