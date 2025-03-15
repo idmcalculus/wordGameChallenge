@@ -68,8 +68,17 @@ export function updateAlphabetContainer(guessedLetter, letterClass, alphabet) {
     container.style.display = 'grid';
   }
   
-  // Find the letter in the grid container
-  const letterElement = document.querySelector(`#alphabetContainer .alphabet-grid span:nth-child(${alphabet.indexOf(guessedLetter) + 1})`);
+  // Find the letter in the grid container by text content instead of position
+  const letterElements = document.querySelectorAll('#alphabetContainer .alphabet-grid span');
+  let letterElement = null;
+  
+  // Find the element with matching text content
+  for (const element of letterElements) {
+    if (element.textContent.toUpperCase() === guessedLetter.toUpperCase()) {
+      letterElement = element;
+      break;
+    }
+  }
   
   if (!letterElement) return; // Safety check
   

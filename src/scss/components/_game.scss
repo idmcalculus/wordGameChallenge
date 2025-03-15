@@ -13,6 +13,18 @@
   text-align: center;
   font-size: v.$font-size-large;
   margin: v.$spacing-small;
+  
+  /* Hide spinner arrows in different browsers */
+  /* Chrome, Safari, Edge, Opera */
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  /* Firefox and standard property for compatibility */
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 #startGame {
@@ -151,9 +163,9 @@
       }
       
       &.notContains {
-        background-color: #f2f2f2; /* Light gray */
-        color: #999; /* Faded text */
-        border-color: #ddd;
+        background-color: v.$color-not-contains; /* Light red */
+        color: v.$color-not-contains-dark; /* Dark red text */
+        border-color: color.adjust(v.$color-not-contains, $lightness: -10%);
       }
       
       &.contains {

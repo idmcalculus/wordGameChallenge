@@ -207,6 +207,46 @@ class WordGame {
   }
 
   init() {
+    // Add input validation for the word length input
+    const wordLengthInput = document.getElementById('wordLengthInput');
+    
+    // Set a default value
+    wordLengthInput.value = 3;
+    
+    // Add event listener to validate input on blur (when focus leaves the input)
+    // This allows users to delete and type freely while editing
+    wordLengthInput.addEventListener('blur', function() {
+      // Only validate when the input loses focus
+      let value = parseInt(this.value);
+      
+      if (isNaN(value)) {
+        // If not a number, reset to default
+        this.value = 3;
+      } else if (value < 3) {
+        // If less than minimum, set to minimum
+        this.value = 3;
+      } else if (value > 10) {
+        // If greater than maximum, set to maximum
+        this.value = 10;
+      }
+    });
+    
+    // Also validate on keyup for better UX
+    wordLengthInput.addEventListener('keyup', function(e) {
+      // Allow empty field during editing
+      if (this.value === '') return;
+      
+      // Allow backspace and delete keys without immediate validation
+      if (e.key === 'Backspace' || e.key === 'Delete') return;
+      
+      const value = parseInt(this.value);
+      
+      // Only enforce max limit during typing
+      if (value > 10) {
+        this.value = 10;
+      }
+    });
+    
     document.getElementById('startGame').addEventListener('click', () => {
       this.displayHighScores();
       this.play();
@@ -420,7 +460,7 @@ class WordGame {
     this.currentScorePage = 0;
     this.displayHighScores();
 
-    showAlert(`Well done! You solved it in ${this.rowCount + 1} attempts. The word was ${this.currentWord}`, () => {
+    showAlert(`Well done! You solved it in ${timeTaken} seconds with ${this.rowCount + 1} attempts. The word was ${this.currentWord}`, () => {
       this.resetGame();
     });
   }
@@ -449,10 +489,13 @@ class WordGame {
             
       // Handle both new format (object) and old format (number)
       if (typeof scoreData === 'object') {
-        listItem.textContent = `#${i + 1}: ${scoreData.score} seconds`;
+        // Show both time and attempts
+        listItem.innerHTML = `<span class="score-rank">#${i + 1}:</span> <span class="score-time">${scoreData.score} seconds</span> <span class="score-attempts">(${scoreData.attempts} attempts)</span>`;
+        
         // Add tooltip with additional info
-        listItem.title = `Word: ${scoreData.word}, Length: ${scoreData.wordLength}, Attempts: ${scoreData.attempts}`;
+        listItem.title = `Word: ${scoreData.word}, Length: ${scoreData.wordLength}`;
       } else {
+        // Legacy format - just show time
         listItem.textContent = `#${i + 1}: ${scoreData} seconds`;
       }
             

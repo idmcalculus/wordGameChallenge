@@ -21,7 +21,29 @@
     list-style-type: none;
     border-bottom: v.$border-width solid rgba(v.$color-black, 0.1);
     cursor: default;
-    text-align: center;
+    text-align: left;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    
+    .score-rank {
+      font-weight: v.$font-weight-bold;
+      margin-right: v.$spacing-small;
+      min-width: 30px;
+    }
+    
+    .score-time {
+      flex-grow: 1;
+      color: v.$color-primary-dark;
+    }
+    
+    .score-attempts {
+      flex-grow: 2;
+      color: v.$color-grey-dark;
+      font-size: 0.9em;
+      margin-left: v.$spacing-xxsmall;
+    }
   }
 }
 
@@ -60,5 +82,26 @@
 @include m.respond-to(mobile) {
   #highScoresList {
     max-height: 220px;
+    font-size: 0.9em;
+    padding: v.$spacing-small;
+    
+    li {
+      padding: v.$spacing-small;
+      flex-direction: column;
+      align-items: flex-start;
+      
+      .score-rank {
+        margin-bottom: v.$spacing-xxsmall;
+      }
+      
+      .score-time {
+        margin-bottom: v.$spacing-xxsmall;
+      }
+      
+      .score-attempts {
+        margin-left: 0;
+        align-self: flex-end;
+      }
+    }
   }
 }
