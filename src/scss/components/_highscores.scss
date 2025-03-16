@@ -44,6 +44,13 @@
       font-size: 0.9em;
       margin-left: v.$spacing-xxsmall;
     }
+
+     .score-wordlength {
+      flex-grow: 2;
+      color: v.$color-grey-dark;
+      font-size: 0.9em;
+      margin-left: v.$spacing-xxsmall;
+    }
   }
 }
 
