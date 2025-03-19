@@ -27,7 +27,8 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
 - Vanilla JavaScript (ES6+)
 - HTML5
 - CSS3
-- Webpack for bundling and optimization
+- Vite for bundling and optimization
+  - Fast development server with HMR
   - Code splitting for performance
   - Asset optimization and compression
   - Environment variables support
@@ -35,7 +36,6 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
   - Service Worker for offline functionality
   - Installable web app with manifest
 - ESLint for code quality
-- Babel for JavaScript transpilation
 - [Datamuse API](https://www.datamuse.com/api/) for word dictionary
 
 ## Setup and Installation 🚀
@@ -48,7 +48,7 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
 
 2. Install dependencies:
    ```bash
-   npm install
+   bun install
    ```
 
 3. Set up environment variables:
@@ -59,29 +59,24 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
 
 4. Development mode:
    ```bash
-   npm run dev
+   bun run dev
    ```
 
 5. Production build:
    ```bash
-   npm run build
+   bun run build
    ```
 
-6. Analyze bundle size (optional):
+6. Preview production build locally:
    ```bash
-   npm run analyze
+   bun run preview
    ```
 
 7. Lint code:
    ```bash
-   npm run lint
+   bun run lint
    # Or to automatically fix issues:
-   npm run lint:fix
-   ```
-
-8. Serve production build locally:
-   ```bash
-   npm run serve:dist
+   bun run lint:fix
    ```
 
 9. Open your browser and navigate to:
@@ -106,8 +101,7 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
 wordGameChallenge/
 ├── src/
 │   ├── index.html                  # Main HTML file
-│   ├── styles.css                  # Styling
-│   ├── manifest.json               # PWA manifest file
+│   ├── scss/                       # SCSS styling files
 │   ├── js/
 │   │   ├── app.js                  # Application entry point
 │   │   ├── WordGame.js             # Core game logic
@@ -119,10 +113,10 @@ wordGameChallenge/
 │   └── assets/
 │       ├── icons/                  # PWA icons
 │       └── favicon.ico             # Favicon
+├── public/                         # Static assets served as-is
 ├── dist/                           # Production build output
-├── webpack.config.js               # Webpack configuration
+├── vite.config.js                  # Vite configuration
 ├── package.json                    # Dependencies and scripts
-├── .babelrc                        # Babel configuration
 ├── .eslintrc.js                    # ESLint configuration
 ├── .env                            # Environment variables (production)
 ├── .env.example                    # Environment variables template

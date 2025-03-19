@@ -1,6 +1,6 @@
 // API configuration from environment variables
-const API_URL = process.env.API_URL || 'https://api.datamuse.com';
-const API_TIMEOUT = parseInt(process.env.API_TIMEOUT || '5000');
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.datamuse.com';
+const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '5000');
 
 /**
  * Fetches possible words matching the given pattern and length
