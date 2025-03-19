@@ -571,7 +571,7 @@ class WordGame {
 
   displayHighScores() {
     const highScoresList = document.getElementById('highScoresList');
-    highScoresList.innerHTML = '<h3 class="highScoresHeader"> High Scores </h3>';
+    highScoresList.innerHTML = '<h3 class="highScoresHeader"> Scores </h3>';
 
     // Display all scores in the scrollable container
     const totalScores = this.highScores.length;
@@ -584,7 +584,15 @@ class WordGame {
       // Handle both new format (object) and old format (number)
       if (typeof scoreData === 'object') {
         // Show both time and attempts
-        listItem.innerHTML = `<span class="score-rank">#${i + 1}:</span> <span class="score-time">${scoreData.score} seconds</span> <span class="score-attempts">(${scoreData.attempts} attempts)</span>`;
+        listItem.innerHTML = `<span class="score-rank">#${
+          i + 1
+        }:</span> <span class="score-time">${
+          scoreData.score
+        } seconds</span> <span class="score-attempts">(${
+          scoreData.attempts
+        } attempts)</span> <span class="score-wordlength">(Word length: ${
+          scoreData.wordLength
+        })</span>`;
         
         // Add tooltip with additional info
         listItem.title = `Word: ${scoreData.word}, Length: ${scoreData.wordLength}`;
