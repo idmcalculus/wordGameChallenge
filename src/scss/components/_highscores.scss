@@ -1,5 +1,5 @@
-@use '../abstracts/variables' as v;
-@use '../abstracts/mixins' as m;
+@use "../abstracts/variables" as v;
+@use "../abstracts/mixins" as m;
 
 #highScoresList {
   text-align: center;
@@ -15,7 +15,7 @@
   width: 100%;
   max-width: 600px;
   border-radius: v.$border-radius-medium;
-  
+
   li {
     padding: v.$spacing-medium v.$spacing-large;
     list-style-type: none;
@@ -23,26 +23,38 @@
     cursor: default;
     text-align: left;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap; // Prevent wrapping to keep on one line
     justify-content: space-between;
     align-items: center;
-    
+    overflow-x: auto; // Allow horizontal scrolling if needed
+    white-space: nowrap; // Prevent text wrapping
+
     .score-rank {
       font-weight: v.$font-weight-bold;
       margin-right: v.$spacing-small;
       min-width: 30px;
+      flex-shrink: 0; // Prevent rank from shrinking
     }
-    
+
     .score-time {
       flex-grow: 1;
       color: v.$color-primary-dark;
+      flex-shrink: 0; // Prevent time from shrinking
     }
-    
+
     .score-attempts {
       flex-grow: 2;
       color: v.$color-grey-dark;
       font-size: 0.9em;
       margin-left: v.$spacing-xxsmall;
+      flex-shrink: 0; // Prevent attempts from shrinking
+    }
+
+    .score-wordlength {
+      color: v.$color-grey-dark;
+      font-size: 0.9em;
+      margin-left: v.$spacing-xxsmall;
+      flex-shrink: 0; // Prevent wordlength from shrinking
     }
   }
 }
@@ -60,7 +72,7 @@
 #highScoresList::-webkit-scrollbar-thumb {
   background-color: rgba(v.$color-black, 0.2);
   border-radius: v.$border-radius-small;
-  
+
   &:hover {
     background-color: rgba(v.$color-black, 0.3);
   }
@@ -72,7 +84,7 @@
     margin: v.$spacing-xlarge v.$spacing-xlarge;
     width: calc(100% - #{v.$spacing-xlarge * 2});
     max-height: 250px;
-    
+
     li {
       padding: v.$spacing-medium v.$spacing-xlarge;
     }
@@ -82,25 +94,31 @@
 @include m.respond-to(mobile) {
   #highScoresList {
     max-height: 220px;
-    font-size: 0.9em;
+    font-size: 0.85em; // Smaller font size for mobile
     padding: v.$spacing-small;
-    
+
     li {
       padding: v.$spacing-small;
-      flex-direction: column;
-      align-items: flex-start;
-      
+      overflow-x: auto; // Allow horizontal scrolling on small screens
+      white-space: nowrap; // Keep content on one line
+
       .score-rank {
-        margin-bottom: v.$spacing-xxsmall;
+        min-width: 25px;
+        margin-right: v.$spacing-xxsmall;
+        flex-shrink: 0;
       }
-      
+
       .score-time {
-        margin-bottom: v.$spacing-xxsmall;
+        margin-bottom: 0;
+        flex-shrink: 0;
+        font-size: 0.9em;
       }
-      
-      .score-attempts {
-        margin-left: 0;
-        align-self: flex-end;
+
+      .score-attempts,
+      .score-wordlength {
+        margin-left: v.$spacing-xxsmall;
+        flex-shrink: 0;
+        font-size: 0.85em;
       }
     }
   }
