@@ -3,5 +3,11 @@
 .nova
 .vscode
 /instructions
+
+# dependencies
 /node_modules
+package-lock.json
+yarn.lock
+
+# build
 /dist
