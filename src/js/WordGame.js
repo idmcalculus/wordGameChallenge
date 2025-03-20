@@ -1,7 +1,7 @@
 import { showAlert } from './modals.js';
 import { startTimer, stopTimer } from './gameUtils.js';
 import { createAlphabetContainer, updateAlphabetContainer, createRow, resetGameUI, updateDifficulty } from './uiHandler.js';
-import { fetchPossibleWords } from './apiHandler.js';
+import { validateWord, fetchPossibleWords } from './apiHandler.js';
 import { createHintButtonsContainer, resetHintButtons, updateCurrentRow, resetHintButtonStates } from './hintHandler.js';
 
 class WordGame {
@@ -370,9 +370,6 @@ class WordGame {
     // Get the entered word from the current row
     const inputs = Array.from(this.currentRow.getElementsByTagName('input'));
     const enteredWord = inputs.map(input => input.value).join('');
-    
-    // Import validateWord function
-    const { validateWord } = await import('./apiHandler.js');
     
     // Check if the entered word is a valid English word
     const isValidWord = await validateWord(enteredWord);

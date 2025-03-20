@@ -34,8 +34,11 @@ export default defineConfig(({ mode }) => {
         },
         output: {
           manualChunks: {
-            'game-logic': ['./js/WordGame.js'],
-            'ui-components': ['./js/uiHandler.js', './js/modals.js'],
+            'game-logic': [resolve(__dirname, 'src/js/WordGame.js')],
+            'ui-components': [
+              resolve(__dirname, 'src/js/uiHandler.js'),
+              resolve(__dirname, 'src/js/modals.js')
+            ],
           },
           entryFileNames: 'assets/js/[name]-[hash].js',
           chunkFileNames: 'assets/js/[name]-[hash].js',
@@ -72,10 +75,33 @@ export default defineConfig(({ mode }) => {
       legacy({
         targets: ['defaults', 'not IE 11']
       }),
-      
-      // PWA plugin to replace workbox-webpack-plugin
       VitePWA({
         strategies: 'generateSW',
+        workbox: {
+          globDirectory: 'dist',
+          globPatterns: [
+            '**/*.{html,js,css,wasm}',
+            'assets/**/*'
+          ],
+          globIgnores: [
+            '**/node_modules/**/*',
+            'sw.js',
+            'workbox-*.js'
+          ],
+          runtimeCaching: [
+            {
+              urlPattern: new RegExp('^https://api.datamuse.com/'),
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'api-cache',
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 24 * 60 * 60 // 24 hours
+                }
+              }
+            }
+          ]
+        },
         registerType: 'autoUpdate',
         includeAssets: ['favicon.svg'],
         manifest: {
@@ -139,21 +165,6 @@ export default defineConfig(({ mode }) => {
               purpose: 'any maskable'
             }
           ]
-        },
-        workbox: {
-          runtimeCaching: [
-            {
-              urlPattern: new RegExp('^https://api\\.datamuse\\.com/'),
-              handler: 'StaleWhileRevalidate',
-              options: {
-                cacheName: 'api-cache',
-                expiration: {
-                  maxEntries: 50,
-                  maxAgeSeconds: 24 * 60 * 60, // 24 hours
-                },
-              },
-            },
-          ],
         }
       }),
       
