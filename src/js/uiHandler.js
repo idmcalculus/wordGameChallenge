@@ -57,15 +57,15 @@ export function createAlphabetContainer(alphabet) {
   
   container.appendChild(gridContainer);
   // Don't display the container yet - it will be shown after the first guess
-  container.style.display = 'none';
+  container.classList.remove('visible');
 }
 
-export function updateAlphabetContainer(guessedLetter, letterClass, alphabet) {
+export function updateAlphabetContainer(guessedLetter, letterClass) {
   const container = document.getElementById('alphabetContainer');
   
   // Show the container if it's not already visible
-  if (container.style.display === 'none') {
-    container.style.display = 'grid';
+  if (!container.classList.contains('visible')) {
+    container.classList.add('visible');
   }
   
   // Find the letter in the grid container by text content instead of position

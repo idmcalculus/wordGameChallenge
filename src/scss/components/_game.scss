@@ -40,6 +40,42 @@
   }
 }
 
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0 1rem;
+  justify-content: center;
+
+  .hint-button {
+    padding: v.$spacing-small v.$spacing-medium;
+    border: none;
+    border-radius: v.$border-radius-small;
+    font-size: v.$font-size-base;
+    cursor: pointer;
+    transition: all v.$animation-duration-medium ease;
+    background-color: v.$color-primary;
+    color: v.$color-white;
+
+    &:hover:not(:disabled) {
+      background-color: v.$color-primary-dark;
+    }
+
+    &:disabled {
+      background-color: v.$color-grey-light;
+      color: v.$color-grey;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    &.inactive-hint {
+      background-color: v.$color-grey-light;
+      color: v.$color-grey;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+  }
+}
+
 #difficulty {
   text-align: center;
   font-size: 1.2em;
@@ -96,14 +132,17 @@
 #alphabetContainer {
   @include m.game-container;
   margin: v.$spacing-xlarge auto;
-  display: none !important; /* Initially hidden, only shown when game starts */
   width: 100%;
   max-width: 600px;
   
   /* Container layout */
-  display: flex;
+  display: none; /* Initially hidden, only shown when game starts */
   flex-direction: column;
   align-items: center;
+  
+  &.visible {
+    display: flex;
+  }
   
   /* Alphabet label styling */
   .alphabet-label {

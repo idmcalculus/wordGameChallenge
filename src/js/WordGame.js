@@ -11,74 +11,81 @@ class WordGame {
   getLetterHint() {
     if (!this.currentWord || !this.currentRow) return;
     
-    // Get all input boxes in the current row
-    const inputs = Array.from(this.currentRow.getElementsByTagName('input'));
+    // Get letter info from previous rows and current row
+    const previousRowsInfo = this.getPreviousRowsLetterInfo();
     
-    // Find empty inputs or inputs with incorrect letters
-    const availableInputs = inputs.filter((input) => {
-      // If input is empty, it's available
-      if (!input.value) return true;
-      
-      // If input has a letter that's not in the word, it's available
-      return !this.currentWord.includes(input.value);
-    });
-    
-    if (availableInputs.length === 0) return; // No available inputs
-    
-    // Choose a random input from available inputs
-    const targetInput = availableInputs[Math.floor(Math.random() * availableInputs.length)];
-    
-    // Get all letters that have been used in any row so far
-    const usedLetters = this.getUsedLetters();
-    
-    // Count occurrences of each letter in the word (case insensitive)
+    // Get all letter occurrences in the word with their positions
+    const letterOccurrences = {};
     const letterCounts = {};
-    for (const letter of this.currentWord) {
+    
+    // Count total occurrences of each letter in the word
+    this.currentWord.split('').forEach((letter, index) => {
       const lowerLetter = letter.toLowerCase();
       letterCounts[lowerLetter] = (letterCounts[lowerLetter] || 0) + 1;
-    }
-    
-    // Count how many of each letter have already been used
-    const usedLetterCounts = {};
-    for (const letter of usedLetters) {
-      usedLetterCounts[letter] = (usedLetterCounts[letter] || 0) + 1;
-    }
-    
-    console.log('Word letter counts:', letterCounts);
-    console.log('Used letter counts:', usedLetterCounts);
-    
-    // Find available letters that haven't been used yet or have multiple occurrences
-    const availableLetters = this.currentWord.split('').filter(letter => {
-      const lowerLetter = letter.toLowerCase();
-      // If the letter hasn't been used at all, it's available
-      if (!usedLetters.includes(lowerLetter)) return true;
       
-      // If the letter occurs multiple times in the word and we haven't used all occurrences yet
-      const letterCount = letterCounts[lowerLetter] || 0;
-      const usedCount = usedLetterCounts[lowerLetter] || 0;
-      if (letterCount > usedCount) return true;
-      
-      // Otherwise, the letter has been fully used
-      return false;
+      if (!letterOccurrences[lowerLetter]) {
+        letterOccurrences[lowerLetter] = [];
+      }
+      letterOccurrences[lowerLetter].push(index);
     });
-    
+
+    // Count how many times each letter has been revealed
+    const revealedCounts = {};
+    previousRowsInfo.usedLetters.forEach(letter => {
+      revealedCounts[letter] = (revealedCounts[letter] || 0) + 1;
+    });
+
+    // Find available letters that:
+    // 1. Haven't been revealed in the alphabet display
+    // 2. Haven't been used in previous rows
+    // 3. Have multiple occurrences and we haven't found them all
+    const availableLetters = Object.entries(letterOccurrences)
+      .filter(([letter]) => {
+        // If the letter hasn't been revealed at all, it's available
+        if (!previousRowsInfo.usedLetters.has(letter)) {
+          return true;
+        }
+
+        // If we've revealed this letter before, check if we've revealed all occurrences
+        const totalOccurrences = letterCounts[letter];
+        const revealedOccurrences = revealedCounts[letter] || 0;
+        
+        // Only available if we haven't revealed all occurrences
+        return revealedOccurrences < totalOccurrences;
+      })
+      .map(([letter]) => letter);
+
+    // Log the letter tracking state
+    console.log('Letter tracking:', {
+      letterCounts,
+      revealedCounts,
+      availableLetters
+    });
+
     console.log('Available letters for hint:', availableLetters);
-    
+
     if (availableLetters.length === 0) return; // No available letters to hint
-    
-    // Choose a random letter from available letters
+
+    // Choose a random letter to reveal
     const hintLetter = availableLetters[Math.floor(Math.random() * availableLetters.length)];
     
-    // Set the letter in the input
-    targetInput.value = hintLetter;
-    
-    // Highlight the input to indicate it was a hint
-    targetInput.classList.add('hint-provided');
-    setTimeout(() => {
-      targetInput.classList.remove('hint-provided');
-    }, 2000);
+    // Make sure the alphabet container is visible
+    const container = document.getElementById('alphabetContainer');
+    if (!container.classList.contains('visible')) {
+      container.classList.add('visible');
+    }
+
+    // Update the alphabet display to show this letter as "present but wrong position"
+    this.updateAlphabetContainer(hintLetter, 'contains');
+
+    // Update our tracking of used letters immediately
+    previousRowsInfo.usedLetters.add(hintLetter);
+    previousRowsInfo.incorrectPositions.add(hintLetter);
+
+    // Log for debugging
+    console.log(`Letter ${hintLetter} revealed and added to usedLetters:`, 
+      Array.from(previousRowsInfo.usedLetters));
   }
-  
   /**
    * Provides a hint for a letter in its correct position
    */
@@ -88,87 +95,141 @@ class WordGame {
     // Get all input boxes in the current row
     const inputs = Array.from(this.currentRow.getElementsByTagName('input'));
     
-    // Get all letters that have been used in any row so far
-    const usedLetters = this.getUsedLetters();
+    // Get letter info from previous rows
+    const previousRowsInfo = this.getPreviousRowsLetterInfo();
     
-    // Count occurrences of each letter in the word (case insensitive)
-    const letterCounts = {};
-    for (const letter of this.currentWord) {
-      const lowerLetter = letter.toLowerCase();
-      letterCounts[lowerLetter] = (letterCounts[lowerLetter] || 0) + 1;
-    }
-    
-    // Count how many of each letter have already been used
-    const usedLetterCounts = {};
-    for (const letter of usedLetters) {
-      usedLetterCounts[letter] = (usedLetterCounts[letter] || 0) + 1;
-    }
-    
-    console.log('Word letter counts:', letterCounts);
-    console.log('Used letter counts:', usedLetterCounts);
-    
-    // Find positions where the letter is not correctly guessed yet
-    // AND the letter hasn't been fully used (unless it occurs multiple times)
+    // Find positions where:
+    // 1. Position doesn't have a correct letter from previous rows
+    // 2. Position is empty or has wrong letter
+    // 3. The letter at that position hasn't been found yet
     const availablePositions = [];
     
     for (let i = 0; i < this.wordLength; i++) {
-      // If position is empty or has wrong letter, it's available
+      // Skip positions that already have correct letters
+      if (previousRowsInfo.correctPositions[i]) continue;
+      
+      // Check if position needs a hint
       if (!inputs[i].value || inputs[i].value !== this.currentWord[i]) {
         const letter = this.currentWord[i];
         const lowerLetter = letter.toLowerCase();
         
-        // Check if this letter is available to be hinted
-        const letterCount = letterCounts[lowerLetter] || 0;
-        const usedCount = usedLetterCounts[lowerLetter] || 0;
-        
-        const letterIsAvailable = 
-          !usedLetters.includes(lowerLetter) || // Letter hasn't been used at all
-          letterCount > usedCount; // Letter occurs multiple times
-        
-        if (letterIsAvailable) {
-          availablePositions.push(i);
+        // Skip if we've already found this letter
+        if (previousRowsInfo.usedLetters.has(lowerLetter)) {
+          // Unless it occurs multiple times and we haven't found them all
+          const totalOccurrences = this.getLetterCounts(this.currentWord)[lowerLetter];
+          const foundOccurrences = Array.from(previousRowsInfo.usedLetters)
+            .filter(l => l === lowerLetter).length;
+          if (foundOccurrences >= totalOccurrences) continue;
         }
+        
+        availablePositions.push(i);
       }
     }
     
+    console.log('Available positions for hint:', availablePositions);
+    
     if (availablePositions.length === 0) return; // No available positions
     
-    // Choose a random position from available positions
+    // Choose random position and reveal
     const targetPosition = availablePositions[Math.floor(Math.random() * availablePositions.length)];
-    
-    // Set the correct letter in that position
     inputs[targetPosition].value = this.currentWord[targetPosition];
     
-    // Highlight the input to indicate it was a hint
+    // Highlight the hint
     inputs[targetPosition].classList.add('hint-provided');
-    setTimeout(() => {
-      inputs[targetPosition].classList.remove('hint-provided');
-    }, 2000);
+    setTimeout(() => inputs[targetPosition].classList.remove('hint-provided'), 2000);
   }
   /**
-   * Gets all letters that have been used in any row so far
-   * @returns {Array} Array of used letters
+   * Gets information about letters used in previous rows
+   * @returns {Object} Information about letter usage in previous rows
    */
-  getUsedLetters() {
-    const usedLetters = [];
+  getPreviousRowsLetterInfo() {
+    const letterInfo = {
+      correctPositions: {}, // Map of position -> letter for correct positions
+      usedLetters: new Set(), // All letters used in previous rows
+      incorrectPositions: new Set() // Letters found but in wrong positions
+    };
     
-    // Get all inputs in the wrapper (all rows)
-    const allInputs = document.querySelectorAll('.wrapper input');
+    // Check alphabet display for already revealed letters
+    const alphabetContainer = document.getElementById('alphabetContainer');
+    if (alphabetContainer) {
+      const alphabetLetters = alphabetContainer.querySelectorAll('.alphabet-grid span');
+      alphabetLetters.forEach(letterSpan => {
+        const letter = letterSpan.textContent.toLowerCase();
+        if (letterSpan.classList.contains('correct')) {
+          // Find the position of this correct letter in the word
+          const position = this.currentWord.toLowerCase().indexOf(letter);
+          if (position !== -1) {
+            letterInfo.correctPositions[position] = letter;
+            letterInfo.usedLetters.add(letter);
+          }
+        } else if (letterSpan.classList.contains('contains')) {
+          letterInfo.incorrectPositions.add(letter);
+          letterInfo.usedLetters.add(letter);
+        } else if (letterSpan.classList.contains('notContains')) {
+          letterInfo.usedLetters.add(letter);
+        }
+      });
+    }
     
-    // Check each input's value
-    allInputs.forEach(input => {
+    // Look at all rows before the current one
+    const rows = document.querySelectorAll('.wrapper .row');
+    const currentRowIndex = Array.from(rows).indexOf(this.currentRow);
+
+    for (let i = 0; i < currentRowIndex; i++) {
+      const inputs = Array.from(rows[i].getElementsByTagName('input'));
+      inputs.forEach((input, position) => {
+        if (!input.value) return;
+        
+        const letter = input.value.toLowerCase();
+        letterInfo.usedLetters.add(letter);
+        
+        if (letter === this.currentWord[position].toLowerCase()) {
+          letterInfo.correctPositions[position] = letter;
+        } else if (this.currentWord.toLowerCase().includes(letter)) {
+          letterInfo.incorrectPositions.add(letter);
+        }
+      });
+    }
+
+    console.log('Previous rows and alphabet letter info:', letterInfo);
+    return letterInfo;
+  }
+
+  /**
+   * Gets letters used in the current row
+   * @returns {Array} Array of letters in current row
+   */
+  getCurrentRowLetters() {
+    if (!this.currentRow) return [];
+    
+    const rowLetters = [];
+    const inputs = Array.from(this.currentRow.getElementsByTagName('input'));
+    
+    inputs.forEach(input => {
       if (input.value && input.value.trim() !== '') {
-        usedLetters.push(input.value.toLowerCase());
+        rowLetters.push(input.value.toLowerCase());
       }
     });
     
-    // Add debug logging to see what letters are being tracked
-    console.log('Used letters:', usedLetters);
+    console.log('Current row letters:', rowLetters);
+    return rowLetters;
+  }
+
+  /**
+   * Counts occurrences of each letter in a word or array of letters
+   * @param {string|Array} letters - Word or array of letters to count
+   * @returns {Object} Map of letter counts
+   */
+  getLetterCounts(letters) {
+    const counts = {};
+    const letterArray = typeof letters === 'string' ? letters.split('') : letters;
     
-    // Log the current state of the game for debugging
-    this.logGameState();
+    for (const letter of letterArray) {
+      const lowerLetter = letter.toLowerCase();
+      counts[lowerLetter] = (counts[lowerLetter] || 0) + 1;
+    }
     
-    return usedLetters;
+    return counts;
   }
   
   /**
@@ -337,11 +398,11 @@ class WordGame {
   updateAlphabetContainer(guessedLetter, letterClass) {
     // Show the alphabet container when the first guess is made
     const container = document.getElementById('alphabetContainer');
-    if (container.style.display === 'none' || container.style.display === '') {
-      container.style.display = 'grid';
+    if (!container.classList.contains('visible')) {
+      container.classList.add('visible');
     }
     
-    updateAlphabetContainer(guessedLetter, letterClass, this.alphabet);
+    updateAlphabetContainer(guessedLetter, letterClass);
   }
 
   createRow() {

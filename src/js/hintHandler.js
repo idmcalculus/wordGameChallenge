@@ -75,8 +75,17 @@ export function createHintButtonsContainer(wordLength, getLetterHint, getPositio
     getLetterHint();
     
     // Update uses left
-    letterHintButton.dataset.usesLeft = usesLeft - 1;
-    letterHintButton.title = `Reveals a correct letter (${usesLeft - 1} uses left)`;
+    const remainingUses = usesLeft - 1;
+    letterHintButton.dataset.usesLeft = remainingUses;
+    letterHintButton.title = `Reveals a correct letter (${remainingUses} uses left)`;
+
+    // If no uses left, permanently disable the button
+    if (remainingUses <= 0) {
+      letterHintButton.disabled = true;
+      letterHintButton.classList.add('inactive-hint');
+      letterHintButton.title = 'No more Letter Reveals available';
+      return;
+    }
     
     // Calculate cooldown time (5s, 10s, 15s, etc.)
     const useCount = wordLength - usesLeft + 1;
@@ -118,8 +127,17 @@ export function createHintButtonsContainer(wordLength, getLetterHint, getPositio
     getPositionHint();
     
     // Update uses left
-    positionHintButton.dataset.usesLeft = usesLeft - 1;
-    positionHintButton.title = `Reveals a correct letter in the correct position (${usesLeft - 1} uses left)`;
+    const remainingUses = usesLeft - 1;
+    positionHintButton.dataset.usesLeft = remainingUses;
+    positionHintButton.title = `Reveals a correct letter in the correct position (${remainingUses} uses left)`;
+
+    // If no uses left, permanently disable the button
+    if (remainingUses <= 0) {
+      positionHintButton.disabled = true;
+      positionHintButton.classList.add('inactive-hint');
+      positionHintButton.title = 'No more Position Reveals available';
+      return;
+    }
     
     // Disable button and start cooldown (60 seconds)
     startButtonCooldown(positionHintButton, 60000);
