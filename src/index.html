@@ -17,7 +17,7 @@
 
             <div class="action-buttons">
                 <button id="howToPlayBtn" class="btn-primary">How to Play</button>
-                <button id="highScoresBtn" class="btn-primary">High Scores</button>
+                <button id="scoresBtn" class="btn-primary">Scores</button>
             </div>
 
             <div class="gameMeta">
@@ -32,8 +32,8 @@
             <div id="alphabetContainer"></div>
             <div class="wrapper" id="wrapper"></div>
             <button id="resetGame" style="display: none;">Reset Game</button>
-            <div id="highScoresList"></div>
         </div>
+        
         <!-- Alert Modal Structure -->
         <div id="alertModal" class="modal">
             <div class="modal-content">
@@ -70,6 +70,16 @@
                 </div>
             </div>
         </div>
+
+        <!-- Scores Modal Structure -->
+        <div id="scoresModal" class="modal">
+            <div class="modal-content scores-content">
+                <span class="close">&times;</span>
+                <h2>Scores</h2>
+                <div id="scoresList" class="scores-container"></div>
+            </div>
+        </div>
+
         <!-- Vite client entry point -->
         <script type="module" src="./js/app.js"></script>
     </body>

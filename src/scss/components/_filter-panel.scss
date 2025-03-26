@@ -1,0 +1,173 @@
+@use "sass:math";
+@use "../abstracts/mixins" as m;
+@use "../abstracts/variables" as v;
+
+// Variables
+$panel-width: 300px;
+$panel-padding: v.$spacing-medium;
+$border-radius: v.$border-radius-medium;
+$transition-duration: v.$animation-duration-medium;
+$chip-height: 32px;
+
+// Filter Panel Container
+.filter-panel {
+  background: var(--background-color);
+  border-radius: $border-radius;
+  padding: $panel-padding;
+  margin-bottom: v.$spacing-medium;
+  @include m.box-shadow;
+}
+
+// Filter Section
+.filter-section {
+  & + .filter-section {
+    margin-top: v.$spacing-medium;
+    padding-top: v.$spacing-medium;
+    border-top: 1px solid var(--border-color);
+  }
+
+  h3 {
+    margin: 0 0 v.$spacing-small;
+    font-size: v.$font-size-small;
+    color: var(--text-muted-color);
+  }
+}
+
+// Filter Chips Container
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$spacing-small;
+}
+
+// Filter Chip
+.filter-chip {
+  height: $chip-height;
+  padding: 0 v.$spacing-medium;
+  border-radius: calc($chip-height / 2);
+  background: var(--chip-bg-color);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  user-select: none;
+  @include m.transition;
+  @include m.flex-center;
+
+  &:hover {
+    background: var(--chip-hover-bg-color);
+    border-color: var(--chip-hover-border-color);
+  }
+
+  &.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+  }
+}
+
+// Active Filters Display
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$spacing-small;
+  margin-top: v.$spacing-medium;
+  min-height: $chip-height;
+  padding: v.$spacing-xsmall;
+  border-radius: $border-radius;
+  background: var(--active-filters-bg-color);
+}
+
+.active-filter {
+  @include m.flex-center;
+  height: calc($chip-height - 8px);
+  padding: 0 v.$spacing-small;
+  border-radius: calc(($chip-height - 8px) / 2);
+  background: var(--primary-color);
+  color: white;
+  font-size: v.$font-size-small;
+
+  .remove-filter {
+    margin-left: v.$spacing-xsmall;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    @include m.flex-center-all;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 2px;
+      background: white;
+      border-radius: 1px;
+    }
+
+    &::before {
+      transform: rotate(45deg);
+    }
+
+    &::after {
+      transform: rotate(-45deg);
+    }
+  }
+}
+
+// Clear Filters Button
+.clear-filters {
+  margin-top: v.$spacing-medium;
+  padding: v.$spacing-small v.$spacing-medium;
+  border-radius: $border-radius;
+  background: var(--danger-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  @include m.transition(opacity);
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Animations
+@keyframes chipIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.filter-chip {
+  animation: chipIn $transition-duration ease forwards;
+}
+
+// Responsive Design
+@include m.tablet {
+  .filter-panel {
+    padding: v.$spacing-small;
+  }
+
+  .filter-chips {
+    gap: v.$spacing-xsmall;
+  }
+
+  .filter-chip {
+    height: 28px;
+    padding: 0 v.$spacing-small;
+    font-size: v.$font-size-small;
+  }
+} 

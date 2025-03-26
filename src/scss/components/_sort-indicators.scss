@@ -1,0 +1,104 @@
+// Variables
+$indicator-size: 16px;
+$indicator-margin: 8px;
+$transition-duration: 0.3s;
+
+// Sort Indicator Base
+.sort-indicator {
+  position: relative;
+  width: $indicator-size;
+  height: $indicator-size;
+  margin-left: $indicator-margin;
+  transition: transform $transition-duration ease;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 8px;
+    height: 2px;
+    background-color: var(--text-color);
+    border-radius: 1px;
+    transition: all $transition-duration ease;
+  }
+}
+
+// Default State (three dots)
+.sort-indicator--default {
+  &::before,
+  &::after,
+  &::before {
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background-color: var(--text-muted-color);
+  }
+
+  &::before {
+    top: 3px;
+    transform: translateX(-50%);
+  }
+
+  &::after {
+    top: 7px;
+    transform: translateX(-50%);
+  }
+
+  &::before {
+    content: '';
+    top: 11px;
+    transform: translateX(-50%);
+  }
+}
+
+// Ascending State
+.sort-indicator--asc {
+  &::before {
+    top: 8px;
+    transform: translateX(-50%) rotate(-45deg);
+    transform-origin: center;
+  }
+
+  &::after {
+    top: 8px;
+    transform: translateX(-50%) rotate(45deg);
+    transform-origin: center;
+  }
+}
+
+// Descending State
+.sort-indicator--desc {
+  &::before {
+    top: 8px;
+    transform: translateX(-50%) rotate(45deg);
+    transform-origin: center;
+  }
+
+  &::after {
+    top: 8px;
+    transform: translateX(-50%) rotate(-45deg);
+    transform-origin: center;
+  }
+}
+
+// Hover Effects
+.header-cell:hover {
+  .sort-indicator--default {
+    &::before,
+    &::after,
+    &::before {
+      background-color: var(--text-color);
+    }
+  }
+}
+
+// Active Column Indicator
+.header-cell[data-active="true"] {
+  .sort-indicator {
+    &::before,
+    &::after {
+      background-color: var(--primary-color);
+    }
+  }
+} 

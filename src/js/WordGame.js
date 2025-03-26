@@ -3,6 +3,7 @@ import { startTimer, stopTimer } from './gameUtils.js';
 import { createAlphabetContainer, updateAlphabetContainer, createRow, resetGameUI, updateDifficulty } from './uiHandler.js';
 import { validateWord, fetchPossibleWords } from './apiHandler.js';
 import { createHintButtonsContainer, resetHintButtons, updateCurrentRow, resetHintButtonStates } from './hintHandler.js';
+import { ScoresManager } from './components/ScoresManager.js';
 
 class WordGame {
   /**
@@ -260,9 +261,29 @@ class WordGame {
     this.startTime = null;
     this.timerDisplay = null;
     this.timerId = null;
-    this.highScores = JSON.parse(localStorage.getItem('highScores')) || [];
-    this.currentScorePage = 0;
-    this.scoresPerPage = 5;
+    // Initialize high scores from localStorage or use test data if none exist
+    const savedScores = localStorage.getItem('highScores');
+    this.highScores = savedScores ? JSON.parse(savedScores) : [
+      {
+        score: 30,
+        word: 'test',
+        wordLength: 4,
+        attempts: 2,
+        date: new Date().toISOString()
+      },
+      {
+        score: 45,
+        word: 'hello',
+        wordLength: 5,
+        attempts: 3,
+        date: new Date().toISOString()
+      }
+    ];
+    
+    // Save test scores if we're using them
+    if (!savedScores) {
+      localStorage.setItem('highScores', JSON.stringify(this.highScores));
+    }
 
     this.init();
   }
@@ -309,7 +330,6 @@ class WordGame {
     });
     
     document.getElementById('startGame').addEventListener('click', () => {
-      this.displayHighScores();
       this.play();
     });
 
@@ -596,8 +616,6 @@ class WordGame {
 
     localStorage.setItem('highScores', JSON.stringify(this.highScores));
 
-    // Reset to first page when adding a new score
-    this.currentScorePage = 0;
     this.displayHighScores();
 
     // For game won, only show the Reset Game button (null for tryAgainCallback)
@@ -628,41 +646,24 @@ class WordGame {
   }
 
   displayHighScores() {
-    const highScoresList = document.getElementById('highScoresList');
-    highScoresList.innerHTML = '<h3 class="highScoresHeader"> Scores </h3>';
-
-    // Display all scores in the scrollable container
-    const totalScores = this.highScores.length;
+    const scoresContainer = document.getElementById('scoresList');
     
-    // Display all scores
-    for (let i = 0; i < totalScores; i++) {
-      const scoreData = this.highScores[i];
-      let listItem = document.createElement('li');
-            
-      // Handle both new format (object) and old format (number)
-      if (typeof scoreData === 'object') {
-        // Show both time and attempts
-        listItem.innerHTML = `<span class="score-rank">#${
-          i + 1
-        }:</span> <span class="score-time">${
-          scoreData.score
-        } seconds</span> <span class="score-attempts">(${
-          scoreData.attempts
-        } attempts)</span> <span class="score-wordlength">(Word length: ${
-          scoreData.wordLength
-        })</span>`;
-        
-        // Add tooltip with additional info
-        listItem.title = `Word: ${scoreData.word}, Length: ${scoreData.wordLength}`;
-      } else {
-        // Legacy format - just show time
-        listItem.textContent = `#${i + 1}: ${scoreData} seconds`;
-      }
-            
-      highScoresList.appendChild(listItem);
+    if (!scoresContainer) {
+      console.error('Scores container not found');
+      return;
     }
 
-    highScoresList.style.display = 'block';
+    // Clear existing content
+    scoresContainer.innerHTML = '';
+
+    // Check if there are any scores
+    if (!this.highScores || this.highScores.length === 0) {
+      scoresContainer.innerHTML = '<p class="no-scores">No scores yet. Complete a game to see your scores here!</p>';
+      return;
+    }
+
+    // Initialize ScoresManager with the container and scores
+    new ScoresManager(scoresContainer, this.highScores);
   }
 
   resetGame() {

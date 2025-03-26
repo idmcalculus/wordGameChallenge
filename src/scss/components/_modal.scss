@@ -49,16 +49,16 @@
   
   &::-webkit-scrollbar-track {
     background: #f1f1f1;
-    border-radius: 10px;
+    border-radius: 4px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
-  }
-  
-  &::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: v.$color-primary;
+    border-radius: 4px;
+    
+    &:hover {
+      background: v.$color-primary-dark;
+    }
   }
   
   ol, ul {
@@ -73,6 +73,95 @@
   
   ul {
     margin-top: v.$spacing-small;
+  }
+}
+
+.scores-content {
+  text-align: left;
+  width: 90%;
+  max-width: 600px;
+  
+  h2 {
+    @include m.heading;
+    margin-bottom: v.$spacing-medium;
+    text-align: center;
+  }
+}
+
+.scores-container {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: v.$spacing-medium;
+  
+  .no-scores {
+    text-align: center;
+    color: v.$color-text-secondary;
+    font-style: italic;
+    padding: v.$spacing-large;
+  }
+  
+  .scores-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .score-item {
+    background: v.$color-background-light;
+    border-radius: 8px;
+    padding: v.$spacing-medium;
+    margin-bottom: v.$spacing-medium;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .score-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: v.$spacing-small;
+      
+      .score-rank {
+        font-weight: bold;
+        color: v.$color-primary;
+        font-size: 1.1em;
+      }
+      
+      .score-time {
+        font-weight: bold;
+        color: v.$color-text;
+      }
+    }
+    
+    .score-details {
+      display: flex;
+      justify-content: space-between;
+      color: v.$color-text-secondary;
+      font-size: 0.9em;
+    }
+  }
+  
+  /* Custom scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: v.$color-primary;
+    border-radius: 4px;
+    
+    &:hover {
+      background: v.$color-primary-dark;
+    }
   }
   
   .green-highlight {

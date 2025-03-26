@@ -8,8 +8,8 @@ import { registerServiceWorker } from './serviceWorkerRegistration.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   setupModals();
-  // Initialize the game - variable is needed to maintain the instance
-  new WordGame();
+  // Initialize the game and store instance on window for access by modals
+  window.game = new WordGame();
 });
 
 // Register service worker for offline functionality

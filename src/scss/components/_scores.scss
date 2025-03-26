@@ -1,0 +1,103 @@
+// Variables
+$header-height: 48px;
+$row-height: 40px;
+$cell-padding: 12px;
+$border-radius: 8px;
+$transition-duration: 0.3s;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+}
+
+@mixin hover-effect {
+  transition: background-color $transition-duration ease;
+  &:hover {
+    background-color: var(--hover-bg-color);
+  }
+}
+
+// Scores Table
+.scores-table {
+  width: 100%;
+  background: var(--background-color);
+  border-radius: $border-radius;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+// Header
+.scores-header {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr 1fr 1fr;
+  background: var(--header-bg-color);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.header-cell {
+  @include flex-center;
+  height: $header-height;
+  padding: 0 $cell-padding;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  @include hover-effect;
+
+  .header-content {
+    flex: 1;
+  }
+}
+
+// Body
+.scores-body {
+  transition: opacity $transition-duration ease;
+}
+
+.score-row {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr 1fr 1fr;
+  height: $row-height;
+  border-bottom: 1px solid var(--border-color);
+  animation: fadeIn 0.5s ease forwards;
+  @include hover-effect;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.score-cell {
+  @include flex-center;
+  padding: 0 $cell-padding;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .scores-header,
+  .score-row {
+    grid-template-columns: 0.3fr 1fr 0.8fr 0.8fr;
+  }
+
+  .header-cell,
+  .score-cell {
+    padding: 0 8px;
+  }
+} 

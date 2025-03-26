@@ -14,6 +14,9 @@ let currentRowNumber = 0;
  * @param {number} rowCount - Current row count
  * @returns {HTMLElement} - The hint buttons container
  */
+// Track total hints used across both buttons
+let totalHintsUsed = 0;
+
 export function createHintButtonsContainer(wordLength, getLetterHint, getPositionHint, rowCount) {
   const container = document.createElement('div');
   container.classList.add('hint-buttons-container');
@@ -26,17 +29,17 @@ export function createHintButtonsContainer(wordLength, getLetterHint, getPositio
   letterHintButton.dataset.usesLeft = wordLength;
   letterHintButton.dataset.cooldownTime = 0;
   letterHintButton.dataset.hintType = 'letter';
-  letterHintButton.title = `Reveals a correct letter (${wordLength} uses available)`;
+  letterHintButton.title = `Reveals a correct letter (${wordLength - totalHintsUsed} hints remaining)`;
   
   // Position Hint Button (Hard Hint)
   const positionHintButton = document.createElement('button');
   positionHintButton.id = 'positionHintButton';
   positionHintButton.classList.add('hint-button', 'position-hint');
   positionHintButton.textContent = 'Position Reveal';
-  positionHintButton.dataset.usesLeft = 3;
+  positionHintButton.dataset.usesLeft = wordLength;
   positionHintButton.dataset.cooldownTime = 0;
   positionHintButton.dataset.hintType = 'position';
-  positionHintButton.title = 'Reveals a correct letter in the correct position (3 uses available)';
+  positionHintButton.title = `Reveals a letter in its correct position (${wordLength - totalHintsUsed} hints remaining)`;
   
   // Initialize current row tracking
   currentRowNumber = rowCount;
@@ -46,8 +49,16 @@ export function createHintButtonsContainer(wordLength, getLetterHint, getPositio
   letterHintButton.addEventListener('click', () => {
     if (letterHintButton.disabled) return;
     
-    const usesLeft = parseInt(letterHintButton.dataset.usesLeft);
-    if (usesLeft <= 0) return;
+    // Check total hints used against word length
+    if (totalHintsUsed >= wordLength) {
+      letterHintButton.disabled = true;
+      positionHintButton.disabled = true;
+      letterHintButton.classList.add('inactive-hint');
+      positionHintButton.classList.add('inactive-hint');
+      letterHintButton.title = 'No more hints available';
+      positionHintButton.title = 'No more hints available';
+      return;
+    }
     
     // Check if we're on a new row
     if (rowCount !== currentRowNumber) {
@@ -74,32 +85,55 @@ export function createHintButtonsContainer(wordLength, getLetterHint, getPositio
     // Provide the hint
     getLetterHint();
     
-    // Update uses left
-    const remainingUses = usesLeft - 1;
+    // Update total hints used and remaining uses
+    totalHintsUsed++;
+    console.log(`Total hints used: ${totalHintsUsed} of ${wordLength}`);
+    
+    // Calculate remaining uses
+    const remainingUses = wordLength - totalHintsUsed;
+    
+    // Update both buttons
     letterHintButton.dataset.usesLeft = remainingUses;
-    letterHintButton.title = `Reveals a correct letter (${remainingUses} uses left)`;
-
-    // If no uses left, permanently disable the button
-    if (remainingUses <= 0) {
+    positionHintButton.dataset.usesLeft = remainingUses;
+    letterHintButton.title = `Reveals a correct letter (${remainingUses} hints remaining)`;
+    positionHintButton.title = `Reveals a letter in its correct position (${remainingUses} hints remaining)`;
+    
+    // If we've used all hints, disable both buttons
+    if (totalHintsUsed >= wordLength) {
       letterHintButton.disabled = true;
+      positionHintButton.disabled = true;
       letterHintButton.classList.add('inactive-hint');
-      letterHintButton.title = 'No more Letter Reveals available';
+      positionHintButton.classList.add('inactive-hint');
+      letterHintButton.title = 'No more hints available';
+      positionHintButton.title = 'No more hints available';
+      console.log('All hints used - buttons disabled');
       return;
     }
     
-    // Calculate cooldown time (5s, 10s, 15s, etc.)
-    const useCount = wordLength - usesLeft + 1;
-    const cooldownTime = useCount * 5000; // 5 seconds * use count
-    
-    // Disable button and start cooldown
-    startButtonCooldown(letterHintButton, cooldownTime);
+    // Only start cooldown if we haven't used all hints
+    if (totalHintsUsed < wordLength) {
+      // Calculate cooldown time (5s, 10s, 15s, etc.)
+      const useCount = totalHintsUsed;
+      const cooldownTime = useCount * 5000; // 5 seconds * use count
+      
+      // Disable button and start cooldown
+      startButtonCooldown(letterHintButton, cooldownTime);
+    }
   });
   
   positionHintButton.addEventListener('click', () => {
     if (positionHintButton.disabled) return;
     
-    const usesLeft = parseInt(positionHintButton.dataset.usesLeft);
-    if (usesLeft <= 0) return;
+    // Check total hints used against word length
+    if (totalHintsUsed >= wordLength) {
+      letterHintButton.disabled = true;
+      positionHintButton.disabled = true;
+      letterHintButton.classList.add('inactive-hint');
+      positionHintButton.classList.add('inactive-hint');
+      letterHintButton.title = 'No more hints available';
+      positionHintButton.title = 'No more hints available';
+      return;
+    }
     
     // Check if we're on a new row
     if (rowCount !== currentRowNumber) {
@@ -126,16 +160,28 @@ export function createHintButtonsContainer(wordLength, getLetterHint, getPositio
     // Provide the hint
     getPositionHint();
     
-    // Update uses left
-    const remainingUses = usesLeft - 1;
+    // Update total hints used and remaining uses
+    totalHintsUsed++;
+    console.log(`Total hints used: ${totalHintsUsed} of ${wordLength}`);
+    
+    // Calculate remaining uses
+    const remainingUses = wordLength - totalHintsUsed;
+    
+    // Update both buttons
+    letterHintButton.dataset.usesLeft = remainingUses;
     positionHintButton.dataset.usesLeft = remainingUses;
-    positionHintButton.title = `Reveals a correct letter in the correct position (${remainingUses} uses left)`;
-
-    // If no uses left, permanently disable the button
-    if (remainingUses <= 0) {
+    letterHintButton.title = `Reveals a correct letter (${remainingUses} hints remaining)`;
+    positionHintButton.title = `Reveals a letter in its correct position (${remainingUses} hints remaining)`;
+    
+    // If we've used all hints, disable both buttons
+    if (totalHintsUsed >= wordLength) {
+      letterHintButton.disabled = true;
       positionHintButton.disabled = true;
+      letterHintButton.classList.add('inactive-hint');
       positionHintButton.classList.add('inactive-hint');
-      positionHintButton.title = 'No more Position Reveals available';
+      letterHintButton.title = 'No more hints available';
+      positionHintButton.title = 'No more hints available';
+      console.log('All hints used - buttons disabled');
       return;
     }
     
@@ -199,16 +245,18 @@ export function resetHintButtons() {
   if (container) {
     container.remove();
   }
-  // Reset the row tracking
+  // Reset all hint tracking
   currentRowHintType = null;
   currentRowNumber = 0;
+  totalHintsUsed = 0;
+  console.log('All hint tracking reset');
 }
 
 /**
  * Explicitly resets the visual state of hint buttons
  */
 export function resetHintButtonStates() {
-  // Reset the current row hint type
+  // Only reset row-specific tracking
   currentRowHintType = null;
   
   // Reset visual state of both buttons
@@ -231,13 +279,51 @@ export function resetHintButtonStates() {
  * @param {number} rowNumber - The new row number
  */
 export function updateCurrentRow(rowNumber) {
-  // If the row number has changed, reset the hint type
+  // If the row number has changed, update row-specific state
   if (rowNumber !== currentRowNumber) {
     currentRowNumber = rowNumber;
     currentRowHintType = null;
-    console.log(`Row changed to ${rowNumber}, hint type reset`);
+    console.log(`Row changed to ${rowNumber}, hint type reset. Total hints used: ${totalHintsUsed}`);
     
-    // Reset visual state of both buttons when moving to a new row
-    resetHintButtonStates();
+    // Get the buttons and update their states based on total hints used
+    const letterButton = document.getElementById('letterHintButton');
+    const positionButton = document.getElementById('positionHintButton');
+    
+    if (letterButton && positionButton) {
+      // Get the word length from the original data
+      const wordLength = parseInt(letterButton.dataset.usesLeft) + totalHintsUsed;
+      const remainingHints = wordLength - totalHintsUsed;
+      
+      console.log(`Word length: ${wordLength}, Remaining hints: ${remainingHints}`);
+      
+      // Update button states
+      letterButton.dataset.usesLeft = remainingHints;
+      positionButton.dataset.usesLeft = remainingHints;
+      
+      // Update tooltips
+      letterButton.title = `Reveals a correct letter (${remainingHints} hints remaining)`;
+      positionButton.title = `Reveals a letter in its correct position (${remainingHints} hints remaining)`;
+      
+      // If all hints are used, keep buttons disabled
+      if (totalHintsUsed >= wordLength) {
+        letterButton.disabled = true;
+        positionButton.disabled = true;
+        letterButton.classList.add('inactive-hint');
+        positionButton.classList.add('inactive-hint');
+        letterButton.title = 'No more hints available';
+        positionButton.title = 'No more hints available';
+        console.log('All hints used - buttons remain disabled');
+      } else {
+        // Otherwise, ensure they're enabled (unless in cooldown)
+        if (!letterButton.classList.contains('cooldown')) {
+          letterButton.disabled = false;
+          letterButton.classList.remove('inactive-hint');
+        }
+        if (!positionButton.classList.contains('cooldown')) {
+          positionButton.disabled = false;
+          positionButton.classList.remove('inactive-hint');
+        }
+      }
+    }
   }
 }

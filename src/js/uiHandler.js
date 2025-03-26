@@ -1,3 +1,5 @@
+import { resetHintButtons } from './hintHandler.js';
+
 export function createAlphabetContainer(alphabet) {
   const container = document.getElementById('alphabetContainer');
   container.innerHTML = '';  // Clear container
@@ -114,7 +116,7 @@ export function createRow(wordLength, checkRowLetters) {
     newInputBox.spellcheck = false;
 
     // Handle input events for letter entry
-    newInputBox.addEventListener('input', (event) => {
+    newInputBox.addEventListener('input', () => {
       // Normalize the input to lowercase
       if (newInputBox.value) {
         newInputBox.value = newInputBox.value.toLowerCase();
@@ -180,6 +182,9 @@ export function resetGameUI() {
   document.getElementById('alphabetContainer').style.display = 'none';
   document.getElementById('difficulty').style.display = 'none';
   document.getElementById('resetGame').style.display = 'none';
+  
+  // Reset hint system
+  resetHintButtons();
 }
 
 export function updateDifficulty(wordLength) {

@@ -1,4 +1,5 @@
 @use 'variables' as v;
+@use "sass:math";
 
 // Flexbox mixins
 @mixin flex($direction: row, $justify: center, $align: center) {
@@ -10,8 +11,13 @@
 
 @mixin flex-center {
   display: flex;
-  justify-content: center;
   align-items: center;
+}
+
+@mixin flex-center-all {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @mixin flex-column-center {
@@ -82,6 +88,10 @@
   animation: highlight-hint 2s ease;
 }
 
+@mixin transition($property: all, $duration: v.$animation-duration-medium, $timing: ease) {
+  transition: $property $duration $timing;
+}
+
 // Container mixin
 @mixin container {
   max-width: v.$container-max-width;
@@ -144,4 +154,29 @@
   text-align: center;
   position: relative;
   @include flex-column-center;
+}
+
+// Responsive mixins
+@mixin mobile {
+  @media (max-width: v.$breakpoint-mobile) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (max-width: v.$breakpoint-tablet) {
+    @content;
+  }
+}
+
+// Typography mixins
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Border radius with math.div
+@mixin rounded($radius) {
+  border-radius: math.div($radius, 2);
 }

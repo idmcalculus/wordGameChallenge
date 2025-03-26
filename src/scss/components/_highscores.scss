@@ -1,14 +1,14 @@
 @use "../abstracts/variables" as v;
 @use "../abstracts/mixins" as m;
 
-#highScoresList {
+#scoresList {
   text-align: center;
   font-size: v.$font-size-base;
   margin: v.$spacing-xlarge auto;
   padding: v.$spacing-medium;
   background-color: v.$color-game-background;
   border: v.$border-width solid v.$color-game-border;
-  display: none;
+  display: block;
   max-height: v.$highscores-max-height;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -60,16 +60,16 @@
 }
 
 // High scores styles for scrolling
-#highScoresList::-webkit-scrollbar {
+#scoresList::-webkit-scrollbar {
   width: 6px;
 }
 
-#highScoresList::-webkit-scrollbar-track {
+#scoresList::-webkit-scrollbar-track {
   background: rgba(v.$color-black, 0.05);
   border-radius: v.$border-radius-small;
 }
 
-#highScoresList::-webkit-scrollbar-thumb {
+#scoresList::-webkit-scrollbar-thumb {
   background-color: rgba(v.$color-black, 0.2);
   border-radius: v.$border-radius-small;
 
@@ -80,7 +80,7 @@
 
 // Responsive adjustments
 @include m.respond-to(tablet) {
-  #highScoresList {
+  #scoresList {
     margin: v.$spacing-xlarge v.$spacing-xlarge;
     width: calc(100% - #{v.$spacing-xlarge * 2});
     max-height: 250px;
@@ -92,7 +92,7 @@
 }
 
 @include m.respond-to(mobile) {
-  #highScoresList {
+  #scoresList {
     max-height: 220px;
     font-size: 0.85em; // Smaller font size for mobile
     padding: v.$spacing-small;

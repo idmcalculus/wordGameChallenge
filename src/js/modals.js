@@ -5,7 +5,6 @@ let isGameStartAlert = false;
 export function setupModals() {
   // Alert Modal Elements
   const alertModal = document.getElementById('alertModal');
-  const alertMessage = document.getElementById('alertMessage');
   const alertClose = document.querySelector('#alertModal .close');
   const alertResetButton = document.getElementById('alertResetButton');
   const alertTryAgainButton = document.getElementById('alertTryAgainButton');
@@ -14,6 +13,11 @@ export function setupModals() {
   const howToPlayBtn = document.getElementById('howToPlayBtn');
   const howToPlayModal = document.getElementById('howToPlayModal');
   const howToPlayClose = document.querySelector('#howToPlayModal .close');
+
+  // Scores Modal Elements
+  const scoresBtn = document.getElementById('scoresBtn');
+  const scoresModal = document.getElementById('scoresModal');
+  const scoresClose = document.querySelector('#scoresModal .close');
 
   // Alert Modal Event Listeners
   alertClose.onclick = () => {
@@ -50,12 +54,34 @@ export function setupModals() {
 
   howToPlayClose.onclick = () => {
     howToPlayModal.style.display = 'none';
-    document.body.style.overflow = ''; // Re-enable scrolling
+    document.body.style.overflow = 'auto'; // Re-enable scrolling
+  };
+
+  // Scores Modal Event Listeners
+  scoresBtn.onclick = () => {
+    const game = window.game;
+    if (game) {
+      // First show the modal
+      scoresModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+      
+      // Then display scores with a slight delay to ensure modal is visible
+      setTimeout(() => {
+        game.displayHighScores();
+      }, 50);
+    } else {
+      console.error('Game instance not found');
+    }
+  };
+
+  scoresClose.onclick = () => {
+    scoresModal.style.display = 'none';
+    document.body.style.overflow = 'auto'; // Re-enable scrolling
   };
 
   // Close modals when clicking outside
   window.onclick = (event) => {
-    if (event.target == alertModal) {
+    if (event.target === alertModal) {
       alertModal.style.display = 'none';
       // If this is a game start alert, reset the game when clicking outside
       if (isGameStartAlert && alertCallback) {
@@ -64,9 +90,13 @@ export function setupModals() {
         isGameStartAlert = false;
       }
     }
-    if (event.target == howToPlayModal) {
+    if (event.target === howToPlayModal) {
       howToPlayModal.style.display = 'none';
-      document.body.style.overflow = ''; // Re-enable scrolling
+      document.body.style.overflow = 'auto'; // Re-enable scrolling
+    }
+    if (event.target === scoresModal) {
+      scoresModal.style.display = 'none';
+      document.body.style.overflow = 'auto'; // Re-enable scrolling
     }
   };
 
