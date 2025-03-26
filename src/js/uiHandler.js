@@ -175,8 +175,8 @@ export function createRow(wordLength, checkRowLetters) {
 
 export function resetGameUI() {
   document.getElementById('wrapper').innerHTML = '';
-  document.getElementById('startGame').disabled = false;
-  document.getElementById('wordLengthInput').disabled = false;
+  document.getElementById('startGame').style.display = 'block';
+  document.querySelector('.wordLengthInputContainer').style.display = 'block';
   document.getElementById('wordLengthInput').value = '';
   document.getElementById('alphabetContainer').innerHTML = '';
   document.getElementById('alphabetContainer').style.display = 'none';

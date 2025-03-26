@@ -5,26 +5,29 @@
 #gameHeader {
   font-size: v.$font-size-xlarge;
   color: v.$color-game-header;
+  margin-bottom: v.$spacing-xlarge;
 }
 
-#wordLengthInput {
-  width: 60px;
-  padding: v.$spacing-small v.$spacing-medium;
-  text-align: center;
-  font-size: v.$font-size-large;
-  margin: v.$spacing-small;
-  
-  /* Hide spinner arrows in different browsers */
-  /* Chrome, Safari, Edge, Opera */
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.wordLengthInputContainer {
+  #wordLengthInput {
+    width: 60px;
+    padding: v.$spacing-small v.$spacing-medium;
+    text-align: center;
+    font-size: v.$font-size-large;
+    margin: v.$spacing-small;
+    
+    /* Hide spinner arrows in different browsers */
+    /* Chrome, Safari, Edge, Opera */
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    
+    /* Firefox and standard property for compatibility */
+    -moz-appearance: textfield;
+    appearance: textfield;
   }
-  
-  /* Firefox and standard property for compatibility */
-  -moz-appearance: textfield;
-  appearance: textfield;
 }
 
 #startGame {
@@ -40,57 +43,32 @@
   }
 }
 
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-  margin: 2rem 0 1rem;
-  justify-content: center;
+.actionButtons {
+  @include m.flex-center-all;
+  gap: v.$spacing-xlarge;
+}
 
-  .hint-button {
-    padding: v.$spacing-small v.$spacing-medium;
-    border: none;
-    border-radius: v.$border-radius-small;
-    font-size: v.$font-size-base;
-    cursor: pointer;
-    transition: all v.$animation-duration-medium ease;
-    background-color: v.$color-primary;
-    color: v.$color-white;
+.timerDifficultyInfo {
+  @include m.flex-center;
+  justify-content: space-between;
+  margin: v.$spacing-xlarge 0 0;
+  width: 100%;
+  max-width: 600px;
 
-    &:hover:not(:disabled) {
-      background-color: v.$color-primary-dark;
-    }
-
-    &:disabled {
-      background-color: v.$color-grey-light;
-      color: v.$color-grey;
-      cursor: not-allowed;
-      opacity: 0.7;
-    }
-
-    &.inactive-hint {
-      background-color: v.$color-grey-light;
-      color: v.$color-grey;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
+  #timerDisplay {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-primary-dark;
+    display: none;
   }
-}
 
-#difficulty {
-  text-align: center;
-  font-size: 1.2em;
-  font-weight: v.$font-weight-bold;
-  margin-top: v.$spacing-medium;
-  display: none;
-}
-
-#timerDisplay {
-  text-align: center;
-  font-size: 1.2em;
-  font-weight: v.$font-weight-bold;
-  color: v.$color-primary-dark;
-  margin: v.$spacing-xlarge 0;
-  display: none;
+  #difficulty {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: v.$font-weight-bold;
+    display: none;
+  }
 }
 
 // Word rows and letter boxes
@@ -175,19 +153,17 @@
       /* Non-button styling */
       border: v.$border-width solid v.$color-grey;
       border-radius: v.$border-radius-small;
-      padding: v.$spacing-xsmall; /* Reduced padding */
+      padding: v.$spacing-xsmall;
       text-align: center;
       text-transform: uppercase;
       font-weight: v.$font-weight-bold;
-      font-size: 0.9rem; /* Smaller font size */
+      font-size: 0.9rem;
       transition: all v.$animation-duration-medium ease;
-      @include m.flex-center;
-      cursor: default; /* Indicate it's not interactive */
-      
-      /* Ensure consistent sizing */
+      @include m.flex-center-all;
+      cursor: default;
       aspect-ratio: 1 / 1;
-      min-width: 32px; /* Slightly increased minimum width */
-      min-height: 32px; /* Slightly increased minimum height */
+      min-width: 32px;
+      min-height: 32px;
       
       &.notGuessed {
         background-color: #f9f9f9;
@@ -219,7 +195,6 @@
 // Reset button
 #resetGame {
   display: none;
-  margin-top: v.$spacing-xlarge;
   width: 150px;
   align-self: center;
   background-color: v.$color-danger;
@@ -286,5 +261,9 @@
     height: v.$letter-box-size-mobile;
     margin: v.$spacing-xxsmall;
     padding: v.$spacing-xxsmall;
+  }
+
+  .buttons-wrapper {
+    @include m.flex-center-all;
   }
 }

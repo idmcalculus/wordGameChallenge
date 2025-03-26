@@ -1,14 +1,6 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins' as m;
 
-// Hint Buttons Styles
-.hint-buttons-container {
-  @include m.flex-center;
-  gap: v.$spacing-xlarge;
-  margin: v.$spacing-large 0;
-  width: 100%;
-}
-
 .hint-button {
   position: relative;
   padding: v.$spacing-medium v.$spacing-xlarge;

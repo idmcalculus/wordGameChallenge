@@ -346,9 +346,9 @@ class WordGame {
     this.timerDisplay = document.getElementById('timerDisplay');
     this.timerId = startTimer(this.startTime, this.timerDisplay);
 
-    // Disable the start game button and word length input
-    document.getElementById('startGame').disabled = true;
-    document.getElementById('wordLengthInput').disabled = true;
+    // Hide the start game button and word length input
+    document.getElementById('startGame').style.display = 'none';
+    document.querySelector('.wordLengthInputContainer').style.display = 'none';
     document.getElementById('resetGame').style.display = 'block';
 
     // Get and validate word length

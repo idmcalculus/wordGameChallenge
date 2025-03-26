@@ -1,15 +1,11 @@
+@use '../abstracts/mixins' as m;
+
 // Variables
 $header-height: 48px;
 $row-height: 40px;
 $cell-padding: 12px;
 $border-radius: 8px;
 $transition-duration: 0.3s;
-
-// Mixins
-@mixin flex-center {
-  display: flex;
-  align-items: center;
-}
 
 @mixin hover-effect {
   transition: background-color $transition-duration ease;
@@ -38,7 +34,7 @@ $transition-duration: 0.3s;
 }
 
 .header-cell {
-  @include flex-center;
+  @include m.flex-center;
   height: $header-height;
   padding: 0 $cell-padding;
   font-weight: 600;
@@ -70,7 +66,7 @@ $transition-duration: 0.3s;
 }
 
 .score-cell {
-  @include flex-center;
+  @include m.flex-center-all;
   padding: 0 $cell-padding;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -15,23 +15,29 @@
         <div class="outerWrapper" id="outerWrapper">
             <h1 id="gameHeader">Find the word ...</h1>
 
-            <div class="action-buttons">
+            <div class="actionButtons">
                 <button id="howToPlayBtn" class="btn-primary">How to Play</button>
                 <button id="scoresBtn" class="btn-primary">Scores</button>
             </div>
 
             <div class="gameMeta">
                 <div class="leftMeta">
-                    <div id="timerDisplay"></div>
-                    <p>Enter word length between 3 and 10:</p>
-                    <input id="wordLengthInput" type="number" min="3" max="10">
+                    <div class="wordLengthInputContainer">
+                        <p>Enter word length between 3 and 10:</p>
+                        <input id="wordLengthInput" type="number" min="3" max="10">
+                    </div>
                     <button id="startGame">Start Game</button>
-                    <div id="difficulty">Difficulty: </div>
+                    <div class="timerDifficultyInfo">
+                        <div id="timerDisplay"></div>
+                        <div id="difficulty">Difficulty: </div>
+                    </div>
                 </div>
             </div>
             <div id="alphabetContainer"></div>
             <div class="wrapper" id="wrapper"></div>
-            <button id="resetGame" style="display: none;">Reset Game</button>
+            <div class="actionButtons includesHintButtons">
+                <button id="resetGame" style="display: none;">Reset Game</button>
+            </div>
         </div>
         
         <!-- Alert Modal Structure -->

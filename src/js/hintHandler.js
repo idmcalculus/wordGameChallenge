@@ -18,8 +18,7 @@ let currentRowNumber = 0;
 let totalHintsUsed = 0;
 
 export function createHintButtonsContainer(wordLength, getLetterHint, getPositionHint, rowCount) {
-  const container = document.createElement('div');
-  container.classList.add('hint-buttons-container');
+  const container = document.querySelector('.actionButtons.includesHintButtons');
   
   // Letter Hint Button (Soft Hint)
   const letterHintButton = document.createElement('button');
@@ -189,8 +188,8 @@ export function createHintButtonsContainer(wordLength, getLetterHint, getPositio
     startButtonCooldown(positionHintButton, 60000);
   });
   
-  container.appendChild(letterHintButton);
-  container.appendChild(positionHintButton);
+  container.prepend(positionHintButton);
+  container.prepend(letterHintButton);
   
   return container;
 }
@@ -241,10 +240,17 @@ function startButtonCooldown(button, cooldownTime) {
  * Resets the hint buttons
  */
 export function resetHintButtons() {
-  const container = document.querySelector('.hint-buttons-container');
-  if (container) {
-    container.remove();
+  const letterHintButton = document.getElementById('letterHintButton');
+  const positionHintButton = document.getElementById('positionHintButton');
+
+  if (letterHintButton) {
+    letterHintButton.remove();
   }
+
+  if (positionHintButton) {
+    positionHintButton.remove();
+  }
+
   // Reset all hint tracking
   currentRowHintType = null;
   currentRowNumber = 0;
