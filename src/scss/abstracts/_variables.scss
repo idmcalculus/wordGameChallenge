@@ -76,7 +76,7 @@ $letter-box-size-mobile: 1.8em; /* Increased by 150% from 1.2em */
 $alphabet-letter-size: 25px;
 $alphabet-letter-size-mobile: 18px;
 $modal-max-width: 300px;
-$highscores-max-height: 600px;
+$stats-max-height: 600px;
 
 // Animation
 $animation-duration-short: 0.2s;
@@ -84,7 +84,7 @@ $animation-duration-medium: 0.3s;
 $animation-duration-long: 1s;
 $animation-timing-function: ease;
 
-// Scores Table Colors
+// Stats Table Colors
 $color-header-bg: #f8f9fa;
 $color-row-hover: #f5f5f5;
 $color-border: #e9ecef;
@@ -103,7 +103,7 @@ $color-active-filters-bg: #f8f9fa;
   --border-color: #{$color-border};
   --danger-color: #{$color-danger};
 
-  // Scores Table
+  // Stats Table
   --header-bg-color: #{$color-header-bg};
   --hover-bg-color: #{$color-row-hover};
   

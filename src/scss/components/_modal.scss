@@ -76,7 +76,7 @@
   }
 }
 
-.scores-content {
+.stats-content {
   text-align: left;
   width: 90%;
   max-width: 600px;
@@ -88,25 +88,25 @@
   }
 }
 
-.scores-container {
+.stats-container {
   max-height: 70vh;
   overflow-y: auto;
   padding: v.$spacing-medium;
   
-  .no-scores {
+  .no-stats {
     text-align: center;
     color: v.$color-text-secondary;
     font-style: italic;
     padding: v.$spacing-large;
   }
   
-  .scores-list {
+  .stats-list {
     list-style: none;
     padding: 0;
     margin: 0;
   }
   
-  .score-item {
+  .stat-item {
     background: v.$color-background-light;
     border-radius: 8px;
     padding: v.$spacing-medium;
@@ -119,25 +119,25 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
     
-    .score-header {
+    .stat-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: v.$spacing-small;
       
-      .score-rank {
+      .stat-rank {
         font-weight: bold;
         color: v.$color-primary;
         font-size: 1.1em;
       }
       
-      .score-time {
+      .stat-time {
         font-weight: bold;
         color: v.$color-text;
       }
     }
     
-    .score-details {
+    .stat-details {
       display: flex;
       justify-content: space-between;
       color: v.$color-text-secondary;

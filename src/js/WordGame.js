@@ -3,7 +3,7 @@ import { startTimer, stopTimer } from './gameUtils.js';
 import { createAlphabetContainer, updateAlphabetContainer, createRow, resetGameUI, updateDifficulty } from './uiHandler.js';
 import { validateWord, fetchPossibleWords } from './apiHandler.js';
 import { createHintButtonsContainer, resetHintButtons, updateCurrentRow, resetHintButtonStates } from './hintHandler.js';
-import { ScoresManager } from './components/ScoresManager.js';
+import { StatsManager } from './components/StatsManager.js';
 
 class WordGame {
   /**
@@ -261,29 +261,23 @@ class WordGame {
     this.startTime = null;
     this.timerDisplay = null;
     this.timerId = null;
-    // Initialize high scores from localStorage or use test data if none exist
-    const savedScores = localStorage.getItem('highScores');
-    this.highScores = savedScores ? JSON.parse(savedScores) : [
-      {
-        score: 30,
-        word: 'test',
-        wordLength: 4,
-        attempts: 2,
-        date: new Date().toISOString()
-      },
-      {
-        score: 45,
-        word: 'hello',
-        wordLength: 5,
-        attempts: 3,
-        date: new Date().toISOString()
-      }
-    ];
+
+    // Initialize stats from localStorage
+    const oldStats = localStorage.getItem('highScores');
+    const savedStats = localStorage.getItem('stats');
     
-    // Save test scores if we're using them
-    if (!savedScores) {
-      localStorage.setItem('highScores', JSON.stringify(this.highScores));
-    }
+    // Transform old stats to new format
+    const transformedOldStats = oldStats ? JSON.parse(oldStats).map(stat => ({
+      time: stat.score, // Use score as time
+      word: stat.word,
+      wordLength: stat.wordLength,
+      attempts: stat.attempts,
+      date: stat.date
+    })) : [];
+
+    // Merge old stats with new stats
+    this.stats = savedStats ? JSON.parse(savedStats) : [];
+    this.stats = [...transformedOldStats, ...this.stats]; // Combine old and new stats
 
     this.init();
   }
@@ -579,24 +573,24 @@ class WordGame {
 
     const timeTaken = Math.floor((new Date() - this.startTime) / 1000);
         
-    // Add score with timestamp and word info
-    this.highScores.push({
-      score: timeTaken,
+    // Add stat with timestamp and word info
+    this.stats.push({
+      time: timeTaken,
       word: this.currentWord,
       wordLength: this.wordLength,
       attempts: this.rowCount + 1,
       date: new Date().toISOString()
     });
         
-    // Sort all scores by time, then attempts, then date (most recent first)
-    this.highScores.sort((a, b) => {
+    // Sort all times by time, then attempts, then date (most recent first)
+    this.stats.sort((a, b) => {
       // Handle both new format (object) and old format (number)
-      const scoreA = typeof a === 'object' ? a.score : a;
-      const scoreB = typeof b === 'object' ? b.score : b;
+      const statA = typeof a === 'object' ? a.time : a;
+      const statB = typeof b === 'object' ? b.time : b;
       
       // First sort by time (ascending)
-      if (scoreA !== scoreB) {
-        return scoreA - scoreB;
+      if (statA !== statB) {
+        return statA - statB;
       }
       
       // If times are equal and both are objects with attempts, sort by attempts (ascending)
@@ -614,9 +608,9 @@ class WordGame {
       return 0; // Equal ranking if we can't determine further ordering
     });
 
-    localStorage.setItem('highScores', JSON.stringify(this.highScores));
+    localStorage.setItem('stats', JSON.stringify(this.stats));
 
-    this.displayHighScores();
+    this.displayStats();
 
     // For game won, only show the Reset Game button (null for tryAgainCallback)
     showAlert(`<div class="success-alert">
@@ -645,25 +639,25 @@ class WordGame {
     });
   }
 
-  displayHighScores() {
-    const scoresContainer = document.getElementById('scoresList');
+  displayStats() {
+    const statsContainer = document.getElementById('statsList');
     
-    if (!scoresContainer) {
-      console.error('Scores container not found');
+    if (!statsContainer) {
+      console.error('Stats container not found');
       return;
     }
 
     // Clear existing content
-    scoresContainer.innerHTML = '';
+    statsContainer.innerHTML = '';
 
-    // Check if there are any scores
-    if (!this.highScores || this.highScores.length === 0) {
-      scoresContainer.innerHTML = '<p class="no-scores">No scores yet. Complete a game to see your scores here!</p>';
+    // Check if there are any stats
+    if (!this.stats || this.stats.length === 0) {
+      statsContainer.innerHTML = '<p class="no-stats">No stats yet. Complete a game to see your stats here!</p>';
       return;
     }
 
-    // Initialize ScoresManager with the container and scores
-    new ScoresManager(scoresContainer, this.highScores);
+    // Initialize StatsManager with the container and stats
+    new StatsManager(statsContainer, this.stats);
   }
 
   resetGame() {

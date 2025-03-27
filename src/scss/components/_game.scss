@@ -46,6 +46,7 @@
 .actionButtons {
   @include m.flex-center-all;
   gap: v.$spacing-xlarge;
+  flex-wrap: wrap;
 }
 
 .timerDifficultyInfo {
@@ -261,9 +262,5 @@
     height: v.$letter-box-size-mobile;
     margin: v.$spacing-xxsmall;
     padding: v.$spacing-xxsmall;
-  }
-
-  .buttons-wrapper {
-    @include m.flex-center-all;
   }
 }

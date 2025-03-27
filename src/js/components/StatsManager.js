@@ -1,29 +1,29 @@
-import { SORT_DIRECTIONS, SORT_FIELDS, DEFAULT_SORT, ANIMATION_DURATION, FILTER_TYPES, FILTER_RANGES } from '../constants/scoreConstants.js';
-import { sortScores, getNextSortDirection, getSortIndicatorClass } from '../utils/sortUtils.js';
+import { SORT_DIRECTIONS, SORT_FIELDS, DEFAULT_SORT, ANIMATION_DURATION, FILTER_TYPES, FILTER_RANGES } from '../constants/statConstants.js';
+import { sortStats, getNextSortDirection, getSortIndicatorClass } from '../utils/sortUtils.js';
 import { applyFilters, getAvailableFilters, saveFilterPreferences, loadFilterPreferences } from '../utils/filterUtils.js';
 
-export class ScoresManager {
-  constructor(container, scores) {
+export class StatsManager {
+  constructor(container, stats) {
     this.container = container;
-    this.originalScores = scores;
-    this.displayedScores = [...scores];
+    this.originalStats = stats;
+    this.displayedStats = [...stats];
     this.currentSort = { ...DEFAULT_SORT };
     this.activeFilters = loadFilterPreferences();
-    this.availableFilters = getAvailableFilters(scores);
+    this.availableFilters = getAvailableFilters(stats);
     
     this.init();
   }
 
   init() {
-    this.createScoresTable();
+    this.createStatsTable();
     this.attachEventListeners();
     this.applyCurrentSortAndFilters();
   }
 
-  createScoresTable() {
+  createStatsTable() {
     // Create table structure
     const table = document.createElement('div');
-    table.classList.add('scores-table');
+    table.classList.add('stats-table');
 
     // Create header
     const header = this.createHeader();
@@ -31,7 +31,7 @@ export class ScoresManager {
 
     // Create body
     const body = document.createElement('div');
-    body.classList.add('scores-body');
+    body.classList.add('stats-body');
     table.appendChild(body);
 
     // Create filter panel
@@ -45,7 +45,7 @@ export class ScoresManager {
 
   createHeader() {
     const header = document.createElement('div');
-    header.classList.add('scores-header');
+    header.classList.add('stats-header');
 
     const headers = [
       { field: SORT_FIELDS.SERIAL, label: 'S/N' },
@@ -251,17 +251,17 @@ export class ScoresManager {
 
   applyCurrentSortAndFilters() {
     // First apply filters
-    let filteredScores = applyFilters(this.originalScores, this.activeFilters);
+    let filteredStats = applyFilters(this.originalStats, this.activeFilters);
     
     // Then apply sorting
-    this.displayedScores = sortScores(filteredScores, this.currentSort.field, this.currentSort.direction);
+    this.displayedStats = sortStats(filteredStats, this.currentSort.field, this.currentSort.direction);
     
     // Update the display
     this.updateDisplay();
   }
 
   updateDisplay() {
-    const body = this.container.querySelector('.scores-body');
+    const body = this.container.querySelector('.stats-body');
     const fragment = document.createDocumentFragment();
 
     // Update headers
@@ -278,21 +278,21 @@ export class ScoresManager {
     });
 
     // Update rows with animation
-    this.displayedScores.forEach((score, index) => {
+    this.displayedStats.forEach((stat, index) => {
       const row = document.createElement('div');
-      row.classList.add('score-row');
+      row.classList.add('stat-row');
       row.style.animationDelay = `${index * 50}ms`;
 
       const cells = [
         { content: (index + 1).toString() },
-        { content: score.word },
-        { content: score.score.toString() },
-        { content: score.attempts.toString() }
+        { content: stat.word },
+        { content: stat.time.toString() },
+        { content: stat.attempts.toString() }
       ];
 
       cells.forEach(({ content }) => {
         const cell = document.createElement('div');
-        cell.classList.add('score-cell');
+        cell.classList.add('stat-cell');
         cell.textContent = content;
         row.appendChild(cell);
       });

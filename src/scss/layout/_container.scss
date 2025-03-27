@@ -45,10 +45,6 @@
 }
 
 @include m.respond-to(mobile) {
-  .outerWrapper {
-    padding: v.$spacing-medium;
-  }
-  
   h1 {
     font-size: 1.5em;
   }

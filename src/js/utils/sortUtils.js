@@ -1,4 +1,4 @@
-import { SORT_DIRECTIONS, SORT_FIELDS } from '../constants/scoreConstants.js';
+import { SORT_DIRECTIONS, SORT_FIELDS } from '../constants/statConstants.js';
 
 /**
  * Cycles through sort directions: default -> ascending -> descending -> default
@@ -29,19 +29,19 @@ export const compareValues = (a, b, direction) => {
 };
 
 /**
- * Sorts scores based on field and direction
+ * Sorts stats based on field and direction
  */
-export const sortScores = (scores, field, direction) => {
-  if (direction === SORT_DIRECTIONS.DEFAULT) return scores;
+export const sortStats = (stats, field, direction) => {
+  if (direction === SORT_DIRECTIONS.DEFAULT) return stats;
 
-  return [...scores].sort((a, b) => {
+  return [...stats].sort((a, b) => {
     switch (field) {
     case SORT_FIELDS.SERIAL:
       return compareValues(a.index, b.index, direction);
     case SORT_FIELDS.WORD:
       return compareValues(a.word.toLowerCase(), b.word.toLowerCase(), direction);
     case SORT_FIELDS.TIME:
-      return compareValues(a.score, b.score, direction);
+      return compareValues(a.time, b.time, direction);
     case SORT_FIELDS.ATTEMPTS:
       return compareValues(a.attempts, b.attempts, direction);
     case SORT_FIELDS.WORD_LENGTH:

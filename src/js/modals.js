@@ -14,10 +14,10 @@ export function setupModals() {
   const howToPlayModal = document.getElementById('howToPlayModal');
   const howToPlayClose = document.querySelector('#howToPlayModal .close');
 
-  // Scores Modal Elements
-  const scoresBtn = document.getElementById('scoresBtn');
-  const scoresModal = document.getElementById('scoresModal');
-  const scoresClose = document.querySelector('#scoresModal .close');
+  // Stats Modal Elements
+  const statsBtn = document.getElementById('statsBtn');
+  const statsModal = document.getElementById('statsModal');
+  const statsClose = document.querySelector('#statsModal .close');
 
   // Alert Modal Event Listeners
   alertClose.onclick = () => {
@@ -57,25 +57,25 @@ export function setupModals() {
     document.body.style.overflow = 'auto'; // Re-enable scrolling
   };
 
-  // Scores Modal Event Listeners
-  scoresBtn.onclick = () => {
+  // Stats Modal Event Listeners
+  statsBtn.onclick = () => {
     const game = window.game;
     if (game) {
       // First show the modal
-      scoresModal.style.display = 'flex';
+      statsModal.style.display = 'flex';
       document.body.style.overflow = 'hidden'; // Prevent background scrolling
       
-      // Then display scores with a slight delay to ensure modal is visible
+      // Then display stats with a slight delay to ensure modal is visible
       setTimeout(() => {
-        game.displayHighScores();
+        game.displayStats();
       }, 50);
     } else {
       console.error('Game instance not found');
     }
   };
 
-  scoresClose.onclick = () => {
-    scoresModal.style.display = 'none';
+  statsClose.onclick = () => {
+    statsModal.style.display = 'none';
     document.body.style.overflow = 'auto'; // Re-enable scrolling
   };
 
@@ -94,8 +94,8 @@ export function setupModals() {
       howToPlayModal.style.display = 'none';
       document.body.style.overflow = 'auto'; // Re-enable scrolling
     }
-    if (event.target === scoresModal) {
-      scoresModal.style.display = 'none';
+    if (event.target === statsModal) {
+      statsModal.style.display = 'none';
       document.body.style.overflow = 'auto'; // Re-enable scrolling
     }
   };

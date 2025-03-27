@@ -1,4 +1,4 @@
-import { FILTER_TYPES, FILTER_RANGES } from '../constants/scoreConstants.js';
+import { FILTER_TYPES, FILTER_RANGES } from '../constants/statConstants.js';
 
 /**
  * Checks if a value falls within a range
@@ -8,14 +8,14 @@ const isInRange = (value, range) => {
 };
 
 /**
- * Applies filters to scores
+ * Applies filters to stats
  */
-export const applyFilters = (scores, activeFilters) => {
+export const applyFilters = (stats, activeFilters) => {
   if (!activeFilters || Object.keys(activeFilters).length === 0) {
-    return scores;
+    return stats;
   }
 
-  return scores.filter(score => {
+  return stats.filter(stat => {
     // Check each filter type
     return Object.entries(activeFilters).every(([filterType, selectedRanges]) => {
       // If no ranges selected for this filter type, consider it passed
@@ -25,13 +25,13 @@ export const applyFilters = (scores, activeFilters) => {
       let valueToCheck;
       switch (filterType) {
       case FILTER_TYPES.WORD_LENGTH:
-        valueToCheck = score.word.length;
+        valueToCheck = stat.word.length;
         break;
       case FILTER_TYPES.TIME:
-        valueToCheck = score.score; // score represents time in seconds
+        valueToCheck = stat.time; // time represents time in seconds
         break;
       case FILTER_TYPES.ATTEMPTS:
-        valueToCheck = score.attempts;
+        valueToCheck = stat.attempts;
         break;
       default:
         return true;
@@ -47,33 +47,33 @@ export const applyFilters = (scores, activeFilters) => {
 };
 
 /**
- * Gets available filter options based on current scores
+ * Gets available filter options based on current stats
  */
-export const getAvailableFilters = (scores) => {
+export const getAvailableFilters = (stats) => {
   const available = {
     [FILTER_TYPES.WORD_LENGTH]: new Set(),
     [FILTER_TYPES.TIME]: new Set(),
     [FILTER_TYPES.ATTEMPTS]: new Set()
   };
 
-  scores.forEach(score => {
+  stats.forEach(stat => {
     // Word Length
     FILTER_RANGES.WORD_LENGTH.forEach((range, index) => {
-      if (isInRange(score.word.length, range)) {
+      if (isInRange(stat.word.length, range)) {
         available[FILTER_TYPES.WORD_LENGTH].add(index);
       }
     });
 
     // Time
     FILTER_RANGES.TIME.forEach((range, index) => {
-      if (isInRange(score.score, range)) {
+      if (isInRange(stat.time, range)) {
         available[FILTER_TYPES.TIME].add(index);
       }
     });
 
     // Attempts
     FILTER_RANGES.ATTEMPTS.forEach((range, index) => {
-      if (isInRange(score.attempts, range)) {
+      if (isInRange(stat.attempts, range)) {
         available[FILTER_TYPES.ATTEMPTS].add(index);
       }
     });
@@ -86,13 +86,13 @@ export const getAvailableFilters = (scores) => {
  * Saves filter preferences to localStorage
  */
 export const saveFilterPreferences = (filters) => {
-  localStorage.setItem('scoreFilters', JSON.stringify(filters));
+  localStorage.setItem('statFilters', JSON.stringify(filters));
 };
 
 /**
  * Loads filter preferences from localStorage
  */
 export const loadFilterPreferences = () => {
-  const saved = localStorage.getItem('scoreFilters');
+  const saved = localStorage.getItem('statFilters');
   return saved ? JSON.parse(saved) : {};
 }; 

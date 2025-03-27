@@ -14,8 +14,24 @@ $transition-duration: 0.3s;
   }
 }
 
-// Scores Table
-.scores-table {
+#statsList {
+  text-align: center;
+  font-size: 16px;
+  margin: 20px auto;
+  padding: 10px;
+  background-color: #add8e6;
+  border: 1px solid blue;
+  display: block;
+  max-height: 600px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 5px;
+}
+
+// Stats Table
+.stats-table {
   width: 100%;
   background: var(--background-color);
   border-radius: $border-radius;
@@ -24,7 +40,7 @@ $transition-duration: 0.3s;
 }
 
 // Header
-.scores-header {
+.stats-header {
   display: grid;
   grid-template-columns: 0.5fr 1fr 1fr 1fr;
   background: var(--header-bg-color);
@@ -48,11 +64,11 @@ $transition-duration: 0.3s;
 }
 
 // Body
-.scores-body {
+.stats-body {
   transition: opacity $transition-duration ease;
 }
 
-.score-row {
+.stat-row {
   display: grid;
   grid-template-columns: 0.5fr 1fr 1fr 1fr;
   height: $row-height;
@@ -65,7 +81,7 @@ $transition-duration: 0.3s;
   }
 }
 
-.score-cell {
+.stat-cell {
   @include m.flex-center-all;
   padding: 0 $cell-padding;
   overflow: hidden;
@@ -87,13 +103,13 @@ $transition-duration: 0.3s;
 
 // Responsive Design
 @media (max-width: 768px) {
-  .scores-header,
-  .score-row {
+  .stats-header,
+  .stat-row {
     grid-template-columns: 0.3fr 1fr 0.8fr 0.8fr;
   }
 
   .header-cell,
-  .score-cell {
+  .stat-cell {
     padding: 0 8px;
   }
 } 

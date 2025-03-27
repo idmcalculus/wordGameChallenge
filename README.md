@@ -1,6 +1,6 @@
 # Word Game Challenge 🎮
 
-A modern, browser-based word guessing game built with vanilla JavaScript. Challenge yourself to guess words of varying lengths with real-time feedback and track your high scores!
+A modern, browser-based word guessing game built with vanilla JavaScript. Challenge yourself to guess words of varying lengths with real-time feedback and track your stats!
 
 ## Features ✨
 
@@ -10,7 +10,7 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
   - 🟧 Orange: Letter exists in the word but wrong position
   - ⬜ Grey: Letter not in the word
 - Real-time timer tracking
-- Persistent high scores
+- Persistent stats
 - Interactive on-screen keyboard
 - Responsive design with smooth animations
 - Integration with Datamuse API for word dictionary

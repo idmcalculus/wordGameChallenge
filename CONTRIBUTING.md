@@ -133,7 +133,7 @@ wordGameChallenge/
    - Note any animation or transition issues
 
 3. **Scoring/Timer Issues**
-   - Check if high scores are saving correctly
+   - Check if stats are saving correctly
    - Verify timer accuracy
    - Note any synchronization problems
 
@@ -145,7 +145,7 @@ wordGameChallenge/
 ### Bug Report Template
 
 **Description:**
-Provide a clear, concise description of the bug. Example: "Game doesn't accept valid 5-letter words" or "High scores not saving after winning game".
+Provide a clear, concise description of the bug. Example: "Game doesn't accept valid 5-letter words" or "Stats not saving after winning game".
 
 **Game State:**
 - Word Length: [e.g., 5]
@@ -167,9 +167,9 @@ Provide exact steps that anyone can follow to reproduce the issue. Example:
 1. Set word length to '4'
 2. Click 'Start Game'
 3. Complete the game successfully in 3 attempts
-4. Check high scores list
+4. Check stats list
 5. Refresh the page
-6. Note that the new score is missing
+6. Note that the new stat is missing
 
 *For a UI bug:*
 1. Set word length to '6'
