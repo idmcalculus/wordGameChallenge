@@ -2,6 +2,9 @@ import { FILTER_TYPES, FILTER_RANGES } from '../constants/statConstants.js';
 
 /**
  * Checks if a value falls within a range
+ * @param {number} value - The value to check
+ * @param {Object} range - The range object with min and max properties
+ * @returns {boolean} - True if the value is within the range, false otherwise
  */
 const isInRange = (value, range) => {
   return value >= range.min && value <= range.max;
@@ -9,6 +12,9 @@ const isInRange = (value, range) => {
 
 /**
  * Applies filters to stats
+ * @param {Array<Object>} stats - The stats to filter
+ * @param {Object} activeFilters - The active filters to apply
+ * @returns {Array<Object>} - The filtered stats
  */
 export const applyFilters = (stats, activeFilters) => {
   if (!activeFilters || Object.keys(activeFilters).length === 0) {
@@ -48,6 +54,8 @@ export const applyFilters = (stats, activeFilters) => {
 
 /**
  * Gets available filter options based on current stats
+ * @param {Array<Object>} stats - The stats to analyze for available filters
+ * @returns {Object} - An object containing available filters
  */
 export const getAvailableFilters = (stats) => {
   const available = {
@@ -84,6 +92,7 @@ export const getAvailableFilters = (stats) => {
 
 /**
  * Saves filter preferences to localStorage
+ * @param {Object} filters - The filters to save
  */
 export const saveFilterPreferences = (filters) => {
   localStorage.setItem('statFilters', JSON.stringify(filters));
@@ -91,6 +100,7 @@ export const saveFilterPreferences = (filters) => {
 
 /**
  * Loads filter preferences from localStorage
+ * @returns {Object} - The loaded filters
  */
 export const loadFilterPreferences = () => {
   const saved = localStorage.getItem('statFilters');

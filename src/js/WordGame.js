@@ -1,5 +1,5 @@
 import { showAlert } from './modals.js';
-import { startTimer, stopTimer } from './gameUtils.js';
+import { startTimer, stopTimer } from './utils/timerUtils.js';
 import { createAlphabetContainer, updateAlphabetContainer, createRow, resetGameUI, updateDifficulty } from './uiHandler.js';
 import { validateWord, fetchPossibleWords } from './apiHandler.js';
 import { createHintButtonsContainer, resetHintButtons, updateCurrentRow, resetHintButtonStates } from './hintHandler.js';
@@ -546,7 +546,7 @@ class WordGame {
     setTimeout(() => {
       if (totalCorrect === this.wordLength) {
         this.gameWon(); // Player guessed the word correctly
-      } else if ((this.rowCount + 1) >= this.maximumAttempts) {
+      } else if (this.rowCount >= this.maximumAttempts) {
         this.gameLost(); // Player ran out of attempts
       } else {
         // Reset hint button states before creating a new row

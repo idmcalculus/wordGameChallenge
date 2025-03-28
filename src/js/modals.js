@@ -2,6 +2,9 @@ let alertCallback = null;
 let tryAgainCallback = null;
 let isGameStartAlert = false;
 
+/**
+ * Sets up the modal event listeners and elements.
+ */
 export function setupModals() {
   // Alert Modal Elements
   const alertModal = document.getElementById('alertModal');
@@ -120,6 +123,13 @@ export function setupModals() {
   });
 }
 
+/**
+ * Displays an alert modal with a message and optional callbacks.
+ * @param {string} message - The message to display in the alert.
+ * @param {function} tryAgainCb - Callback for the "Try Again" button.
+ * @param {function} resetCb - Callback for the "Reset" button.
+ * @param {boolean} isGameStart - Indicates if this is a game start alert.
+ */
 export function showAlert(message, tryAgainCb, resetCb, isGameStart = false) {
   const alertMessage = document.getElementById('alertMessage');
   const alertModal = document.getElementById('alertModal');

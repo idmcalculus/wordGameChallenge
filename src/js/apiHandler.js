@@ -15,7 +15,7 @@ export async function fetchPossibleWords(pattern, wordLength) {
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
     
     // Fetch words that match our pattern and are common enough
-    const response = await fetch(`${API_URL}/words?sp=${pattern}&md=f&max=100`, {
+    const response = await fetch(`${API_URL}/words?sp=${pattern}&md=f&max=1000`, {
       signal: controller.signal
     });
     

@@ -1,5 +1,9 @@
 import { resetHintButtons } from './hintHandler.js';
 
+/**
+ * Creates the alphabet container and populates it with letters.
+ * @param {Array<string>} alphabet - An array of letters to display in the container.
+ */
 export function createAlphabetContainer(alphabet) {
   const container = document.getElementById('alphabetContainer');
   container.innerHTML = '';  // Clear container
@@ -62,6 +66,11 @@ export function createAlphabetContainer(alphabet) {
   container.classList.remove('visible');
 }
 
+/**
+ * Updates the alphabet container to reflect the status of a guessed letter.
+ * @param {string} guessedLetter - The letter that was guessed.
+ * @param {string} letterClass - The class to apply to the letter (e.g., 'correct', 'contains', 'notContains').
+ */
 export function updateAlphabetContainer(guessedLetter, letterClass) {
   const container = document.getElementById('alphabetContainer');
   
@@ -100,6 +109,12 @@ export function updateAlphabetContainer(guessedLetter, letterClass) {
   letterElement.setAttribute('aria-label', `Letter ${guessedLetter}, ${status}`);
 }
 
+/**
+ * Creates a new row of input boxes for letter entry.
+ * @param {number} wordLength - The length of the word to be guessed.
+ * @param {function} checkRowLetters - A callback function to check the letters in the row.
+ * @returns {HTMLElement} The newly created row element.
+ */
 export function createRow(wordLength, checkRowLetters) {
   const newRow = document.createElement('div');
   newRow.classList.add('wordRow');
@@ -173,6 +188,9 @@ export function createRow(wordLength, checkRowLetters) {
   return newRow;
 }
 
+/**
+ * Resets the game UI to its initial state.
+ */
 export function resetGameUI() {
   document.getElementById('wrapper').innerHTML = '';
   document.getElementById('startGame').style.display = 'block';
@@ -187,6 +205,10 @@ export function resetGameUI() {
   resetHintButtons();
 }
 
+/**
+ * Updates the displayed difficulty level based on the word length.
+ * @param {number} wordLength - The length of the word to determine the difficulty.
+ */
 export function updateDifficulty(wordLength) {
   const difficulty = document.getElementById('difficulty');
   if (wordLength <= 4) {

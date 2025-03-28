@@ -2,6 +2,8 @@ import { SORT_DIRECTIONS, SORT_FIELDS } from '../constants/statConstants.js';
 
 /**
  * Cycles through sort directions: default -> ascending -> descending -> default
+ * @param {string} currentDirection - The current sort direction
+ * @returns {string} - The next sort direction
  */
 export const getNextSortDirection = (currentDirection) => {
   switch (currentDirection) {
@@ -17,6 +19,10 @@ export const getNextSortDirection = (currentDirection) => {
 
 /**
  * Compares two values based on sort direction
+ * @param {any} a - The first value
+ * @param {any} b - The second value
+ * @param {string} direction - The sort direction
+ * @returns {number} - Comparison result
  */
 export const compareValues = (a, b, direction) => {
   if (direction === SORT_DIRECTIONS.DEFAULT) return 0;
@@ -30,6 +36,10 @@ export const compareValues = (a, b, direction) => {
 
 /**
  * Sorts stats based on field and direction
+ * @param {Array<Object>} stats - The stats to sort
+ * @param {string} field - The field to sort by
+ * @param {string} direction - The sort direction
+ * @returns {Array<Object>} - The sorted stats
  */
 export const sortStats = (stats, field, direction) => {
   if (direction === SORT_DIRECTIONS.DEFAULT) return stats;
@@ -54,6 +64,8 @@ export const sortStats = (stats, field, direction) => {
 
 /**
  * Gets the appropriate sort indicator icon class based on direction
+ * @param {string} direction - The sort direction
+ * @returns {string} - The class name for the sort indicator
  */
 export const getSortIndicatorClass = (direction) => {
   switch (direction) {

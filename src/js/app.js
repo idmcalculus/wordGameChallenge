@@ -6,6 +6,9 @@ import WordGame from './WordGame.js';
 import { setupModals } from './modals.js';
 import { registerServiceWorker } from './serviceWorkerRegistration.js';
 
+/**
+ * Initializes the application when the DOM is fully loaded.
+ */
 document.addEventListener('DOMContentLoaded', () => {
   setupModals();
   // Initialize the game and store instance on window for access by modals
