@@ -4,35 +4,57 @@
 .modal {
   @include m.modal-overlay;
   display: none;
+  backdrop-filter: blur(8px);
+  animation: fadeIn v.$animation-duration-medium v.$animation-smooth;
+  
+  &.show {
+    display: flex;
+  }
 }
 
 .modal-content {
   @include m.modal-content;
-  max-width: 600px; /* Increased from default */
+  max-width: 650px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: v.$border-radius-large;
+  box-shadow: v.$shadow-xl;
+  animation: scaleIn v.$animation-duration-long v.$animation-bounce;
+  border: 2px solid rgba(255, 255, 255, 0.5);
 }
 
 .how-to-play-btn {
   @include m.button-base;
   @include m.button-hover;
-  background-color: v.$color-primary;
+  background: v.$gradient-primary;
   color: v.$color-white;
   margin: v.$spacing-medium auto;
   display: block;
+  border-radius: v.$border-radius-medium;
+  box-shadow: v.$shadow-base;
+  transition: all v.$animation-duration-medium v.$animation-smooth;
   
   &:hover {
-    background-color: v.$color-primary-dark;
+    transform: translateY(-2px);
+    box-shadow: v.$shadow-md;
   }
 }
 
 .how-to-play-content {
   text-align: left;
   width: 90%;
-  max-width: 700px; /* Wider than the default modal */
+  max-width: 750px;
   
   h2 {
     @include m.heading;
     margin-bottom: v.$spacing-large;
     width: 100%;
+    background: v.$gradient-primary;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: v.$font-weight-extrabold;
+    text-align: center;
   }
 }
 
@@ -42,32 +64,38 @@
   padding-right: v.$spacing-medium;
   width: 100%;
   
-  /* Custom scrollbar styling */
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
   }
   
   &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
+    background: v.$color-grey-light;
+    border-radius: v.$border-radius-small;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: v.$color-primary;
-    border-radius: 4px;
+    background: v.$gradient-primary;
+    border-radius: v.$border-radius-small;
     
     &:hover {
-      background: v.$color-primary-dark;
+      opacity: 0.8;
     }
   }
   
   ol, ul {
-    margin-left: v.$spacing-medium;
+    margin-left: v.$spacing-large;
     
     li {
-      margin-bottom: v.$spacing-small;
-      line-height: 1.5;
+      margin-bottom: v.$spacing-medium;
+      line-height: 1.6;
       font-size: v.$font-size-base;
+      animation: slideAndFade v.$animation-duration-medium v.$animation-smooth both;
+      
+      @for $i from 1 through 10 {
+        &:nth-child(#{$i}) {
+          animation-delay: #{$i * 0.05}s;
+        }
+      }
     }
   }
   
@@ -79,12 +107,17 @@
 .stats-content {
   text-align: left;
   width: 90%;
-  max-width: 600px;
+  max-width: 650px;
   
   h2 {
     @include m.heading;
-    margin-bottom: v.$spacing-medium;
+    margin-bottom: v.$spacing-large;
     text-align: center;
+    background: v.$gradient-primary;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: v.$font-weight-extrabold;
   }
 }
 
@@ -97,7 +130,8 @@
     text-align: center;
     color: v.$color-text-secondary;
     font-style: italic;
-    padding: v.$spacing-large;
+    padding: v.$spacing-xlarge;
+    font-size: 1.1em;
   }
   
   .stats-list {
@@ -107,16 +141,25 @@
   }
   
   .stat-item {
-    background: v.$color-background-light;
-    border-radius: 8px;
-    padding: v.$spacing-medium;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9));
+    border-radius: v.$border-radius-medium;
+    padding: v.$spacing-large;
     margin-bottom: v.$spacing-medium;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
+    box-shadow: v.$shadow-base;
+    transition: all v.$animation-duration-medium v.$animation-smooth;
+    animation: slideInFromBottom v.$animation-duration-medium v.$animation-smooth both;
+    border: 2px solid transparent;
+    
+    @for $i from 1 through 20 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 0.05}s;
+      }
+    }
     
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: v.$shadow-lg;
+      border-color: v.$color-primary;
     }
     
     .stat-header {
@@ -126,14 +169,18 @@
       margin-bottom: v.$spacing-small;
       
       .stat-rank {
-        font-weight: bold;
-        color: v.$color-primary;
-        font-size: 1.1em;
+        font-weight: v.$font-weight-bold;
+        background: v.$gradient-primary;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 1.2em;
       }
       
       .stat-time {
-        font-weight: bold;
+        font-weight: v.$font-weight-bold;
         color: v.$color-text;
+        font-size: 1.1em;
       }
     }
     
@@ -141,64 +188,76 @@
       display: flex;
       justify-content: space-between;
       color: v.$color-text-secondary;
-      font-size: 0.9em;
+      font-size: 0.95em;
     }
   }
   
-  /* Custom scrollbar styling */
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
   }
   
   &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
+    background: v.$color-grey-light;
+    border-radius: v.$border-radius-small;
   }
   
   &::-webkit-scrollbar-thumb {
-    background: v.$color-primary;
-    border-radius: 4px;
+    background: v.$gradient-primary;
+    border-radius: v.$border-radius-small;
     
     &:hover {
-      background: v.$color-primary-dark;
+      opacity: 0.8;
     }
   }
   
   .green-highlight {
-    background-color: #4CAF50;
+    background: v.$color-correct;
     color: white;
-    padding: 2px 5px;
-    border-radius: 3px;
+    padding: v.$spacing-xxsmall v.$spacing-small;
+    border-radius: v.$border-radius-small;
+    font-weight: v.$font-weight-semibold;
   }
   
   .orange-highlight {
-    background-color: #FF9800;
+    background: v.$color-contains;
     color: white;
-    padding: 2px 5px;
-    border-radius: 3px;
+    padding: v.$spacing-xxsmall v.$spacing-small;
+    border-radius: v.$border-radius-small;
+    font-weight: v.$font-weight-semibold;
   }
   
   .grey-highlight {
-    background-color: #9E9E9E;
+    background: v.$color-not-contains;
     color: white;
-    padding: 2px 5px;
-    border-radius: 3px;
+    padding: v.$spacing-xxsmall v.$spacing-small;
+    border-radius: v.$border-radius-small;
+    font-weight: v.$font-weight-semibold;
   }
 }
 
 .close {
-  color: #aaa;
+  color: v.$color-grey-dark;
   float: right;
-  font-size: 28px;
+  font-size: 32px;
   font-weight: v.$font-weight-bold;
   position: absolute;
   top: v.$spacing-medium;
-  right: v.$spacing-medium;
+  right: v.$spacing-large;
   line-height: 1;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all v.$animation-duration-short v.$animation-smooth;
+  background: rgba(0, 0, 0, 0.05);
   
   &:hover,
   &:focus {
-    color: v.$color-black;
+    color: v.$color-danger;
+    background: rgba(239, 68, 68, 0.1);
+    transform: rotate(90deg) scale(1.1);
     text-decoration: none;
     cursor: pointer;
   }
@@ -207,8 +266,9 @@
 .alert-buttons {
   display: flex;
   justify-content: center;
-  gap: v.$spacing-medium;
-  margin-top: v.$spacing-medium;
+  gap: v.$spacing-large;
+  margin-top: v.$spacing-large;
+  flex-wrap: wrap;
 }
 
 #alertTryAgainButton {
@@ -217,12 +277,35 @@
   border-radius: v.$border-radius-medium;
   color: v.$color-white;
   font-size: v.$font-size-base;
+  font-weight: v.$font-weight-bold;
   cursor: pointer;
-  transition: background-color v.$animation-duration-medium ease;
-  background-color: v.$color-primary;
+  transition: all v.$animation-duration-medium v.$animation-smooth;
+  background: v.$gradient-primary;
+  box-shadow: v.$shadow-base;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width v.$animation-duration-medium, height v.$animation-duration-medium;
+  }
   
   &:hover {
-    background-color: v.$color-primary-dark;
+    transform: translateY(-2px);
+    box-shadow: v.$shadow-md;
+    
+    &::before {
+      width: 300px;
+      height: 300px;
+    }
   }
 }
 
@@ -232,36 +315,63 @@
   border-radius: v.$border-radius-medium;
   color: v.$color-white;
   font-size: v.$font-size-base;
+  font-weight: v.$font-weight-bold;
   cursor: pointer;
-  transition: background-color v.$animation-duration-medium ease;
-  background-color: v.$color-success;
+  transition: all v.$animation-duration-medium v.$animation-smooth;
+  background: v.$gradient-success;
+  box-shadow: v.$shadow-base;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width v.$animation-duration-medium, height v.$animation-duration-medium;
+  }
   
   &:hover {
-    background-color: v.$color-success-dark;
+    transform: translateY(-2px);
+    box-shadow: v.$shadow-md;
+    
+    &::before {
+      width: 300px;
+      height: 300px;
+    }
   }
 }
 
 // Styling for alert messages
 .invalid-word-alert, .success-alert, .failure-alert {
   text-align: center;
-  padding: v.$spacing-medium;
-  border-radius: v.$border-radius-medium;
-  margin-bottom: v.$spacing-medium;
+  padding: v.$spacing-xlarge;
+  border-radius: v.$border-radius-large;
+  margin-bottom: v.$spacing-large;
+  animation: bounceIn v.$animation-duration-long v.$animation-bounce;
   
   .alert-icon {
-    font-size: 2rem;
+    font-size: 3rem;
     display: block;
-    margin-bottom: v.$spacing-small;
+    margin-bottom: v.$spacing-medium;
+    animation: wiggle 1s ease-in-out infinite;
   }
   
   h3 {
-    margin: v.$spacing-small 0;
+    margin: v.$spacing-medium 0;
     font-size: v.$font-size-large;
+    font-weight: v.$font-weight-extrabold;
   }
   
   p {
     margin: v.$spacing-small 0;
     font-size: v.$font-size-base;
+    line-height: 1.6;
     
     strong {
       font-weight: v.$font-weight-bold;
@@ -271,38 +381,56 @@
 
 // Invalid word alert (red theme)
 .invalid-word-alert {
-  background-color: #fff3f3;
-  border: 2px solid #ff6b6b;
+  background: linear-gradient(135deg, #fff5f5, #ffe5e5);
+  border: 3px solid v.$color-danger;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
   
   h3 {
-    color: #e74c3c;
+    color: v.$color-danger;
+  }
+  
+  .alert-icon {
+    filter: drop-shadow(0 4px 8px rgba(239, 68, 68, 0.3));
   }
 }
 
 // Success alert (green theme)
 .success-alert {
-  background-color: #f0fff0;
-  border: 2px solid #4CAF50;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 3px solid v.$color-success;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  animation: bounceIn v.$animation-duration-long v.$animation-bounce, 
+             rainbow 3s linear infinite;
   
   h3 {
-    color: #2e7d32;
+    color: v.$color-success;
+  }
+  
+  .alert-icon {
+    filter: drop-shadow(0 4px 8px rgba(16, 185, 129, 0.3));
+    animation: celebrate v.$animation-duration-long v.$animation-bounce infinite;
   }
 }
 
 // Failure alert (orange/yellow theme)
 .failure-alert {
-  background-color: #fffbf0;
-  border: 2px solid #FF9800;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 3px solid #f59e0b;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
   
   h3 {
-    color: #e65100;
+    color: #d97706;
+  }
+  
+  .alert-icon {
+    filter: drop-shadow(0 4px 8px rgba(245, 158, 11, 0.3));
   }
 }
 
 @include m.respond-to(mobile) {
   .modal-content {
     width: 95%;
-    padding: v.$spacing-large;
+    padding: v.$spacing-xlarge v.$spacing-medium;
   }
   
   .how-to-play-btn {
@@ -315,15 +443,37 @@
     max-height: 70vh;
   }
   
-  .invalid-word-alert {
-    padding: v.$spacing-small;
+  .close {
+    font-size: 28px;
+    width: 36px;
+    height: 36px;
+    right: v.$spacing-medium;
+  }
+  
+  .invalid-word-alert,
+  .success-alert,
+  .failure-alert {
+    padding: v.$spacing-large;
+    
+    .alert-icon {
+      font-size: 2.5rem;
+    }
     
     h3 {
-      font-size: v.$font-size-base;
+      font-size: 1.2em;
     }
     
     p {
       font-size: v.$font-size-small;
+    }
+  }
+  
+  .alert-buttons {
+    gap: v.$spacing-medium;
+    
+    button {
+      padding: v.$spacing-small v.$spacing-large;
+      font-size: 0.9em;
     }
   }
 }

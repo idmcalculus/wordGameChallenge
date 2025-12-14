@@ -3,30 +3,30 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <meta name="description" content="A modern, browser-based word guessing game with real-time feedback">
-        <meta name="theme-color" content="#4a90e2">
+        <meta name="description" content="A stunning, modern word guessing game with beautiful animations and real-time feedback">
+        <meta name="theme-color" content="#667eea">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="Word Game">
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <title>Word Game Challenge</title>
+        <title>✨ Word Game Challenge</title>
     </head>
     <body>
         <div class="outerWrapper" id="outerWrapper">
-            <h1 id="gameHeader">Find the word ...</h1>
+            <h1 id="gameHeader">🎮 Find the word ...</h1>
 
             <div class="actionButtons">
-                <button id="howToPlayBtn" class="btn-primary">How to Play</button>
-                <button id="statsBtn" class="btn-primary">Stats</button>
+                <button id="howToPlayBtn" class="btn-primary">📖 How to Play</button>
+                <button id="statsBtn" class="btn-primary">📊 Stats</button>
             </div>
 
             <div class="gameMeta">
                 <div class="leftMeta">
                     <div class="wordLengthInputContainer">
-                        <p>Enter word length between 3 and 10:</p>
+                        <p>✨ Enter word length between 3 and 10:</p>
                         <input id="wordLengthInput" type="number" min="3" max="10">
                     </div>
-                    <button id="startGame">Start Game</button>
+                    <button id="startGame">🚀 Start Game</button>
                     <div class="timerDifficultyInfo">
                         <div id="timerDisplay"></div>
                         <div id="difficulty">Difficulty: </div>
@@ -36,7 +36,7 @@
             <div id="alphabetContainer"></div>
             <div class="wrapper" id="wrapper"></div>
             <div class="actionButtons includesHintButtons">
-                <button id="resetGame" style="display: none;">Reset Game</button>
+                <button id="resetGame" style="display: none;">🔄 Reset Game</button>
             </div>
         </div>
         
@@ -46,8 +46,8 @@
                 <span class="close">&times;</span>
                 <div id="alertMessage"></div>
                 <div class="alert-buttons">
-                    <button id="alertTryAgainButton">Try Again</button>
-                    <button id="alertResetButton">Reset Game</button>
+                    <button id="alertTryAgainButton">🎯 Try Again</button>
+                    <button id="alertResetButton">🔄 Reset Game</button>
                 </div>
             </div>
         </div>
@@ -56,22 +56,23 @@
         <div id="howToPlayModal" class="modal">
             <div class="modal-content how-to-play-content">
                 <span class="close">&times;</span>
-                <h2>How to Play</h2>
+                <h2>📖 How to Play</h2>
                 <div class="rules-container">
                     <ol>
-                        <li>Enter a word length between 3 and 10 letters</li>
-                        <li>Click "Start Game"</li>
-                        <li>Type your guess using your keyboard and press Enter or click to submit</li>
-                        <li>The on-screen alphabet grid is for feedback only, not for typing</li>
-                        <li>Get feedback through colors:
+                        <li>🎯 <strong>Choose Your Challenge:</strong> Enter a word length between 3 and 10 letters</li>
+                        <li>🚀 <strong>Start the Game:</strong> Click "Start Game" to begin your adventure</li>
+                        <li>⌨️ <strong>Make Your Guess:</strong> Type your guess using your keyboard and press Enter to submit</li>
+                        <li>👀 <strong>Visual Feedback:</strong> The on-screen alphabet grid shows which letters you've tried (it's not for typing)</li>
+                        <li>🎨 <strong>Color Clues:</strong> Each guess gives you colorful feedback:
                             <ul>
-                                <li><span class="green-highlight">Green</span>: Correct letter in correct position</li>
-                                <li><span class="orange-highlight">Orange</span>: Correct letter in wrong position</li>
-                                <li><span class="grey-highlight">Grey</span>: Letter not in word</li>
+                                <li>✅ <span class="green-highlight">Green</span>: Perfect! Correct letter in the correct position</li>
+                                <li>🟡 <span class="orange-highlight">Yellow</span>: Good! Letter is in the word but wrong position</li>
+                                <li>❌ <span class="grey-highlight">Grey</span>: Nope! Letter is not in the word</li>
                             </ul>
                         </li>
-                        <li>You have 5 attempts to guess the word</li>
-                        <li>Try to beat your best time!</li>
+                        <li>🎲 <strong>Five Chances:</strong> You have 5 attempts to guess the word</li>
+                        <li>⏱️ <strong>Beat the Clock:</strong> Try to guess as quickly as possible and beat your best time!</li>
+                        <li>💡 <strong>Hint Power-ups:</strong> Use hints strategically to help you when you're stuck</li>
                     </ol>
                 </div>
             </div>
@@ -81,7 +82,7 @@
         <div id="statsModal" class="modal">
             <div class="modal-content stats-content">
                 <span class="close">&times;</span>
-                <h2>Stats</h2>
+                <h2>📊 Your Stats</h2>
                 <div id="statsList" class="stats-container"></div>
             </div>
         </div>

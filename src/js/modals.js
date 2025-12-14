@@ -1,3 +1,5 @@
+import { createConfetti } from './utils/confetti.js';
+
 let alertCallback = null;
 let tryAgainCallback = null;
 let isGameStartAlert = false;
@@ -143,6 +145,11 @@ export function showAlert(message, tryAgainCb, resetCb, isGameStart = false, try
   alertModal.style.display = 'flex';
   alertModal.style.alignItems = 'center';
   alertModal.style.justifyContent = 'center';
+  
+  // Trigger confetti if this is a success message
+  if (message.includes('success-alert') || message.includes('🎉') || message.includes('Congratulations')) {
+    setTimeout(() => createConfetti(), 100);
+  }
   
   // Set button text
   alertTryAgainButton.textContent = tryAgainText;

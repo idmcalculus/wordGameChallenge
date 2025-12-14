@@ -1,51 +1,86 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins' as m;
+@use 'sass:color';
 
 .hint-button {
   position: relative;
   padding: v.$spacing-medium v.$spacing-xlarge;
   border: none;
-  border-radius: v.$border-radius-small;
+  border-radius: v.$border-radius-medium;
   font-size: v.$font-size-base;
   font-weight: v.$font-weight-bold;
   cursor: pointer;
-  transition: background-color v.$animation-duration-medium, transform v.$animation-duration-short;
+  transition: all v.$animation-duration-medium v.$animation-smooth;
   overflow: hidden;
-  min-width: 150px;
+  min-width: 160px;
+  box-shadow: v.$shadow-base;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width v.$animation-duration-medium, height v.$animation-duration-medium;
+  }
   
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: v.$shadow-md;
+    
+    &::before {
+      width: 300px;
+      height: 300px;
+    }
   }
   
   &:active:not(:disabled) {
-    transform: translateY(0);
+    transform: translateY(-1px) scale(0.98);
   }
   
   &:disabled {
-    opacity: 0.7;
+    opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
   }
   
   &.cooldown {
-    background-color: v.$color-grey-dark;
+    background: linear-gradient(135deg, v.$color-grey-dark, v.$color-grey);
+    animation: breathe 2s ease-in-out infinite;
   }
 }
 
 .letter-hint {
-  background-color: v.$color-primary;
+  background: v.$gradient-primary;
   color: v.$color-white;
   
   &:hover:not(:disabled) {
-    background-color: v.$color-primary-dark;
+    box-shadow: v.$shadow-lg, v.$shadow-glow;
+  }
+  
+  &:disabled {
+    background: linear-gradient(135deg, 
+      color.adjust(v.$color-primary, $lightness: 20%), 
+      color.adjust(v.$color-primary-dark, $lightness: 20%));
   }
 }
 
 .position-hint {
-  background-color: v.$color-secondary;
+  background: v.$gradient-secondary;
   color: v.$color-white;
   
   &:hover:not(:disabled) {
-    background-color: v.$color-secondary-dark;
+    box-shadow: v.$shadow-lg, 0 0 20px rgba(79, 172, 254, 0.4);
+  }
+  
+  &:disabled {
+    background: linear-gradient(135deg, 
+      color.adjust(v.$color-secondary, $lightness: 20%), 
+      color.adjust(v.$color-secondary-dark, $lightness: 20%));
   }
 }
 
@@ -55,27 +90,33 @@
   pointer-events: none;
 }
 
-// Progress bar for cooldown
+// Progress bar for cooldown with gradient
 .cooldown-progress {
   position: absolute;
   bottom: 0;
   left: 0;
-  height: 4px;
-  background-color: v.$color-cooldown;
+  height: 5px;
+  background: v.$gradient-success;
   width: 0%;
   transition: width 0.05s linear;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  border-radius: 0 0 v.$border-radius-medium v.$border-radius-medium;
 }
 
 // Style for inputs that received hints
 .hint-provided {
-  animation: highlight-hint 2s ease;
+  animation: highlight-hint v.$animation-duration-extra-long ease-in-out;
 }
 
-@keyframes highlight-hint {
-  0%, 100% {
-    background-color: inherit;
-  }
-  50% {
-    background-color: v.$color-hint;
+// Hint buttons container
+.includesHintButtons {
+  animation: slideInFromBottom v.$animation-duration-medium v.$animation-smooth 0.3s both;
+  
+  .hint-button {
+    @for $i from 1 through 5 {
+      &:nth-child(#{$i}) {
+        animation: pop v.$animation-duration-medium v.$animation-bounce #{$i * 0.1}s both;
+      }
+    }
   }
 }

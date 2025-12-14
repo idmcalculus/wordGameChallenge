@@ -1,94 +1,130 @@
 // Color Variables
-// Primary Colors
-$color-primary: #4a90e2;
-$color-primary-dark: #3a80d2;
-$color-primary-light: #6aa5e8;
+// Modern Gradient Theme
+$color-primary: #667eea;
+$color-primary-dark: #5568d3;
+$color-primary-light: #7f9cf5;
+$color-accent: #f093fb;
+$color-accent-dark: #e67de8;
 
 // Secondary Colors
-$color-secondary: #9b59b6;
-$color-secondary-dark: #8e44ad;
-$color-secondary-light: #b07cc6;
+$color-secondary: #4facfe;
+$color-secondary-dark: #00a8ff;
+$color-secondary-light: #7cc8ff;
 
-// Game Feedback Colors
-$color-correct: #adebad;        // Light green for correct letter in correct position
-$color-correct-dark: #1a531b;   // Dark green text for correct letter
-$color-contains: #faedcd;       // Light orange for letter in word but wrong position
-$color-contains-dark: #884c00;  // Dark orange text for contained letter
-$color-not-contains: #f5a9a9;   // Light red for letter not in word
-$color-not-contains-dark: #7a1c1c; // Dark red text for not contained letter
+// Game Feedback Colors (More vibrant)
+$color-correct: #10b981;        // Vibrant green
+$color-correct-light: #6ee7b7;  // Light green
+$color-correct-dark: #065f46;   // Dark green
+$color-contains: #fbbf24;       // Vibrant yellow/orange
+$color-contains-light: #fde68a; // Light yellow
+$color-contains-dark: #92400e;  // Dark orange
+$color-not-contains: #ef4444;   // Vibrant red
+$color-not-contains-light: #fca5a5; // Light red
+$color-not-contains-dark: #7f1d1d; // Dark red
 
 // Neutral Colors
 $color-white: #ffffff;
-$color-black: #000000;
-$color-grey-light: #f0f0f0;
-$color-grey: #cccccc;
-$color-grey-dark: #777777;
-$color-text: #333333;
+$color-black: #1a202c;
+$color-grey-light: #f7fafc;
+$color-grey: #e2e8f0;
+$color-grey-dark: #64748b;
+$color-text: #2d3748;
+$color-text-light: #718096;
 
 // UI Colors
-$color-background: $color-white;
-$color-background-light: #f8f9fa;
-$color-text-secondary: #6c757d;
-$color-success: #28a745;
-$color-success-dark: #218838;
-$color-danger: #dc3545;
-$color-danger-dark: #c82333;
-$color-hint: #ffd700;           // Gold color for hint highlights
-$color-cooldown: #2ecc71;       // Green for cooldown progress
+$color-background: #f8fafc;
+$color-background-dark: #1e293b;
+$color-background-light: #ffffff;
+$color-text-secondary: #64748b;
+$color-success: #10b981;
+$color-success-dark: #059669;
+$color-danger: #ef4444;
+$color-danger-dark: #dc2626;
+$color-hint: #fbbf24;
+$color-cooldown: #10b981;
 
 // Game Element Colors
-$color-game-header: navy;
-$color-game-border: blue;
-$color-game-background: lightblue;
+$color-game-header: #1e293b;
+$color-game-border: #e2e8f0;
+$color-game-background: #ffffff;
+$color-card-shadow: rgba(15, 23, 42, 0.08);
+$color-card-shadow-hover: rgba(15, 23, 42, 0.16);
+
+// Gradients
+$gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+$gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+$gradient-danger: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+$gradient-background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+$gradient-button: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
 // Typography
-$font-family-primary: Verdana, sans-serif;
+$font-family-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+$font-family-display: 'Segoe UI', system-ui, -apple-system, sans-serif;
 $font-size-base: 16px;
 $font-size-large: 1.5em;
-$font-size-xlarge: 2em;
+$font-size-xlarge: 2.5em;
 $font-size-small: 0.9em;
 $font-weight-normal: 400;
-$font-weight-bold: 600;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-weight-extrabold: 800;
 
 // Spacing
-$spacing-xxsmall: 2px;
-$spacing-xsmall: 3px;
-$spacing-small: 5px;
-$spacing-medium: 10px;
-$spacing-large: 15px;
-$spacing-xlarge: 20px;
-$spacing-xxlarge: 40px;
+$spacing-xxsmall: 4px;
+$spacing-xsmall: 8px;
+$spacing-small: 12px;
+$spacing-medium: 16px;
+$spacing-large: 24px;
+$spacing-xlarge: 32px;
+$spacing-xxlarge: 48px;
 
 // Borders
-$border-radius-small: 4px;
-$border-radius-medium: 5px;
-$border-radius-large: 10px;
-$border-width: 1px;
+$border-radius-small: 8px;
+$border-radius-medium: 12px;
+$border-radius-large: 16px;
+$border-radius-xlarge: 24px;
+$border-width: 2px;
 
 // Breakpoints
 $breakpoint-mobile: 480px;
 $breakpoint-tablet: 768px;
+$breakpoint-desktop: 1024px;
 
 // Dimensions
-$container-max-width: 800px;
-$letter-box-size: 2.25em; /* Increased by 150% from 1.5em */
-$letter-box-size-mobile: 1.8em; /* Increased by 150% from 1.2em */
-$alphabet-letter-size: 25px;
-$alphabet-letter-size-mobile: 18px;
-$modal-max-width: 300px;
+$container-max-width: 1000px;
+$letter-box-size: 3em;
+$letter-box-size-mobile: 2.5em;
+$alphabet-letter-size: 40px;
+$alphabet-letter-size-mobile: 32px;
+$modal-max-width: 500px;
 $stats-max-height: 600px;
 
 // Animation
-$animation-duration-short: 0.2s;
-$animation-duration-medium: 0.3s;
-$animation-duration-long: 1s;
-$animation-timing-function: ease;
+$animation-duration-fast: 0.15s;
+$animation-duration-short: 0.25s;
+$animation-duration-medium: 0.4s;
+$animation-duration-long: 0.6s;
+$animation-duration-extra-long: 1s;
+$animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+$animation-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+$animation-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
+
+// Shadows
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-base: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+$shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+$shadow-glow: 0 0 20px rgba(102, 126, 234, 0.4);
+$shadow-glow-success: 0 0 20px rgba(16, 185, 129, 0.4);
+$shadow-glow-danger: 0 0 20px rgba(239, 68, 68, 0.4);
 
 // Stats Table Colors
 $color-header-bg: #f8f9fa;
 $color-row-hover: #f5f5f5;
 $color-border: #e9ecef;
-$color-text-muted: #6c757d;
 $color-chip-bg: #e9ecef;
 $color-chip-hover: #dee2e6;
 $color-active-filters-bg: #f8f9fa;
@@ -99,9 +135,14 @@ $color-active-filters-bg: #f8f9fa;
   --secondary-color: #{$color-secondary};
   --background-color: #{$color-background};
   --text-color: #{$color-text};
-  --text-muted-color: #{$color-text-muted};
+  --text-muted-color: #{$color-text-secondary};
   --border-color: #{$color-border};
   --danger-color: #{$color-danger};
+  
+  // Gradients
+  --gradient-primary: #{$gradient-primary};
+  --gradient-secondary: #{$gradient-secondary};
+  --gradient-background: #{$gradient-background};
 
   // Stats Table
   --header-bg-color: #{$color-header-bg};
