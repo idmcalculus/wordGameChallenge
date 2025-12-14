@@ -1,11 +1,61 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins' as m;
 
+// Add animated background
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  font-family: v.$font-family-primary;
+  overflow-x: hidden;
+}
+
+// Animated particles background
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  animation: float 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
 .outerWrapper {
   @include m.container;
   @include m.flex-column-center;
+  position: relative;
+  z-index: 1;
   text-align: center;
   font-family: v.$font-family-primary;
+  padding: v.$spacing-xlarge v.$spacing-large;
+  animation: fadeIn v.$animation-duration-long v.$animation-smooth;
+  
+  // Add glass morphism effect
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 900px;
+    height: 95%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: v.$border-radius-xlarge;
+    z-index: -1;
+    box-shadow: v.$shadow-xl;
+  }
 }
 
 .gameMeta {
@@ -13,24 +63,70 @@
   width: 100%;
   flex-wrap: wrap;
   gap: v.$spacing-xlarge;
+  animation: slideInFromTop v.$animation-duration-long v.$animation-smooth 0.2s both;
 }
 
 .leftMeta {
   @include m.flex-column-center;
   width: 100%;
   text-align: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: v.$spacing-xlarge;
+  border-radius: v.$border-radius-large;
+  box-shadow: v.$shadow-md;
+  transition: all v.$animation-duration-medium v.$animation-smooth;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: v.$shadow-lg;
+  }
 }
 
 .wrapper {
   margin: v.$spacing-xxlarge auto;
   @include m.flex-column-center;
   width: 100%;
+  animation: slideInFromBottom v.$animation-duration-long v.$animation-smooth 0.4s both;
+}
+
+// Staggered animations for children
+.outerWrapper > * {
+  animation-fill-mode: both;
+}
+
+.outerWrapper > *:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.outerWrapper > *:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.outerWrapper > *:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.outerWrapper > *:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.outerWrapper > *:nth-child(5) {
+  animation-delay: 0.5s;
 }
 
 // Responsive adjustments
 @include m.respond-to(tablet) {
+  body::before {
+    animation: float 15s ease-in-out infinite;
+  }
+  
   .outerWrapper {
     padding: v.$spacing-large;
+    
+    &::before {
+      width: 95%;
+      height: 98%;
+    }
   }
   
   .gameMeta {
@@ -41,11 +137,24 @@
   .leftMeta {
     width: 100%;
     text-align: center;
+    padding: v.$spacing-large;
   }
 }
 
 @include m.respond-to(mobile) {
+  body {
+    background-size: 600% 600%;
+  }
+  
+  .outerWrapper {
+    padding: v.$spacing-medium;
+  }
+  
+  .leftMeta {
+    padding: v.$spacing-medium;
+  }
+  
   h1 {
-    font-size: 1.5em;
+    font-size: 1.8em;
   }
 }

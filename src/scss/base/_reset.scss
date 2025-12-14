@@ -9,6 +9,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-size: v.$font-size-base;
   font-family: v.$font-family-primary;
@@ -16,14 +20,27 @@ body {
   background-color: v.$color-background;
   @include m.flex-center;
   min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
   @include m.heading;
 }
 
+h1 {
+  font-size: v.$font-size-xlarge;
+  font-weight: v.$font-weight-extrabold;
+}
+
+h2 {
+  font-size: v.$font-size-large;
+  font-weight: v.$font-weight-bold;
+}
+
 button {
   @include m.button-base;
+  font-family: v.$font-family-primary;
 }
 
 input {
@@ -32,6 +49,7 @@ input {
 
 p {
   margin: v.$spacing-medium 0;
+  line-height: 1.6;
 }
 
 ul, ol {
@@ -41,8 +59,27 @@ ul, ol {
 a {
   color: v.$color-primary;
   text-decoration: none;
+  transition: all v.$animation-duration-short v.$animation-smooth;
   
   &:hover {
+    color: v.$color-primary-dark;
     text-decoration: underline;
   }
+}
+
+// Selection styling
+::selection {
+  background: v.$color-primary;
+  color: v.$color-white;
+}
+
+::-moz-selection {
+  background: v.$color-primary;
+  color: v.$color-white;
+}
+
+// Focus visible for accessibility
+*:focus-visible {
+  outline: 3px solid v.$color-primary;
+  outline-offset: 2px;
 }

@@ -2,257 +2,516 @@
 @use '../abstracts/mixins' as m;
 @use 'sass:color';
 
+// Game Header with gradient text
 #gameHeader {
   font-size: v.$font-size-xlarge;
-  color: v.$color-game-header;
+  font-weight: v.$font-weight-extrabold;
+  background: v.$gradient-primary;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: v.$spacing-xlarge;
+  animation: slideInFromTop v.$animation-duration-long v.$animation-bounce;
+  text-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+  letter-spacing: -1px;
+  position: relative;
+  
+  &::after {
+    content: '✨';
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.6em;
+    animation: wiggle 2s ease-in-out infinite;
+  }
 }
 
+// Word Length Input Container
 .wordLengthInputContainer {
+  margin-bottom: v.$spacing-large;
+  
+  p {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-medium;
+    color: v.$color-text;
+    margin-bottom: v.$spacing-small;
+  }
+  
   #wordLengthInput {
-    width: 60px;
-    padding: v.$spacing-small v.$spacing-medium;
+    width: 80px;
+    padding: v.$spacing-medium v.$spacing-large;
     text-align: center;
     font-size: v.$font-size-large;
+    font-weight: v.$font-weight-bold;
     margin: v.$spacing-small;
+    border: 3px solid transparent;
+    border-radius: v.$border-radius-medium;
+    background: linear-gradient(white, white) padding-box,
+                v.$gradient-primary border-box;
+    box-shadow: v.$shadow-base;
+    transition: all v.$animation-duration-medium v.$animation-smooth;
+    color: v.$color-text;
     
-    /* Hide spinner arrows in different browsers */
-    /* Chrome, Safari, Edge, Opera */
+    &:focus {
+      outline: none;
+      transform: scale(1.05);
+      box-shadow: v.$shadow-glow;
+      animation: pulse v.$animation-duration-extra-long v.$animation-smooth infinite;
+    }
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: v.$shadow-md;
+    }
+    
+    /* Hide spinner arrows */
     &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button {
       -webkit-appearance: none;
       margin: 0;
     }
     
-    /* Firefox and standard property for compatibility */
     -moz-appearance: textfield;
     appearance: textfield;
   }
 }
 
+// Start Game Button with gradient
 #startGame {
-  background-color: v.$color-game-background;
+  background: v.$gradient-button;
+  border: none;
   border-radius: v.$border-radius-medium;
-  padding: 6px 12px;
-  margin-top: 30px;
+  padding: v.$spacing-medium v.$spacing-xlarge;
+  margin-top: v.$spacing-large;
   font-size: v.$font-size-large;
+  font-weight: v.$font-weight-bold;
+  color: v.$color-white;
+  box-shadow: v.$shadow-md;
+  transition: all v.$animation-duration-medium v.$animation-smooth;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left v.$animation-duration-long v.$animation-smooth;
+  }
   
   &:hover {
-    background-color: v.$color-grey-light;
-    cursor: pointer;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: v.$shadow-lg, v.$shadow-glow;
+    
+    &::before {
+      left: 100%;
+    }
+  }
+  
+  &:active {
+    transform: translateY(-1px) scale(0.98);
   }
 }
 
+// Action Buttons
 .actionButtons {
   @include m.flex-center-all;
-  gap: v.$spacing-xlarge;
+  gap: v.$spacing-large;
   flex-wrap: wrap;
+  margin-bottom: v.$spacing-large;
+  
+  .btn-primary {
+    background: v.$gradient-primary;
+    border: none;
+    border-radius: v.$border-radius-medium;
+    padding: v.$spacing-medium v.$spacing-xlarge;
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-white;
+    box-shadow: v.$shadow-base;
+    transition: all v.$animation-duration-medium v.$animation-smooth;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width v.$animation-duration-medium, height v.$animation-duration-medium;
+    }
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: v.$shadow-md;
+      
+      &::before {
+        width: 300px;
+        height: 300px;
+      }
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
 }
 
+// Timer and Difficulty Display
 .timerDifficultyInfo {
   @include m.flex-center;
-  justify-content: space-between;
+  justify-content: space-around;
   margin: v.$spacing-xlarge 0 0;
   width: 100%;
   max-width: 600px;
+  gap: v.$spacing-large;
 
+  #timerDisplay, #difficulty {
+    text-align: center;
+    font-size: 1.3em;
+    font-weight: v.$font-weight-bold;
+    padding: v.$spacing-small v.$spacing-large;
+    border-radius: v.$border-radius-medium;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: v.$shadow-sm;
+    display: none;
+    animation: pop v.$animation-duration-medium v.$animation-bounce;
+  }
+  
   #timerDisplay {
-    text-align: center;
-    font-size: 1.2em;
-    font-weight: v.$font-weight-bold;
-    color: v.$color-primary-dark;
-    display: none;
+    color: v.$color-primary;
+    border: 2px solid v.$color-primary;
   }
-
+  
   #difficulty {
-    text-align: center;
-    font-size: 1.2em;
-    font-weight: v.$font-weight-bold;
-    display: none;
+    color: v.$color-accent;
+    border: 2px solid v.$color-accent;
   }
 }
 
-// Word rows and letter boxes
+// Word rows with card styling
 .wordRow {
-  border-top: v.$border-width solid v.$color-game-border;
-  background-color: v.$color-game-background;
-  padding: v.$spacing-xsmall;
-  margin: 0;
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  padding: v.$spacing-medium;
+  margin: v.$spacing-small 0;
   text-align: center;
+  border-radius: v.$border-radius-medium;
+  box-shadow: v.$shadow-sm;
+  transition: all v.$animation-duration-medium v.$animation-smooth;
+  animation: slideInFromBottom v.$animation-duration-medium v.$animation-smooth both;
+  
+  &:hover {
+    box-shadow: v.$shadow-base;
+    transform: translateY(-2px);
+  }
 }
 
+// Letter boxes with flip animation
 .wordLetterBox {
   @include m.letter-box;
+  font-weight: v.$font-weight-bold;
+  border: 3px solid v.$color-grey;
+  transition: all v.$animation-duration-medium v.$animation-smooth;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    transition: left v.$animation-duration-long;
+  }
+  
+  &:focus {
+    border-color: v.$color-primary;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    transform: scale(1.05);
+  }
   
   &.contains {
-    background-color: v.$color-contains;
-    color: v.$color-contains-dark;
-    @include m.rotate-animation;
+    background: v.$color-contains;
+    color: v.$color-white;
+    border-color: v.$color-contains;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+    animation: flip v.$animation-duration-long v.$animation-smooth both;
+    
+    &::before {
+      left: 100%;
+    }
   }
   
   &.notContains {
-    background-color: v.$color-not-contains;
-    color: v.$color-not-contains-dark;
-    @include m.rotate-animation;
+    background: v.$color-not-contains;
+    color: v.$color-white;
+    border-color: v.$color-not-contains;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    animation: flip v.$animation-duration-long v.$animation-smooth both;
+    
+    &::before {
+      left: 100%;
+    }
   }
   
   &.correct {
-    background-color: v.$color-correct;
-    color: v.$color-correct-dark;
-    @include m.rotate-animation;
+    background: v.$color-correct;
+    color: v.$color-white;
+    border-color: v.$color-correct;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    animation: flip v.$animation-duration-long v.$animation-smooth both, celebrate v.$animation-duration-long v.$animation-bounce 0.3s both;
+    
+    &::before {
+      left: 100%;
+    }
   }
   
   &.hint-provided {
-    @include m.highlight-animation;
+    animation: highlight-hint v.$animation-duration-extra-long v.$animation-smooth;
   }
 }
 
-// Alphabet container
+// Alphabet container with modern styling
 #alphabetContainer {
   @include m.game-container;
   margin: v.$spacing-xlarge auto;
   width: 100%;
-  max-width: 600px;
+  max-width: 650px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: v.$border-radius-large;
+  box-shadow: v.$shadow-md;
+  padding: v.$spacing-xlarge;
   
-  /* Container layout */
-  display: none; /* Initially hidden, only shown when game starts */
+  display: none;
   flex-direction: column;
   align-items: center;
   
   &.visible {
     display: flex;
+    animation: scaleIn v.$animation-duration-long v.$animation-bounce;
   }
   
-  /* Alphabet label styling */
   .alphabet-label {
     font-weight: v.$font-weight-bold;
-    font-size: v.$font-size-base;
-    margin-bottom: v.$spacing-medium;
+    font-size: 1.1rem;
+    margin-bottom: v.$spacing-large;
     color: v.$color-text;
     text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
   
-  /* Grid container for the letters */
   .alphabet-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     grid-template-rows: repeat(4, 1fr);
-    gap: v.$spacing-xsmall;
-    width: 95%; /* Slightly increased from 90% */
-    max-width: 520px;
+    gap: v.$spacing-small;
+    width: 100%;
+    max-width: 550px;
     margin: 0 auto;
-    justify-content: center;
-    align-items: center;
     
-    /* Letter spacer for centering the last row */
     .letter-spacer {
       visibility: hidden;
-      grid-column: span 1;
     }
     
     span {
-      /* Non-button styling */
-      border: v.$border-width solid v.$color-grey;
+      border: 3px solid v.$color-grey;
       border-radius: v.$border-radius-small;
-      padding: v.$spacing-xsmall;
+      padding: v.$spacing-medium;
       text-align: center;
       text-transform: uppercase;
       font-weight: v.$font-weight-bold;
-      font-size: 0.9rem;
-      transition: all v.$animation-duration-medium ease;
+      font-size: 1rem;
+      transition: all v.$animation-duration-medium v.$animation-smooth;
       @include m.flex-center-all;
       cursor: default;
       aspect-ratio: 1 / 1;
-      min-width: 32px;
-      min-height: 32px;
+      min-width: 40px;
+      min-height: 40px;
+      box-shadow: v.$shadow-sm;
+      position: relative;
+      overflow: hidden;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transform: rotate(45deg);
+        transition: all v.$animation-duration-long;
+      }
       
       &.notGuessed {
-        background-color: #f9f9f9;
+        background: linear-gradient(135deg, #f7fafc, #ffffff);
         color: v.$color-text;
-        border-color: #ddd;
+        border-color: v.$color-grey;
+        
+        &:hover::before {
+          left: 100%;
+        }
       }
       
       &.correct {
-        background-color: v.$color-correct;
-        color: v.$color-correct-dark;
-        border-color: color.adjust(v.$color-correct, $lightness: -10%);
+        background: v.$color-correct;
+        color: v.$color-white;
+        border-color: v.$color-correct;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        animation: pop v.$animation-duration-medium v.$animation-bounce;
       }
       
       &.notContains {
-        background-color: v.$color-not-contains; /* Light red */
-        color: v.$color-not-contains-dark; /* Dark red text */
-        border-color: color.adjust(v.$color-not-contains, $lightness: -10%);
+        background: v.$color-not-contains;
+        color: v.$color-white;
+        border-color: v.$color-not-contains;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        animation: pop v.$animation-duration-medium v.$animation-bounce;
       }
       
       &.contains {
-        background-color: v.$color-contains;
-        color: v.$color-contains-dark;
-        border-color: color.adjust(v.$color-contains, $lightness: -10%);
+        background: v.$color-contains;
+        color: v.$color-white;
+        border-color: v.$color-contains;
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+        animation: pop v.$animation-duration-medium v.$animation-bounce;
       }
     }
   }
 }
 
-// Reset button
+// Reset button with gradient
 #resetGame {
   display: none;
-  width: 150px;
+  width: 180px;
   align-self: center;
-  background-color: v.$color-danger;
+  background: v.$gradient-danger;
   padding: v.$spacing-medium v.$spacing-xlarge;
   border: none;
   border-radius: v.$border-radius-medium;
   color: v.$color-white;
   font-size: v.$font-size-base;
+  font-weight: v.$font-weight-bold;
   cursor: pointer;
-  transition: background-color v.$animation-duration-medium ease;
+  box-shadow: v.$shadow-md;
+  transition: all v.$animation-duration-medium v.$animation-smooth;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width v.$animation-duration-medium, height v.$animation-duration-medium;
+  }
   
   &:hover {
-    background-color: v.$color-danger-dark;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: v.$shadow-lg;
+    
+    &::before {
+      width: 300px;
+      height: 300px;
+    }
+  }
+  
+  &:active {
+    transform: translateY(-1px) scale(0.98);
+  }
+}
+
+// Stagger animation for word rows
+.wrapper .wordRow {
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
   }
 }
 
 // Responsive adjustments
 @include m.respond-to(tablet) {
+  #gameHeader {
+    font-size: 2em;
+    
+    &::after {
+      font-size: 0.5em;
+      right: -30px;
+    }
+  }
+  
   #alphabetContainer {
-    padding: v.$spacing-small;
+    padding: v.$spacing-large;
     
     .alphabet-grid {
       gap: v.$spacing-xsmall;
       
       span {
-        padding: v.$spacing-xsmall;
+        padding: v.$spacing-small;
         font-size: 0.9em;
+        min-width: 36px;
+        min-height: 36px;
       }
     }
   }
   
   .wordLetterBox {
-    width: 1.3em;
-    height: 1.3em;
+    width: 2.5em;
+    height: 2.5em;
     margin: v.$spacing-xxsmall;
   }
 }
 
 @include m.respond-to(mobile) {
+  #gameHeader {
+    font-size: 1.8em;
+    
+    &::after {
+      display: none;
+    }
+  }
+  
   #wordLengthInput, #startGame {
     font-size: 1.2em;
   }
   
   #alphabetContainer {
-    padding: v.$spacing-small;
+    padding: v.$spacing-medium;
     
     .alphabet-label {
       font-size: 0.9em;
-      margin-bottom: v.$spacing-small;
+      margin-bottom: v.$spacing-medium;
     }
     
     .alphabet-grid {
       gap: v.$spacing-xxsmall;
       
       span {
-        padding: v.$spacing-xxsmall;
+        padding: v.$spacing-xsmall;
         font-size: 0.8em;
+        min-width: 32px;
+        min-height: 32px;
       }
     }
   }
@@ -262,5 +521,14 @@
     height: v.$letter-box-size-mobile;
     margin: v.$spacing-xxsmall;
     padding: v.$spacing-xxsmall;
+  }
+  
+  .timerDifficultyInfo {
+    flex-direction: column;
+    gap: v.$spacing-small;
+    
+    #timerDisplay, #difficulty {
+      font-size: 1.1em;
+    }
   }
 }

@@ -1,0 +1,11 @@
+npm warn Unknown env config "python". This will stop working in the next major version of npm.
+
+> word-game-challenge@1.0.0 dev
+> bunx --bun vite
+
+
+  VITE v6.2.2  ready in 398 ms
+
+  ➜  Local:   http://localhost:8080/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help

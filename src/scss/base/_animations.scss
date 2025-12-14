@@ -1,7 +1,129 @@
 // Import variables
 @use '../abstracts/variables' as v;
 
-// Animations
+// Letter flip animation (card style)
+@keyframes flip {
+  0% {
+    transform: rotateY(0deg) scale(1);
+  }
+  50% {
+    transform: rotateY(90deg) scale(1.1);
+  }
+  100% {
+    transform: rotateY(0deg) scale(1);
+  }
+}
+
+// Bounce in animation
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-50px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+// Pulse animation
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: v.$shadow-base;
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: v.$shadow-glow;
+  }
+}
+
+// Shake animation for invalid input
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+// Float animation
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+// Glow pulse animation
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: v.$shadow-base;
+  }
+  50% {
+    box-shadow: v.$shadow-glow;
+  }
+}
+
+// Slide in from top
+@keyframes slideInFromTop {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Slide in from bottom
+@keyframes slideInFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Fade in
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Scale in
+@keyframes scaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Rotate animation
 @keyframes rotate {
   from {
     transform: rotate(0deg);
@@ -11,11 +133,197 @@
   }
 }
 
+// Highlight hint animation
 @keyframes highlight-hint {
   0%, 100% {
     background-color: inherit;
+    transform: scale(1);
   }
   50% {
     background-color: v.$color-hint;
+    transform: scale(1.1);
   }
+}
+
+// Shimmer animation for loading states
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+// Success celebration animation
+@keyframes celebrate {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.2) rotate(-5deg);
+  }
+  75% {
+    transform: scale(1.2) rotate(5deg);
+  }
+}
+
+// Gradient animation for background
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+// Pop animation
+@keyframes pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Wiggle animation
+@keyframes wiggle {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+// Breathing animation
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+// Slide and fade animation
+@keyframes slideAndFade {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Rainbow animation for celebration
+@keyframes rainbow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+// Confetti animation
+@keyframes confettiFall {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(var(--drift, 0)) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+// Firework particle animation
+@keyframes fireworkExplode {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--vx), var(--vy)) scale(0);
+    opacity: 0;
+  }
+}
+
+// Confetti piece styling
+.confetti-piece {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  animation: confettiFall linear forwards;
+}
+
+// Firework particle styling
+.firework-particle {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  animation: fireworkExplode 1s ease-out forwards;
+}
+
+// Utility classes for animations
+.animate-bounce-in {
+  animation: bounceIn v.$animation-duration-long v.$animation-bounce both;
+}
+
+.animate-pulse {
+  animation: pulse v.$animation-duration-extra-long v.$animation-smooth infinite;
+}
+
+.animate-shake {
+  animation: shake v.$animation-duration-medium v.$animation-smooth;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn v.$animation-duration-medium v.$animation-smooth both;
+}
+
+.animate-slide-in-top {
+  animation: slideInFromTop v.$animation-duration-medium v.$animation-smooth both;
+}
+
+.animate-slide-in-bottom {
+  animation: slideInFromBottom v.$animation-duration-medium v.$animation-smooth both;
+}
+
+.animate-scale-in {
+  animation: scaleIn v.$animation-duration-medium v.$animation-bounce both;
+}
+
+.animate-flip {
+  animation: flip v.$animation-duration-long v.$animation-smooth both;
+}
+
+.animate-pop {
+  animation: pop v.$animation-duration-medium v.$animation-bounce both;
+}
+
+.animate-celebrate {
+  animation: celebrate v.$animation-duration-long v.$animation-bounce both;
 }
