@@ -2,6 +2,7 @@
   "name": "word-game-challenge",
   "version": "1.0.0",
   "description": "A word guessing game",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -35,5 +36,9 @@
     "workbox-precaching": "^7.3.0",
     "workbox-routing": "^7.3.0",
     "workbox-strategies": "^7.3.0"
+  },
+  "dependencies": {
+    "baseline-browser-mapping": "^2.9.7",
+    "caniuse-lite": "^1.0.30001760"
   }
 }

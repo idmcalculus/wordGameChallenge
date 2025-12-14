@@ -1,0 +1,7 @@
+# Browserslist configuration for Word Game Challenge
+# Target modern browsers for optimal performance
+defaults
+not IE 11
+> 0.5%
+last 2 versions
+not dead
