@@ -158,11 +158,22 @@ export class StatsManager {
     if (index === -1) {
       // Add filter
       this.activeFilters[filterType].push(rangeIndex);
-      chipElement.classList.add('active');
+      if (chipElement) {
+        chipElement.classList.add('adding');
+        setTimeout(() => chipElement.classList.add('active'), 150);
+        setTimeout(() => chipElement.classList.remove('adding'), 300);
+      }
     } else {
       // Remove filter
+      if (chipElement) {
+        chipElement.classList.add('removing');
+        setTimeout(() => {
+          chipElement.classList.remove('active');
+          chipElement.classList.remove('removing');
+        }, 150);
+      }
+      
       this.activeFilters[filterType].splice(index, 1);
-      chipElement.classList.remove('active');
       
       // Remove empty filter type
       if (this.activeFilters[filterType].length === 0) {
@@ -170,9 +181,8 @@ export class StatsManager {
       }
     }
 
-    // Update clear button state
-    const clearButton = this.container.querySelector('.clear-filters');
-    clearButton.disabled = Object.keys(this.activeFilters).length === 0;
+    // Update clear button state and panel styling
+    this.updateFilterPanelState();
 
     // Save preferences
     saveFilterPreferences(this.activeFilters);
@@ -182,19 +192,37 @@ export class StatsManager {
     this.applyCurrentSortAndFilters();
   }
 
+  updateFilterPanelState() {
+    const filterPanel = this.container.querySelector('.filter-panel');
+    const clearButton = this.container.querySelector('.clear-filters');
+    
+    const hasActiveFilters = Object.keys(this.activeFilters).length > 0;
+    clearButton.disabled = !hasActiveFilters;
+    
+    if (hasActiveFilters) {
+      filterPanel.classList.add('has-active-filters');
+    } else {
+      filterPanel.classList.remove('has-active-filters');
+    }
+  }
+
   clearAllFilters() {
     this.activeFilters = {};
     saveFilterPreferences(this.activeFilters);
 
-    // Reset all chips
+    // Reset all chips with animation
     const chips = this.container.querySelectorAll('.filter-chip');
-    chips.forEach(chip => chip.classList.remove('active'));
+    chips.forEach((chip, index) => {
+      setTimeout(() => {
+        chip.classList.add('removing');
+        setTimeout(() => {
+          chip.classList.remove('active', 'removing');
+        }, 150);
+      }, index * 50);
+    });
 
-    // Disable clear button
-    const clearButton = this.container.querySelector('.clear-filters');
-    clearButton.disabled = true;
-
-    // Update display
+    // Update display state
+    this.updateFilterPanelState();
     this.updateActiveFiltersDisplay();
     this.applyCurrentSortAndFilters();
   }
@@ -204,19 +232,23 @@ export class StatsManager {
     display.innerHTML = '';
 
     Object.entries(this.activeFilters).forEach(([type, indices]) => {
-      indices.forEach(index => {
+      indices.forEach((index, filterIndex) => {
         const range = FILTER_RANGES[type][index];
         const filter = document.createElement('div');
         filter.classList.add('active-filter');
+        filter.style.animation = `activeFilterIn ${ANIMATION_DURATION}ms ease forwards`;
+        filter.style.animationDelay = `${filterIndex * 100}ms`;
         
         const label = document.createElement('span');
         label.textContent = `${this.getFilterTitle(type)}: ${range.label}`;
         
         const removeButton = document.createElement('span');
         removeButton.classList.add('remove-filter');
+        removeButton.setAttribute('data-filter-type', type);
+        removeButton.setAttribute('data-filter-index', index);
+        removeButton.setAttribute('aria-label', `Remove ${this.getFilterTitle(type)} filter: ${range.label}`);
         removeButton.addEventListener('click', () => {
-          const chip = this.container.querySelector(`.filter-chip:nth-child(${index + 1})`);
-          this.toggleFilter(type, index, chip);
+          this.removeFilter(type, index);
         });
 
         filter.appendChild(label);
@@ -224,6 +256,21 @@ export class StatsManager {
         display.appendChild(filter);
       });
     });
+  }
+
+  removeFilter(filterType, rangeIndex) {
+    // Find the correct chip element within the specific filter section
+    const section = this.container.querySelector(`.filter-section:nth-of-type(${this.getSectionIndex(filterType)})`);
+    const chips = section?.querySelectorAll('.filter-chip');
+    const chip = chips?.[rangeIndex];
+
+    this.toggleFilter(filterType, rangeIndex, chip);
+  }
+
+  getSectionIndex(filterType) {
+    const filterTypes = Object.keys(FILTER_TYPES);
+    const currentType = Object.entries(FILTER_TYPES).find(([, value]) => value === filterType)?.[0];
+    return filterTypes.indexOf(currentType) + 1; // nth-of-type is 1-indexed
   }
 
   attachEventListeners() {
