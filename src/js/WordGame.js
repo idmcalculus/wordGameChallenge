@@ -612,15 +612,18 @@ class WordGame {
 
     this.displayStats();
 
-    // For game won, only show the Reset Game button (null for tryAgainCallback)
+    // For game won, show Play Again and New Game options
     showAlert(`<div class="success-alert">
       <span class="alert-icon">🎉</span>
       <h3>Congratulations!</h3>
       <p>Well done! You solved it in ${timeTaken} seconds with ${this.rowCount + 1} attempts.</p>
       <p>The word was: <strong>${this.currentWord}</strong></p>
-    </div>`, null, () => {
-      this.resetGame();
-    });
+    </div>`, 
+    () => { this.playAgain(); }, 
+    () => { this.resetGame(); }, 
+    false, 
+    'Play Again', 
+    'New Game');
   }
 
   gameLost() {
@@ -628,15 +631,18 @@ class WordGame {
 
     stopTimer(this.timerId);
 
-    // For game lost, show both Try Again and Reset Game buttons
+    // For game lost, show Play Again and New Game options
     showAlert(`<div class="failure-alert">
       <span class="alert-icon">😕</span>
       <h3>Game Over</h3>
       <p>Sorry, you've reached the maximum number of attempts.</p>
       <p>The word was: <strong>${this.currentWord}</strong></p>
-    </div>`, null, () => {
-      this.resetGame();
-    });
+    </div>`, 
+    () => { this.playAgain(); }, 
+    () => { this.resetGame(); }, 
+    false, 
+    'Play Again', 
+    'New Game');
   }
 
   displayStats() {
@@ -658,6 +664,39 @@ class WordGame {
 
     // Initialize StatsManager with the container and stats
     new StatsManager(statsContainer, this.stats);
+  }
+
+  playAgain() {
+    console.log('play again called');
+    
+    // Clear the board
+    document.getElementById('wrapper').innerHTML = '';
+    
+    // Reset hints
+    resetHintButtons();
+    
+    // Reset alphabet
+    const alphabetContainer = document.getElementById('alphabetContainer');
+    alphabetContainer.innerHTML = '';
+    alphabetContainer.classList.remove('visible');
+    alphabetContainer.style.display = 'none';
+    
+    // Reset state
+    this.rowCount = 0;
+    this.currentWord = '';
+    this.possibleWords = [];
+    if (this.timerDisplay) {
+      this.timerDisplay.style.display = 'none';
+    }
+    
+    // Ensure the input has the correct value
+    const wordLengthInput = document.getElementById('wordLengthInput');
+    if (wordLengthInput) {
+      wordLengthInput.value = this.wordLength;
+    }
+
+    // Call play to start a new game
+    this.play();
   }
 
   resetGame() {

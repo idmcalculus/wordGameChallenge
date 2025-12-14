@@ -129,17 +129,24 @@ export function setupModals() {
  * @param {function} tryAgainCb - Callback for the "Try Again" button.
  * @param {function} resetCb - Callback for the "Reset" button.
  * @param {boolean} isGameStart - Indicates if this is a game start alert.
+ * @param {string} tryAgainText - Text for the "Try Again" button.
+ * @param {string} resetText - Text for the "Reset" button.
  */
-export function showAlert(message, tryAgainCb, resetCb, isGameStart = false) {
+export function showAlert(message, tryAgainCb, resetCb, isGameStart = false, tryAgainText = 'Try Again', resetText = 'Reset Game') {
   const alertMessage = document.getElementById('alertMessage');
   const alertModal = document.getElementById('alertModal');
   const alertTryAgainButton = document.getElementById('alertTryAgainButton');
+  const alertResetButton = document.getElementById('alertResetButton');
   const alertButtonsContainer = document.querySelector('.alert-buttons');
 
   alertMessage.innerHTML = message;
   alertModal.style.display = 'flex';
   alertModal.style.alignItems = 'center';
   alertModal.style.justifyContent = 'center';
+  
+  // Set button text
+  alertTryAgainButton.textContent = tryAgainText;
+  alertResetButton.textContent = resetText;
   
   // Show/hide Try Again button based on whether a callback was provided
   if (tryAgainCb) {
