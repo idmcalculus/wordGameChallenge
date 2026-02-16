@@ -7,12 +7,26 @@
   --game-cell-gap: 2px;
 }
 
+// Header row with centered title and right-aligned theme button
+.headerBar {
+  width: 100%;
+  max-width: 760px;
+  min-height: 54px;
+  margin: 0 auto v.$spacing-small;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 // Game Header
 #gameHeader {
   font-size: v.$font-size-xlarge;
   font-weight: v.$font-weight-extrabold;
   color: rgba(v.$color-white, 0.96);
-  margin-bottom: v.$spacing-medium;
+  margin: 0;
+  max-width: calc(100% - 76px);
+  text-align: center;
   animation: slideInFromTop v.$animation-duration-long v.$animation-bounce;
   text-shadow: 0 3px 14px rgba(v.$color-primary-dark, 0.55);
   letter-spacing: -1px;
@@ -36,40 +50,51 @@
   }
 }
 
-// Utility bar for controls (theme switcher)
-.utilityBar {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  margin: 0 0 v.$spacing-small;
-}
-
-.theme-switcher {
-  @include m.flex-center;
-  gap: v.$spacing-small;
-  padding: v.$spacing-xsmall v.$spacing-small;
+// Theme toggle button (moon/sun)
+.theme-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  @include m.flex-center-all;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(v.$color-accent, 0.58);
   border-radius: 999px;
-  border: 1px solid rgba(v.$color-accent, 0.55);
-  background: rgba(v.$color-white, 0.2);
+  background: linear-gradient(160deg, rgba(v.$color-white, 0.22), rgba(v.$color-accent, 0.2));
   backdrop-filter: blur(8px);
   box-shadow: v.$shadow-sm;
+  color: rgba(v.$color-white, 0.96);
+  cursor: pointer;
+  transition: transform v.$animation-duration-medium v.$animation-smooth,
+    box-shadow v.$animation-duration-medium v.$animation-smooth,
+    background-color v.$animation-duration-medium v.$animation-smooth;
+  line-height: 1;
+  padding: 0;
 
-  label {
-    font-size: v.$font-size-small;
-    font-weight: v.$font-weight-semibold;
-    color: rgba(v.$color-white, 0.94);
-    margin: 0;
+  .theme-toggle__icon {
+    width: 100%;
+    height: 100%;
+    font-size: 1.55rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    text-align: center;
   }
 
-  select {
-    border: 1px solid rgba(v.$color-accent, 0.9);
-    border-radius: v.$border-radius-small;
-    background: rgba(v.$color-white, 0.92);
-    color: v.$color-text;
-    font-size: v.$font-size-small;
-    font-weight: v.$font-weight-semibold;
-    padding: v.$spacing-xxsmall v.$spacing-small;
-    cursor: pointer;
+  &:hover {
+    transform: translateY(-50%) scale(1.04);
+    box-shadow: v.$shadow-md;
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.96);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(v.$color-accent, 0.4), v.$shadow-sm;
   }
 }
 
@@ -588,17 +613,21 @@
     --game-cell-size: clamp(32px, 5.5vw, 42px);
   }
 
-  .utilityBar {
-    justify-content: center;
-    margin-top: 0;
+  .headerBar {
+    max-width: 100%;
+    min-height: 50px;
   }
 
   #gameHeader {
     font-size: 2em;
-    
-    &::after {
-      font-size: 0.5em;
-      right: -30px;
+  }
+
+  .theme-toggle {
+    width: 46px;
+    height: 46px;
+
+    .theme-toggle__icon {
+      font-size: 1.35rem;
     }
   }
   
@@ -637,17 +666,21 @@
     --game-cell-gap: 1px;
   }
 
-  .theme-switcher {
-    width: 100%;
-    max-width: 260px;
-    justify-content: space-between;
+  .headerBar {
+    min-height: 46px;
+    margin-bottom: v.$spacing-xxsmall;
   }
 
   #gameHeader {
     font-size: 1.8em;
-    
-    &::after {
-      font-size: 0.58em;
+  }
+
+  .theme-toggle {
+    width: 40px;
+    height: 40px;
+
+    .theme-toggle__icon {
+      font-size: 1.18rem;
     }
   }
   

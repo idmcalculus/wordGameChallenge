@@ -8,22 +8,24 @@
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="Word Game">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" media="(prefers-color-scheme: light)" />
+        <link rel="icon" type="image/svg+xml" href="/dark_logo.svg" media="(prefers-color-scheme: dark)" />
+        <link rel="apple-touch-icon" href="/icons/logo-180.png">
         <title>✨ Word Game Challenge</title>
     </head>
     <body>
         <div class="outerWrapper" id="outerWrapper">
-            <h1 id="gameHeader">🎮 Find the word ...</h1>
-
-            <div class="utilityBar">
-                <div class="theme-switcher">
-                    <label for="themeSelect">Theme</label>
-                    <select id="themeSelect" aria-label="Choose theme">
-                        <option value="system">System</option>
-                        <option value="light">Light</option>
-                        <option value="dark">Dark</option>
-                    </select>
-                </div>
+            <div class="headerBar">
+                <h1 id="gameHeader">🎮 Find the word ...</h1>
+                <button
+                    id="themeToggle"
+                    class="theme-toggle"
+                    type="button"
+                    aria-label="Toggle theme"
+                    title="Toggle theme"
+                >
+                    <span class="theme-toggle__icon" aria-hidden="true">🌙</span>
+                </button>
             </div>
 
             <div class="actionButtons">

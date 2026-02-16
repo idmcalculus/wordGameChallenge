@@ -103,66 +103,45 @@ export default defineConfig(({ mode }) => {
           ]
         },
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.svg'],
+        includeAssets: [
+          'favicon.svg',
+          'dark_logo.svg',
+          'icons/logo-180.png',
+          'icons/logo-192.png',
+          'icons/logo-512.png',
+          'icons/logo-maskable-192.png',
+          'icons/logo-maskable-512.png'
+        ],
         manifest: {
           name: 'Word Game Challenge',
           short_name: 'Word Game',
           description: 'A modern, browser-based word guessing game',
           theme_color: '#4a90e2',
+          background_color: '#0f1f33',
           icons: [
             {
-              src: 'favicon.svg',
-              sizes: '32x32',
-              type: 'image/svg+xml',
-              purpose: 'any maskable'
-            },
-            {
-              src: 'favicon.svg',
-              sizes: '72x72',
-              type: 'image/svg+xml',
-              purpose: 'any maskable'
-            },
-            {
-              src: 'favicon.svg',
-              sizes: '96x96',
-              type: 'image/svg+xml',
-              purpose: 'any maskable'
-            },
-            {
-              src: 'favicon.svg',
-              sizes: '128x128',
-              type: 'image/svg+xml',
-              purpose: 'any maskable'
-            },
-            {
-              src: 'favicon.svg',
-              sizes: '144x144',
-              type: 'image/svg+xml',
-              purpose: 'any maskable'
-            },
-            {
-              src: 'favicon.svg',
-              sizes: '152x152',
-              type: 'image/svg+xml',
-              purpose: 'any maskable'
-            },
-            {
-              src: 'favicon.svg',
+              src: 'icons/logo-192.png',
               sizes: '192x192',
-              type: 'image/svg+xml',
-              purpose: 'any maskable'
+              type: 'image/png',
+              purpose: 'any'
             },
             {
-              src: 'favicon.svg',
-              sizes: '384x384',
-              type: 'image/svg+xml',
-              purpose: 'any maskable'
-            },
-            {
-              src: 'favicon.svg',
+              src: 'icons/logo-512.png',
               sizes: '512x512',
-              type: 'image/svg+xml',
-              purpose: 'any maskable'
+              type: 'image/png',
+              purpose: 'any'
+            },
+            {
+              src: 'icons/logo-maskable-192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'maskable'
+            },
+            {
+              src: 'icons/logo-maskable-512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable'
             }
           ]
         }

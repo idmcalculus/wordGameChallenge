@@ -56,15 +56,19 @@
   color: #e5effb;
 }
 
-:root[data-theme='dark'] .theme-switcher {
-  background: rgba(15, 29, 46, 0.72);
-  border-color: rgba(95, 132, 191, 0.55);
+:root[data-theme='dark'] .theme-toggle {
+  background: linear-gradient(160deg, rgba(17, 37, 59, 0.95), rgba(31, 59, 96, 0.78));
+  border-color: rgba(117, 162, 226, 0.55);
+  color: #f1f7ff;
 }
 
-:root[data-theme='dark'] .theme-switcher select {
-  background: #11253b;
-  color: #e5effb;
-  border-color: #4e6e92;
+:root[data-theme='dark'] .theme-toggle:hover {
+  box-shadow: 0 8px 16px rgba(6, 13, 21, 0.35);
+}
+
+:root[data-theme='dark'] #gameHeader {
+  color: #eef6ff;
+  text-shadow: 0 0 18px rgba(111, 168, 255, 0.35);
 }
 
 :root[data-theme='dark'] .wordLengthInputContainer p,
