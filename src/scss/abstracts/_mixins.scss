@@ -147,7 +147,7 @@
   background-color: v.$color-white;
   margin: auto;
   padding: v.$spacing-xlarge;
-  border: v.$border-width solid #888;
+  border: v.$border-width solid v.$color-game-border;
   width: 90%;
   max-width: v.$modal-max-width;
   border-radius: v.$border-radius-large;

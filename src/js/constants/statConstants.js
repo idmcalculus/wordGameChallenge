@@ -9,6 +9,7 @@ export const SORT_FIELDS = {
   WORD: 'word',
   TIME: 'time',
   ATTEMPTS: 'attempts',
+  DATE: 'date',
   WORD_LENGTH: 'wordLength'
 };
 

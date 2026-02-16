@@ -4,6 +4,7 @@ import { createAlphabetContainer, updateAlphabetContainer, createRow, resetGameU
 import { validateWord, fetchPossibleWords } from './apiHandler.js';
 import { createHintButtonsContainer, resetHintButtons, updateCurrentRow, resetHintButtonStates } from './hintHandler.js';
 import { StatsManager } from './components/StatsManager.js';
+import { logger } from './utils/logger.js';
 
 class WordGame {
   /**
@@ -56,15 +57,6 @@ class WordGame {
       })
       .map(([letter]) => letter);
 
-    // Log the letter tracking state
-    console.log('Letter tracking:', {
-      letterCounts,
-      revealedCounts,
-      availableLetters
-    });
-
-    console.log('Available letters for hint:', availableLetters);
-
     if (availableLetters.length === 0) return; // No available letters to hint
 
     // Choose a random letter to reveal
@@ -83,9 +75,6 @@ class WordGame {
     previousRowsInfo.usedLetters.add(hintLetter);
     previousRowsInfo.incorrectPositions.add(hintLetter);
 
-    // Log for debugging
-    console.log(`Letter ${hintLetter} revealed and added to usedLetters:`, 
-      Array.from(previousRowsInfo.usedLetters));
   }
   /**
    * Provides a hint for a letter in its correct position
@@ -127,8 +116,6 @@ class WordGame {
       }
     }
     
-    console.log('Available positions for hint:', availablePositions);
-    
     if (availablePositions.length === 0) return; // No available positions
     
     // Choose random position and reveal
@@ -153,27 +140,27 @@ class WordGame {
     // Check alphabet display for already revealed letters
     const alphabetContainer = document.getElementById('alphabetContainer');
     if (alphabetContainer) {
-      const alphabetLetters = alphabetContainer.querySelectorAll('.alphabet-grid span');
-      alphabetLetters.forEach(letterSpan => {
-        const letter = letterSpan.textContent.toLowerCase();
-        if (letterSpan.classList.contains('correct')) {
+      const alphabetLetters = alphabetContainer.querySelectorAll('.alphabet-grid .keyboard-key[data-letter]');
+      alphabetLetters.forEach(letterKey => {
+        const letter = letterKey.dataset.letter;
+        if (letterKey.classList.contains('correct')) {
           // Find the position of this correct letter in the word
           const position = this.currentWord.toLowerCase().indexOf(letter);
           if (position !== -1) {
             letterInfo.correctPositions[position] = letter;
             letterInfo.usedLetters.add(letter);
           }
-        } else if (letterSpan.classList.contains('contains')) {
+        } else if (letterKey.classList.contains('contains')) {
           letterInfo.incorrectPositions.add(letter);
           letterInfo.usedLetters.add(letter);
-        } else if (letterSpan.classList.contains('notContains')) {
+        } else if (letterKey.classList.contains('notContains')) {
           letterInfo.usedLetters.add(letter);
         }
       });
     }
     
     // Look at all rows before the current one
-    const rows = document.querySelectorAll('.wrapper .row');
+    const rows = document.querySelectorAll('.wrapper .wordRow');
     const currentRowIndex = Array.from(rows).indexOf(this.currentRow);
 
     for (let i = 0; i < currentRowIndex; i++) {
@@ -192,7 +179,6 @@ class WordGame {
       });
     }
 
-    console.log('Previous rows and alphabet letter info:', letterInfo);
     return letterInfo;
   }
 
@@ -212,7 +198,6 @@ class WordGame {
       }
     });
     
-    console.log('Current row letters:', rowLetters);
     return rowLetters;
   }
 
@@ -237,15 +222,15 @@ class WordGame {
    * Logs the current state of the game for debugging
    */
   logGameState() {
-    console.log('Current word:', this.currentWord);
-    console.log('Current row count:', this.rowCount);
+    logger.debug('Current word:', this.currentWord);
+    logger.debug('Current row count:', this.rowCount);
     
     // Log all rows and their inputs
-    const rows = document.querySelectorAll('.wrapper .row');
+    const rows = document.querySelectorAll('.wrapper .wordRow');
     rows.forEach((row, index) => {
       const inputs = Array.from(row.getElementsByTagName('input'));
       const values = inputs.map(input => input.value || '_').join('');
-      console.log(`Row ${index + 1}: ${values}`);
+      logger.debug(`Row ${index + 1}: ${values}`);
     });
   }
   
@@ -261,6 +246,7 @@ class WordGame {
     this.startTime = null;
     this.timerDisplay = null;
     this.timerId = null;
+    this.isCheckingRow = false;
 
     // Initialize stats from localStorage
     const oldStats = localStorage.getItem('highScores');
@@ -333,7 +319,9 @@ class WordGame {
   }
 
   async play() {
-    console.log('play game has been called');
+    // Reset round tracking before creating the first row.
+    this.rowCount = 0;
+    this.attempts = 0;
 
     // Start the timer
     this.startTime = new Date();
@@ -371,18 +359,18 @@ class WordGame {
     try {
       this.possibleWords = await fetchPossibleWords(pattern, this.wordLength);
       this.currentWord = this.possibleWords[Math.floor(Math.random() * this.possibleWords.length)];
-      // console.log(this.currentWord);
       
       // Initialize the alphabet container after we have a word
       this.createAlphabetContainer();
       
-      // Show the alphabet container with !important override
+      // Show the keyboard container for tile input.
       const container = document.getElementById('alphabetContainer');
-      container.setAttribute('style', 'display: grid !important');
+      container.style.display = '';
+      container.classList.add('visible');
       
       this.createRow();
     } catch (error) {
-      console.error('Error:', error);
+      logger.error(error, { source: 'WordGame.play' });
       document.getElementById('startGame').disabled = false;
       document.getElementById('wordLengthInput').disabled = false;
     }
@@ -390,23 +378,18 @@ class WordGame {
     // Update game header
     document.getElementById('gameHeader').innerHTML = `Find the ${this.wordLength} letter word ...`;
     
-    // Add hint buttons above the Reset Game button
-    const hintContainer = createHintButtonsContainer(
+    // Create and mount hint buttons in the dedicated includesHintButtons container.
+    createHintButtonsContainer(
       this.wordLength, 
       this.getLetterHint.bind(this), 
       this.getPositionHint.bind(this),
       this.rowCount
     );
-    
-    // Insert before the Reset Game button
-    const resetButton = document.getElementById('resetGame');
-    resetButton.parentNode.insertBefore(hintContainer, resetButton);
 
-    this.rowCount = 0;
   }
 
   createAlphabetContainer() {
-    createAlphabetContainer(this.alphabet);
+    createAlphabetContainer(this.alphabet, this.handleVirtualKeyInput.bind(this));
   }
 
   updateAlphabetContainer(guessedLetter, letterClass) {
@@ -419,13 +402,157 @@ class WordGame {
     updateAlphabetContainer(guessedLetter, letterClass);
   }
 
+  getCurrentRowInputs() {
+    if (!this.currentRow) {
+      return [];
+    }
+
+    return Array.from(this.currentRow.querySelectorAll('input.wordLetterBox'));
+  }
+
+  getActiveCurrentRowInput() {
+    const activeElement = document.activeElement;
+    if (
+      activeElement &&
+      activeElement.tagName === 'INPUT' &&
+      activeElement.classList.contains('wordLetterBox') &&
+      activeElement.closest('.wordRow') === this.currentRow &&
+      !activeElement.disabled
+    ) {
+      return activeElement;
+    }
+
+    return null;
+  }
+
+  handleVirtualLetterInput(letter, inputs) {
+    const activeInput = this.getActiveCurrentRowInput();
+    let targetInput = activeInput || inputs.find((input) => !input.disabled && input.value === '');
+
+    if (!targetInput) {
+      targetInput = inputs.find((input) => !input.disabled);
+    }
+
+    if (!targetInput) {
+      return;
+    }
+
+    targetInput.focus();
+    targetInput.value = letter;
+    targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  handleVirtualDelete(inputs) {
+    const activeInput = this.getActiveCurrentRowInput();
+
+    if (activeInput) {
+      if (activeInput.value) {
+        activeInput.value = '';
+        return;
+      }
+
+      const activeIndex = inputs.indexOf(activeInput);
+      if (activeIndex > 0) {
+        inputs[activeIndex - 1].value = '';
+        inputs[activeIndex - 1].focus();
+      }
+      return;
+    }
+
+    const firstEmptyIndex = inputs.findIndex((input) => !input.disabled && input.value === '');
+    if (firstEmptyIndex > 0) {
+      inputs[firstEmptyIndex - 1].value = '';
+      inputs[firstEmptyIndex - 1].focus();
+      return;
+    }
+
+    const reversed = [...inputs].reverse();
+    const lastFilled = reversed.find((input) => !input.disabled && input.value);
+    if (lastFilled) {
+      lastFilled.value = '';
+      lastFilled.focus();
+    }
+  }
+
+  handleVirtualArrow(direction, inputs) {
+    const move = direction === 'arrowleft' ? -1 : 1;
+    const activeInput = this.getActiveCurrentRowInput();
+
+    if (!activeInput) {
+      const fallback = direction === 'arrowleft'
+        ? [...inputs].reverse().find((input) => !input.disabled)
+        : inputs.find((input) => !input.disabled && input.value === '') || inputs.find((input) => !input.disabled);
+      if (fallback) {
+        fallback.focus();
+      }
+      return;
+    }
+
+    const activeIndex = inputs.indexOf(activeInput);
+    const targetIndex = Math.max(0, Math.min(inputs.length - 1, activeIndex + move));
+    inputs[targetIndex].focus();
+  }
+
+  async animateCurrentRowSomersault(inputs) {
+    if (!inputs || inputs.length === 0) {
+      return;
+    }
+
+    this.currentRow.classList.remove('row-somersaulting');
+
+    inputs.forEach((input) => {
+      input.classList.remove('row-complete-spin');
+    });
+
+    void inputs[0].offsetWidth; // Reflow to reliably restart animation
+    this.currentRow.classList.add('row-somersaulting');
+    inputs.forEach((input) => input.classList.add('row-complete-spin'));
+
+    const spinDuration = 720;
+    await new Promise((resolve) => setTimeout(resolve, spinDuration));
+
+    this.currentRow.classList.remove('row-somersaulting');
+    inputs.forEach((input) => {
+      input.classList.remove('row-complete-spin');
+    });
+  }
+
+  handleVirtualKeyInput(key) {
+    if (!this.currentRow || !key) {
+      return;
+    }
+
+    const inputs = this.getCurrentRowInputs();
+    if (inputs.length === 0 || inputs.every((input) => input.disabled)) {
+      return;
+    }
+
+    const normalizedKey = key.toLowerCase();
+    if (/^[a-z]$/.test(normalizedKey)) {
+      this.handleVirtualLetterInput(normalizedKey, inputs);
+      return;
+    }
+
+    if (normalizedKey === 'delete') {
+      this.handleVirtualDelete(inputs);
+      return;
+    }
+
+    if (normalizedKey === 'arrowleft' || normalizedKey === 'arrowright') {
+      this.handleVirtualArrow(normalizedKey, inputs);
+      return;
+    }
+
+    if (normalizedKey === 'enter') {
+      this.checkRowLetters();
+    }
+  }
+
   createRow() {
     this.currentRow = createRow(this.wordLength, this.checkRowLetters.bind(this));
     document.querySelector('.wrapper').appendChild(this.currentRow);
     this.rowCount++;
     this.currentRow.firstChild.focus();
-
-    console.log('Row created:', this.rowCount);
     
     // Explicitly reset the hint button states for the new row
     resetHintButtonStates();
@@ -437,127 +564,140 @@ class WordGame {
   }
 
   async checkRowLetters() {
-    console.log('Check row letters called on row ' + this.currentRow.id);
-    if (!this.testIsRowComplete()) {
+    if (!this.currentRow) {
       return;
     }
-    
-    // Get the entered word from the current row
-    const inputs = Array.from(this.currentRow.getElementsByTagName('input'));
-    const enteredWord = inputs.map(input => input.value).join('');
-    
-    // Check if the entered word is a valid English word
-    const isValidWord = await validateWord(enteredWord);
-    
-    if (!isValidWord) {
-      // Create try again callback - clears only the current row
-      const tryAgainCallback = () => {
-        // Clear the inputs in the current row
-        inputs.forEach(input => {
-          input.value = '';
-          input.classList.remove('correct', 'contains', 'notContains');
-        });
-        // Focus on the first input
-        inputs[0].focus();
-      };
-      
-      // Reset game callback - resets the entire game
-      const resetGameCallback = () => {
-        this.resetGame();
-      };
-      
-      // Show an alert with both Try Again and Reset Game buttons
-      showAlert(`<div class="invalid-word-alert">
+    if (this.isCheckingRow || !this.testIsRowComplete()) {
+      return;
+    }
+
+    this.isCheckingRow = true;
+
+    try {
+      // Get the entered word from the current row
+      const inputs = Array.from(this.currentRow.getElementsByTagName('input'));
+
+      // Row-complete somersault before checking colors
+      await this.animateCurrentRowSomersault(inputs);
+
+      const enteredWord = inputs.map((input) => input.value).join('');
+
+      // Check if the entered word is a valid English word
+      const isValidWord = await validateWord(enteredWord);
+
+      if (!isValidWord) {
+        // Create try again callback - clears only the current row
+        const tryAgainCallback = () => {
+          // Clear the inputs in the current row
+          inputs.forEach((input) => {
+            input.value = '';
+            input.classList.remove('correct', 'contains', 'notContains', 'row-complete-spin');
+          });
+          // Focus on the first input
+          inputs[0].focus();
+        };
+
+        // Reset game callback - resets the entire game
+        const resetGameCallback = () => {
+          this.resetGame();
+        };
+
+        // Show an alert with both Try Again and Reset Game buttons
+        showAlert(`<div class="invalid-word-alert">
         <span class="alert-icon">⚠️</span>
         <h3>Invalid Word</h3>
         <p>"${enteredWord}" is not a valid English word.</p>
         <p>Please try again with a valid word.</p>
       </div>`, tryAgainCallback, resetGameCallback);
-      return;
-    }
-    
-    const letterStates = {};         // Track the state of each letter in each position (correct, contains, notContains)
-    const wordLetterCounts = {};    // Track remaining occurrences of each letter in the target word
-    const alphabetLetterStates = {}; // Track the best state for each letter in the alphabet
-    
-    // Initialize wordLetterCounts with the frequency of each letter in the current word
-    for (const letter of this.currentWord) {
-      wordLetterCounts[letter] = (wordLetterCounts[letter] || 0) + 1;
-    }
-    
-    let totalCorrect = 0; // Counter for correctly guessed letters
-    
-    // First Pass: Mark correct letters and track remaining occurrences
-    for (let i = 0; i < this.wordLength; i++) {
-      let inputBox = this.currentRow.children[i];
-      let enteredLetter = inputBox.value;
-      let correctLetter = this.currentWord[i];
-    
-      if (enteredLetter === correctLetter) {
-        inputBox.classList.add('correct'); // Visually mark as correct
-        letterStates[i] = 'correct'; // Track this position as correct
-        // Track this as the best state for this letter in the alphabet
-        alphabetLetterStates[enteredLetter] = 'correct';
-        totalCorrect++; // Increment total correct count
-        wordLetterCounts[enteredLetter]--; // Decrement remaining count in the word
+        return;
       }
-    }
-    
-    // Second Pass: Handle misplaced and not contained letters
-    for (let i = 0; i < this.wordLength; i++) {
-      let inputBox = this.currentRow.children[i];
-      let enteredLetter = inputBox.value;
-    
-      // Skip positions already marked as correct
-      if (letterStates[i] === 'correct') {
-        continue;
+
+      const letterStates = {};         // Track the state of each letter in each position (correct, contains, notContains)
+      const wordLetterCounts = {};    // Track remaining occurrences of each letter in the target word
+      const alphabetLetterStates = {}; // Track the best state for each letter in the alphabet
+
+      // Initialize wordLetterCounts with the frequency of each letter in the current word
+      for (const letter of this.currentWord) {
+        wordLetterCounts[letter] = (wordLetterCounts[letter] || 0) + 1;
       }
-      
-      // Check if the letter exists in the word and we haven't used all occurrences yet
-      if (this.currentWord.includes(enteredLetter) && wordLetterCounts[enteredLetter] > 0) {
-        inputBox.classList.add('contains');
-        letterStates[i] = 'contains';
-        // Only update alphabet state if we don't already have a better state (correct)
-        if (!alphabetLetterStates[enteredLetter] || alphabetLetterStates[enteredLetter] !== 'correct') {
-          alphabetLetterStates[enteredLetter] = 'contains';
-        }
-        wordLetterCounts[enteredLetter]--; // Decrement remaining count in the word
-      } else {
-        // Either the letter is not in the word at all, or all occurrences have been accounted for
-        inputBox.classList.add('notContains');
-        letterStates[i] = 'notContains';
-        // Only update alphabet state if we don't already have a better state (correct or contains)
-        if (!alphabetLetterStates[enteredLetter] && 
-            (!this.currentWord.includes(enteredLetter) || 
-             alphabetLetterStates[enteredLetter] !== 'contains')) {
-          alphabetLetterStates[enteredLetter] = 'notContains';
+
+      let totalCorrect = 0; // Counter for correctly guessed letters
+
+      // First Pass: Mark correct letters and track remaining occurrences
+      for (let i = 0; i < this.wordLength; i++) {
+        let inputBox = this.currentRow.children[i];
+        let enteredLetter = inputBox.value;
+        let correctLetter = this.currentWord[i];
+
+        if (enteredLetter === correctLetter) {
+          inputBox.classList.add('correct'); // Visually mark as correct
+          letterStates[i] = 'correct'; // Track this position as correct
+          // Track this as the best state for this letter in the alphabet
+          alphabetLetterStates[enteredLetter] = 'correct';
+          totalCorrect++; // Increment total correct count
+          wordLetterCounts[enteredLetter]--; // Decrement remaining count in the word
         }
       }
-    }
-    
-    // Update the alphabet container with the best state for each letter
-    for (const [letter, state] of Object.entries(alphabetLetterStates)) {
-      this.updateAlphabetContainer(letter, state);
-    }
-    
-    Array.from(this.currentRow.children).forEach(input => input.disabled = true); // Disable inputs after checking
-    
-    // Game logic:
-    setTimeout(() => {
-      if (totalCorrect === this.wordLength) {
-        this.gameWon(); // Player guessed the word correctly
-      } else if (this.rowCount >= this.maximumAttempts) {
-        this.gameLost(); // Player ran out of attempts
-      } else {
-        // Reset hint button states before creating a new row
-        resetHintButtonStates();
-        this.createRow(); // Create a new row for the next guess
+
+      // Second Pass: Handle misplaced and not contained letters
+      for (let i = 0; i < this.wordLength; i++) {
+        let inputBox = this.currentRow.children[i];
+        let enteredLetter = inputBox.value;
+
+        // Skip positions already marked as correct
+        if (letterStates[i] === 'correct') {
+          continue;
+        }
+
+        // Check if the letter exists in the word and we haven't used all occurrences yet
+        if (this.currentWord.includes(enteredLetter) && wordLetterCounts[enteredLetter] > 0) {
+          inputBox.classList.add('contains');
+          letterStates[i] = 'contains';
+          // Only update alphabet state if we don't already have a better state (correct)
+          if (!alphabetLetterStates[enteredLetter] || alphabetLetterStates[enteredLetter] !== 'correct') {
+            alphabetLetterStates[enteredLetter] = 'contains';
+          }
+          wordLetterCounts[enteredLetter]--; // Decrement remaining count in the word
+        } else {
+          // Either the letter is not in the word at all, or all occurrences have been accounted for
+          inputBox.classList.add('notContains');
+          letterStates[i] = 'notContains';
+          // Only update alphabet state if we don't already have a better state (correct or contains)
+          if (!alphabetLetterStates[enteredLetter] &&
+              (!this.currentWord.includes(enteredLetter) ||
+              alphabetLetterStates[enteredLetter] !== 'contains')) {
+            alphabetLetterStates[enteredLetter] = 'notContains';
+          }
+        }
       }
-    }, 100); // Add a slight delay for visual feedback
+
+      // Update the alphabet container with the best state for each letter
+      for (const [letter, state] of Object.entries(alphabetLetterStates)) {
+        this.updateAlphabetContainer(letter, state);
+      }
+
+      Array.from(this.currentRow.children).forEach((input) => {
+        input.disabled = true;
+      }); // Disable inputs after checking
+
+      // Game logic:
+      setTimeout(() => {
+        if (totalCorrect === this.wordLength) {
+          this.gameWon(); // Player guessed the word correctly
+        } else if (this.rowCount >= this.maximumAttempts) {
+          this.gameLost(); // Player ran out of attempts
+        } else {
+          // Reset hint button states before creating a new row
+          resetHintButtonStates();
+          this.createRow(); // Create a new row for the next guess
+        }
+      }, 100); // Add a slight delay for visual feedback
+    } finally {
+      this.isCheckingRow = false;
+    }
   }
 
   testIsRowComplete() {
-    console.log('Test row complete called on row ' + this.currentRow.id);
     if (!this.currentRow) {
       return false;
     }
@@ -567,8 +707,6 @@ class WordGame {
   }
 
   gameWon() {
-    console.log(`Game won! player found the word (which was ${this.currentWord})`);
-
     stopTimer(this.timerId);
 
     const timeTaken = Math.floor((new Date() - this.startTime) / 1000);
@@ -578,7 +716,7 @@ class WordGame {
       time: timeTaken,
       word: this.currentWord,
       wordLength: this.wordLength,
-      attempts: this.rowCount + 1,
+      attempts: this.rowCount,
       date: new Date().toISOString()
     });
         
@@ -616,7 +754,7 @@ class WordGame {
     showAlert(`<div class="success-alert">
       <span class="alert-icon">🎉</span>
       <h3>Congratulations!</h3>
-      <p>Well done! You solved it in ${timeTaken} seconds with ${this.rowCount + 1} attempts.</p>
+      <p>Well done! You solved it in ${timeTaken} seconds with ${this.rowCount} attempts.</p>
       <p>The word was: <strong>${this.currentWord}</strong></p>
     </div>`, 
     () => { this.playAgain(); }, 
@@ -627,8 +765,6 @@ class WordGame {
   }
 
   gameLost() {
-    console.log(`Game Lost! Maximum attempts reached for guessing the word: ${this.currentWord}`);
-
     stopTimer(this.timerId);
 
     // For game lost, show Play Again and New Game options
@@ -649,7 +785,7 @@ class WordGame {
     const statsContainer = document.getElementById('statsList');
     
     if (!statsContainer) {
-      console.error('Stats container not found');
+      logger.error(new Error('Stats container not found'), { source: 'WordGame.displayStats' });
       return;
     }
 
@@ -667,8 +803,6 @@ class WordGame {
   }
 
   playAgain() {
-    console.log('play again called');
-    
     // Clear the board
     document.getElementById('wrapper').innerHTML = '';
     

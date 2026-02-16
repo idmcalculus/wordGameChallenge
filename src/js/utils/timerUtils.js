@@ -6,7 +6,7 @@
  */
 export function startTimer(startTime, timerDisplay) {
   // Show the timer display if it's hidden
-  timerDisplay.style.display = 'block';
+  timerDisplay.style.display = 'inline-flex';
   
   return setInterval(() => {
     const now = new Date();

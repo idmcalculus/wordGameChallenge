@@ -20,3 +20,6 @@
 @use 'components/hints';
 @use 'components/sort-indicators';
 @use 'components/filter-panel';
+
+// Theme overrides
+@use 'base/themes';

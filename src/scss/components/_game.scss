@@ -2,28 +2,74 @@
 @use '../abstracts/mixins' as m;
 @use 'sass:color';
 
-// Game Header with gradient text
+:root {
+  --game-cell-size: clamp(34px, 4vw, 48px);
+  --game-cell-gap: 2px;
+}
+
+// Game Header
 #gameHeader {
   font-size: v.$font-size-xlarge;
   font-weight: v.$font-weight-extrabold;
-  background: v.$gradient-primary;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: v.$spacing-xlarge;
+  color: rgba(v.$color-white, 0.96);
+  margin-bottom: v.$spacing-medium;
   animation: slideInFromTop v.$animation-duration-long v.$animation-bounce;
-  text-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+  text-shadow: 0 3px 14px rgba(v.$color-primary-dark, 0.55);
   letter-spacing: -1px;
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: v.$spacing-xsmall;
   
   &::after {
     content: '✨';
-    position: absolute;
-    right: -40px;
-    top: 50%;
-    transform: translateY(-50%);
+    position: static;
+    transform: none;
+    margin-left: 2px;
     font-size: 0.6em;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     animation: wiggle 2s ease-in-out infinite;
+  }
+}
+
+// Utility bar for controls (theme switcher)
+.utilityBar {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 v.$spacing-small;
+}
+
+.theme-switcher {
+  @include m.flex-center;
+  gap: v.$spacing-small;
+  padding: v.$spacing-xsmall v.$spacing-small;
+  border-radius: 999px;
+  border: 1px solid rgba(v.$color-accent, 0.55);
+  background: rgba(v.$color-white, 0.2);
+  backdrop-filter: blur(8px);
+  box-shadow: v.$shadow-sm;
+
+  label {
+    font-size: v.$font-size-small;
+    font-weight: v.$font-weight-semibold;
+    color: rgba(v.$color-white, 0.94);
+    margin: 0;
+  }
+
+  select {
+    border: 1px solid rgba(v.$color-accent, 0.9);
+    border-radius: v.$border-radius-small;
+    background: rgba(v.$color-white, 0.92);
+    color: v.$color-text;
+    font-size: v.$font-size-small;
+    font-weight: v.$font-weight-semibold;
+    padding: v.$spacing-xxsmall v.$spacing-small;
+    cursor: pointer;
   }
 }
 
@@ -47,7 +93,7 @@
     margin: v.$spacing-small;
     border: 3px solid transparent;
     border-radius: v.$border-radius-medium;
-    background: linear-gradient(white, white) padding-box,
+    background: linear-gradient(v.$color-white, v.$color-white) padding-box,
                 v.$gradient-primary border-box;
     box-shadow: v.$shadow-base;
     transition: all v.$animation-duration-medium v.$animation-smooth;
@@ -100,7 +146,7 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(v.$color-white, 0.3), transparent);
     transition: left v.$animation-duration-long v.$animation-smooth;
   }
   
@@ -121,16 +167,16 @@
 // Action Buttons
 .actionButtons {
   @include m.flex-center-all;
-  gap: v.$spacing-large;
+  gap: v.$spacing-medium;
   flex-wrap: wrap;
-  margin-bottom: v.$spacing-large;
+  margin-bottom: v.$spacing-small;
   
   .btn-primary {
     background: v.$gradient-primary;
     border: none;
     border-radius: v.$border-radius-medium;
-    padding: v.$spacing-medium v.$spacing-xlarge;
-    font-size: v.$font-size-base;
+    padding: 10px 22px;
+    font-size: 0.95rem;
     font-weight: v.$font-weight-semibold;
     color: v.$color-white;
     box-shadow: v.$shadow-base;
@@ -147,7 +193,7 @@
       width: 0;
       height: 0;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(v.$color-white, 0.3);
       transform: translate(-50%, -50%);
       transition: width v.$animation-duration-medium, height v.$animation-duration-medium;
     }
@@ -168,24 +214,41 @@
   }
 }
 
+.outerWrapper > .actionButtons:not(.includesHintButtons) {
+  margin-top: -6px;
+  margin-bottom: v.$spacing-xsmall;
+}
+
 // Timer and Difficulty Display
 .timerDifficultyInfo {
-  @include m.flex-center;
-  justify-content: space-around;
-  margin: v.$spacing-xlarge 0 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  margin: 0;
+  padding: 4px 0;
   width: 100%;
   max-width: 600px;
-  gap: v.$spacing-large;
+  min-height: 66px;
+  gap: v.$spacing-medium;
 
   #timerDisplay, #difficulty {
-    text-align: center;
-    font-size: 1.3em;
-    font-weight: v.$font-weight-bold;
-    padding: v.$spacing-small v.$spacing-large;
-    border-radius: v.$border-radius-medium;
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: v.$shadow-sm;
     display: none;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: v.$font-weight-bold;
+    height: 50px;
+    min-height: 50px;
+    padding: 0 18px;
+    border-radius: v.$border-radius-medium;
+    background: rgba(v.$color-white, 0.92);
+    box-shadow: v.$shadow-sm;
+    box-sizing: border-box;
+    line-height: 1.05;
+    white-space: nowrap;
     animation: pop v.$animation-duration-medium v.$animation-bounce;
   }
   
@@ -195,17 +258,17 @@
   }
   
   #difficulty {
-    color: v.$color-accent;
-    border: 2px solid v.$color-accent;
+    color: v.$color-secondary;
+    border: 2px solid v.$color-secondary;
   }
 }
 
 // Word rows with card styling
 .wordRow {
   border: none;
-  background: rgba(255, 255, 255, 0.95);
-  padding: v.$spacing-medium;
-  margin: v.$spacing-small 0;
+  background: rgba(v.$color-white, 0.95);
+  padding: 3px 4px;
+  margin: 0;
   text-align: center;
   border-radius: v.$border-radius-medium;
   box-shadow: v.$shadow-sm;
@@ -213,8 +276,8 @@
   animation: slideInFromBottom v.$animation-duration-medium v.$animation-smooth both;
   
   &:hover {
-    box-shadow: v.$shadow-base;
-    transform: translateY(-2px);
+    box-shadow: v.$shadow-sm;
+    transform: none;
   }
 }
 
@@ -222,10 +285,25 @@
 .wordLetterBox {
   @include m.letter-box;
   font-weight: v.$font-weight-bold;
+  width: var(--game-cell-size);
+  height: var(--game-cell-size);
+  margin: var(--game-cell-gap);
+  border-radius: v.$border-radius-small;
   border: 3px solid v.$color-grey;
-  transition: all v.$animation-duration-medium v.$animation-smooth;
+  transition:
+    transform v.$animation-duration-medium v.$animation-smooth,
+    box-shadow v.$animation-duration-medium v.$animation-smooth,
+    border-color v.$animation-duration-medium v.$animation-smooth,
+    background-color v.$animation-duration-medium v.$animation-smooth,
+    color v.$animation-duration-medium v.$animation-smooth;
   position: relative;
   overflow: hidden;
+  line-height: 1;
+  font-size: clamp(1rem, 2vw, 1.6rem);
+  transform-origin: center center;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
   
   &::before {
     content: '';
@@ -234,21 +312,25 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    background: linear-gradient(90deg, transparent, rgba(v.$color-white, 0.5), transparent);
     transition: left v.$animation-duration-long;
   }
   
   &:focus {
     border-color: v.$color-primary;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgba(v.$color-primary, 0.22);
+    transform: scale(1.04);
+  }
+
+  &.row-complete-spin {
+    animation: rowSomersault 0.72s linear both;
   }
   
   &.contains {
-    background: v.$color-contains;
-    color: v.$color-white;
-    border-color: v.$color-contains;
-    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+    background: var(--clue-contains-bg);
+    color: var(--clue-text-color);
+    border-color: var(--clue-contains-border);
+    box-shadow: 0 4px 12px var(--clue-contains-shadow);
     animation: flip v.$animation-duration-long v.$animation-smooth both;
     
     &::before {
@@ -257,10 +339,10 @@
   }
   
   &.notContains {
-    background: v.$color-not-contains;
-    color: v.$color-white;
-    border-color: v.$color-not-contains;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    background: var(--clue-notcontains-bg);
+    color: var(--clue-text-color);
+    border-color: var(--clue-notcontains-border);
+    box-shadow: 0 4px 12px var(--clue-notcontains-shadow);
     animation: flip v.$animation-duration-long v.$animation-smooth both;
     
     &::before {
@@ -269,10 +351,10 @@
   }
   
   &.correct {
-    background: v.$color-correct;
-    color: v.$color-white;
-    border-color: v.$color-correct;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    background: var(--clue-correct-bg);
+    color: var(--clue-text-color);
+    border-color: var(--clue-correct-border);
+    box-shadow: 0 4px 12px var(--clue-correct-shadow);
     animation: flip v.$animation-duration-long v.$animation-smooth both, celebrate v.$animation-duration-long v.$animation-bounce 0.3s both;
     
     &::before {
@@ -288,13 +370,14 @@
 // Alphabet container with modern styling
 #alphabetContainer {
   @include m.game-container;
-  margin: v.$spacing-xlarge auto;
+  margin: v.$spacing-small auto;
   width: 100%;
-  max-width: 650px;
-  background: rgba(255, 255, 255, 0.95);
+  max-width: 680px;
+  background: rgba(v.$color-white, 0.94);
+  border: 1px solid rgba(v.$color-accent, 0.55);
   border-radius: v.$border-radius-large;
   box-shadow: v.$shadow-md;
-  padding: v.$spacing-xlarge;
+  padding: v.$spacing-large;
   
   display: none;
   flex-direction: column;
@@ -308,43 +391,52 @@
   .alphabet-label {
     font-weight: v.$font-weight-bold;
     font-size: 1.1rem;
-    margin-bottom: v.$spacing-large;
-    color: v.$color-text;
+    margin-bottom: v.$spacing-medium;
+    color: rgba(v.$color-primary-dark, 0.98);
+    text-shadow: 0 0 12px rgba(v.$color-accent, 0.35);
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
   }
   
   .alphabet-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(4, 1fr);
-    gap: v.$spacing-small;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     width: 100%;
-    max-width: 550px;
+    max-width: 620px;
     margin: 0 auto;
-    
-    .letter-spacer {
-      visibility: hidden;
+
+    .keyboard-row {
+      @include m.flex-center-all;
+      gap: var(--game-cell-gap);
+      width: 100%;
+      flex-wrap: nowrap;
     }
-    
-    span {
+
+    .keyboard-key {
       border: 3px solid v.$color-grey;
       border-radius: v.$border-radius-small;
-      padding: v.$spacing-medium;
       text-align: center;
       text-transform: uppercase;
       font-weight: v.$font-weight-bold;
-      font-size: 1rem;
+      font-size: clamp(0.95rem, 1.85vw, 1.4rem);
       transition: all v.$animation-duration-medium v.$animation-smooth;
       @include m.flex-center-all;
-      cursor: default;
-      aspect-ratio: 1 / 1;
-      min-width: 40px;
-      min-height: 40px;
+      cursor: pointer;
+      width: var(--game-cell-size);
+      height: var(--game-cell-size);
+      min-width: var(--game-cell-size);
+      min-height: var(--game-cell-size);
+      padding: 0;
       box-shadow: v.$shadow-sm;
       position: relative;
       overflow: hidden;
+      background: linear-gradient(135deg, v.$color-grey-light, v.$color-white);
+      color: v.$color-text;
+      border-color: v.$color-grey;
+      font-family: inherit;
+      outline: none;
       
       &::before {
         content: '';
@@ -353,42 +445,66 @@
         left: -50%;
         width: 200%;
         height: 200%;
-        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        background: linear-gradient(45deg, transparent, rgba(v.$color-white, 0.3), transparent);
         transform: rotate(45deg);
         transition: all v.$animation-duration-long;
       }
-      
+
+      &:hover::before {
+        left: 100%;
+      }
+
+      &:active {
+        transform: scale(0.97);
+      }
+
+      &:focus-visible {
+        box-shadow: 0 0 0 3px rgba(v.$color-primary, 0.26);
+      }
+
+      &.keyboard-key--wide {
+        width: calc(var(--game-cell-size) * 1.8);
+        min-width: calc(var(--game-cell-size) * 1.8);
+        font-size: clamp(0.78rem, 1.35vw, 1.05rem);
+      }
+
+      &.keyboard-key--arrow {
+        width: calc(var(--game-cell-size) * 1.3);
+        min-width: calc(var(--game-cell-size) * 1.3);
+        font-size: clamp(0.9rem, 1.45vw, 1.15rem);
+      }
+
+      &.keyboard-key--control {
+        text-transform: none;
+      }
+
       &.notGuessed {
-        background: linear-gradient(135deg, #f7fafc, #ffffff);
+        background: linear-gradient(135deg, v.$color-grey-light, v.$color-white);
         color: v.$color-text;
         border-color: v.$color-grey;
-        
-        &:hover::before {
-          left: 100%;
-        }
       }
       
       &.correct {
-        background: v.$color-correct;
-        color: v.$color-white;
-        border-color: v.$color-correct;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        background: var(--clue-correct-bg);
+        color: var(--clue-text-color);
+        border-color: var(--clue-correct-border);
+        box-shadow: 0 4px 12px var(--clue-correct-shadow);
         animation: pop v.$animation-duration-medium v.$animation-bounce;
       }
       
       &.notContains {
-        background: v.$color-not-contains;
-        color: v.$color-white;
-        border-color: v.$color-not-contains;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        background: var(--clue-notcontains-bg);
+        color: var(--clue-text-color);
+        border-color: var(--clue-notcontains-border);
+        box-shadow: 0 4px 12px var(--clue-notcontains-shadow);
         animation: pop v.$animation-duration-medium v.$animation-bounce;
       }
       
       &.contains {
-        background: v.$color-contains;
-        color: v.$color-white;
-        border-color: v.$color-contains;
-        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+        background: var(--clue-contains-bg);
+        color: var(--clue-text-color);
+        border-color: var(--clue-contains-border);
+        box-shadow: 0 4px 12px var(--clue-contains-shadow);
         animation: pop v.$animation-duration-medium v.$animation-bounce;
       }
     }
@@ -398,15 +514,18 @@
 // Reset button with gradient
 #resetGame {
   display: none;
-  width: 180px;
+  width: auto;
+  min-width: 210px;
   align-self: center;
   background: v.$gradient-danger;
-  padding: v.$spacing-medium v.$spacing-xlarge;
+  padding: v.$spacing-medium v.$spacing-large;
   border: none;
   border-radius: v.$border-radius-medium;
   color: v.$color-white;
   font-size: v.$font-size-base;
   font-weight: v.$font-weight-bold;
+  white-space: nowrap;
+  line-height: 1;
   cursor: pointer;
   box-shadow: v.$shadow-md;
   transition: all v.$animation-duration-medium v.$animation-smooth;
@@ -421,7 +540,7 @@
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(v.$color-white, 0.3);
     transform: translate(-50%, -50%);
     transition: width v.$animation-duration-medium, height v.$animation-duration-medium;
   }
@@ -441,8 +560,17 @@
   }
 }
 
+.includesHintButtons {
+  width: 100%;
+  max-width: 720px;
+  margin-top: v.$spacing-small;
+  margin-bottom: v.$spacing-xxsmall;
+}
+
 // Stagger animation for word rows
 .wrapper .wordRow {
+  margin-bottom: 1px;
+
   @for $i from 1 through 10 {
     &:nth-child(#{$i}) {
       animation-delay: #{$i * 0.1}s;
@@ -450,8 +578,21 @@
   }
 }
 
+.wordRow.row-somersaulting .wordLetterBox {
+  animation: rowSomersault 0.72s linear both !important;
+}
+
 // Responsive adjustments
 @include m.respond-to(tablet) {
+  :root {
+    --game-cell-size: clamp(32px, 5.5vw, 42px);
+  }
+
+  .utilityBar {
+    justify-content: center;
+    margin-top: 0;
+  }
+
   #gameHeader {
     font-size: 2em;
     
@@ -462,33 +603,51 @@
   }
   
   #alphabetContainer {
-    padding: v.$spacing-large;
+    padding: v.$spacing-medium;
     
     .alphabet-grid {
       gap: v.$spacing-xsmall;
-      
-      span {
-        padding: v.$spacing-small;
-        font-size: 0.9em;
-        min-width: 36px;
-        min-height: 36px;
+
+      .keyboard-row {
+        gap: v.$spacing-xxsmall;
+      }
+
+      .keyboard-key {
+        font-size: clamp(0.82rem, 2vw, 1.1rem);
+      }
+
+      .keyboard-key--wide {
+        font-size: clamp(0.72rem, 1.4vw, 0.95rem);
+      }
+
+      .keyboard-key--arrow {
+        font-size: clamp(0.84rem, 1.6vw, 1.02rem);
       }
     }
   }
   
   .wordLetterBox {
-    width: 2.5em;
-    height: 2.5em;
-    margin: v.$spacing-xxsmall;
+    font-size: clamp(0.92rem, 2vw, 1.35rem);
   }
 }
 
 @include m.respond-to(mobile) {
+  :root {
+    --game-cell-size: clamp(24px, 7vw, 34px);
+    --game-cell-gap: 1px;
+  }
+
+  .theme-switcher {
+    width: 100%;
+    max-width: 260px;
+    justify-content: space-between;
+  }
+
   #gameHeader {
     font-size: 1.8em;
     
     &::after {
-      display: none;
+      font-size: 0.58em;
     }
   }
   
@@ -497,38 +656,54 @@
   }
   
   #alphabetContainer {
-    padding: v.$spacing-medium;
+    padding: v.$spacing-small;
     
     .alphabet-label {
-      font-size: 0.9em;
-      margin-bottom: v.$spacing-medium;
+      font-size: 0.85em;
+      margin-bottom: v.$spacing-small;
     }
     
     .alphabet-grid {
       gap: v.$spacing-xxsmall;
-      
-      span {
-        padding: v.$spacing-xsmall;
-        font-size: 0.8em;
-        min-width: 32px;
-        min-height: 32px;
+
+      .keyboard-row {
+        gap: v.$spacing-xxsmall;
+      }
+
+      .keyboard-key {
+        font-size: clamp(0.72rem, 3.5vw, 0.92rem);
+      }
+
+      .keyboard-key--wide {
+        font-size: clamp(0.64rem, 2.8vw, 0.82rem);
+      }
+
+      .keyboard-key--arrow {
+        font-size: clamp(0.75rem, 3vw, 0.9rem);
       }
     }
   }
   
   .wordLetterBox {
-    width: v.$letter-box-size-mobile;
-    height: v.$letter-box-size-mobile;
-    margin: v.$spacing-xxsmall;
-    padding: v.$spacing-xxsmall;
+    font-size: clamp(0.82rem, 4vw, 1.06rem);
+    padding: 0;
   }
   
   .timerDifficultyInfo {
-    flex-direction: column;
-    gap: v.$spacing-small;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: v.$spacing-xsmall;
+    min-height: 56px;
     
     #timerDisplay, #difficulty {
-      font-size: 1.1em;
+      font-size: 1.02em;
+      height: 42px;
+      min-height: 42px;
     }
+  }
+
+  #resetGame {
+    min-width: 190px;
+    font-size: 0.95rem;
   }
 }

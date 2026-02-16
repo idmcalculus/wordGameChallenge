@@ -1,68 +1,100 @@
 import { resetHintButtons } from './hintHandler.js';
 
+const KEYBOARD_LAYOUT = [
+  ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+  ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+  ['enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'delete'],
+  ['arrowleft', 'arrowright']
+];
+
+function getKeyLabel(key) {
+  if (key === 'enter') return 'Enter';
+  if (key === 'delete') return 'Delete';
+  if (key === 'arrowleft') return '←';
+  if (key === 'arrowright') return '→';
+  return key.toUpperCase();
+}
+
+function getKeyAriaLabel(key) {
+  if (key === 'enter') return 'Enter key';
+  if (key === 'delete') return 'Delete key';
+  if (key === 'arrowleft') return 'Move cursor left';
+  if (key === 'arrowright') return 'Move cursor right';
+  return `Letter ${key.toUpperCase()}, tap to input`;
+}
+
 /**
  * Creates the alphabet container and populates it with letters.
  * @param {Array<string>} alphabet - An array of letters to display in the container.
+ * @param {function} onKeyInput - Callback invoked when an on-screen key is clicked.
  */
-export function createAlphabetContainer(alphabet) {
+export function createAlphabetContainer(alphabet, onKeyInput = null) {
   const container = document.getElementById('alphabetContainer');
   container.innerHTML = '';  // Clear container
   
-  // Add a title/label above the grid to clarify its purpose
+  const letterSet = new Set(alphabet.map((letter) => letter.toLowerCase()));
+
+  // Add a title/label above the keyboard to clarify its purpose
   const label = document.createElement('div');
   label.classList.add('alphabet-label');
-  label.textContent = 'Letter Status';
+  label.textContent = 'Keyboard & Letter Status';
   container.appendChild(label);
   
-  // Create a grid container for the letters
+  // Create keyboard layout container
   const gridContainer = document.createElement('div');
   gridContainer.classList.add('alphabet-grid');
+
+  const createKeyTile = (key) => {
+    const keyButton = document.createElement('button');
+    keyButton.type = 'button';
+    keyButton.classList.add('keyboard-key');
+    keyButton.dataset.key = key;
+    keyButton.textContent = getKeyLabel(key);
+    keyButton.setAttribute('aria-label', getKeyAriaLabel(key));
+
+    const isLetterKey = key.length === 1 && letterSet.has(key);
+    if (isLetterKey) {
+      keyButton.classList.add('keyboard-key--letter', 'notGuessed');
+      keyButton.dataset.letter = key;
+    } else {
+      keyButton.classList.add('keyboard-key--control');
+      if (key === 'enter' || key === 'delete') {
+        keyButton.classList.add('keyboard-key--wide');
+      }
+      if (key === 'arrowleft' || key === 'arrowright') {
+        keyButton.classList.add('keyboard-key--arrow');
+      }
+    }
+
+    if (typeof onKeyInput === 'function') {
+      const emitKey = () => onKeyInput(key);
+      // Keep focus on the active input so virtual arrows/delete operate on the row cursor.
+      keyButton.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+      });
+      keyButton.addEventListener('click', emitKey);
+      keyButton.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          emitKey();
+        }
+      });
+    }
+
+    return keyButton;
+  };
   
-  // Create a more balanced layout
-  // First 3 rows with 7 letters each (21 letters)
-  const firstThreeRows = alphabet.slice(0, 21);
-  // Last row with 5 letters, centered
-  const lastRow = alphabet.slice(21);
-  
-  // Add first three rows (7 letters each)
-  firstThreeRows.forEach(letter => {
-    const span = document.createElement('span');
-    span.textContent = letter;
-    span.classList.add('notGuessed');
-    span.setAttribute('aria-label', `Letter ${letter}, not yet guessed`);
-    gridContainer.appendChild(span);
+  KEYBOARD_LAYOUT.forEach((rowKeys, rowIndex) => {
+    const row = document.createElement('div');
+    row.classList.add('keyboard-row', `keyboard-row-${rowIndex + 1}`);
+    rowKeys.forEach((key) => {
+      row.appendChild(createKeyTile(key));
+    });
+    gridContainer.appendChild(row);
   });
   
-  // Add spacer for centering last row if needed
-  if (lastRow.length < 7) {
-    const spacersNeeded = Math.floor((7 - lastRow.length) / 2);
-    
-    // Add left spacers
-    for (let i = 0; i < spacersNeeded; i++) {
-      const spacer = document.createElement('div');
-      spacer.classList.add('letter-spacer');
-      gridContainer.appendChild(spacer);
-    }
-    
-    // Add the remaining letters
-    lastRow.forEach(letter => {
-      const span = document.createElement('span');
-      span.textContent = letter;
-      span.classList.add('notGuessed');
-      span.setAttribute('aria-label', `Letter ${letter}, not yet guessed`);
-      gridContainer.appendChild(span);
-    });
-    
-    // Add right spacers
-    for (let i = 0; i < spacersNeeded; i++) {
-      const spacer = document.createElement('div');
-      spacer.classList.add('letter-spacer');
-      gridContainer.appendChild(spacer);
-    }
-  }
-  
   container.appendChild(gridContainer);
-  // Don't display the container yet - it will be shown after the first guess
+  // Visibility is controlled by the game flow.
   container.classList.remove('visible');
 }
 
@@ -79,21 +111,11 @@ export function updateAlphabetContainer(guessedLetter, letterClass) {
     container.classList.add('visible');
   }
   
-  // Find the letter in the grid container by text content instead of position
-  const letterElements = document.querySelectorAll('#alphabetContainer .alphabet-grid span');
-  let letterElement = null;
-  
-  // Find the element with matching text content
-  for (const element of letterElements) {
-    if (element.textContent.toUpperCase() === guessedLetter.toUpperCase()) {
-      letterElement = element;
-      break;
-    }
-  }
-  
+  const normalizedLetter = guessedLetter.toLowerCase();
+  const letterElement = container.querySelector(`.keyboard-key[data-letter="${normalizedLetter}"]`);
   if (!letterElement) return; // Safety check
   
-  letterElement.className = ''; // Remove all classes
+  letterElement.classList.remove('notGuessed', 'correct', 'contains', 'notContains');
   letterElement.classList.add(letterClass);
   
   // Update the aria-label for accessibility
@@ -106,7 +128,7 @@ export function updateAlphabetContainer(guessedLetter, letterClass) {
     status = 'not in the word';
   }
   
-  letterElement.setAttribute('aria-label', `Letter ${guessedLetter}, ${status}`);
+  letterElement.setAttribute('aria-label', `Letter ${guessedLetter.toUpperCase()}, ${status}`);
 }
 
 /**
@@ -220,5 +242,5 @@ export function updateDifficulty(wordLength) {
   } else {
     difficulty.innerHTML = 'Difficulty: Very Hard';
   }
-  difficulty.style.display = 'block';
+  difficulty.style.display = 'inline-flex';
 }

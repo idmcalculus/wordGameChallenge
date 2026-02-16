@@ -1,3 +1,5 @@
+import { logger } from './utils/logger.js';
+
 /**
  * Register the service worker for production builds
  * 
@@ -13,10 +15,10 @@ export function registerServiceWorker() {
       if (import.meta.env.PROD) {
         navigator.serviceWorker.register('/sw.js')
           .then(registration => {
-            console.log('SW registered: ', registration);
+            logger.debug('SW registered', registration);
           })
           .catch(registrationError => {
-            console.log('SW registration failed: ', registrationError);
+            logger.error(registrationError, { source: 'serviceWorker.register' });
           });
       }
     });

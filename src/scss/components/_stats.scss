@@ -19,30 +19,34 @@ $transition-duration: 0.3s;
   font-size: 16px;
   margin: 20px auto;
   padding: 10px;
-  background-color: #add8e6;
-  border: 1px solid blue;
+  background-color: var(--active-filters-bg-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
   display: block;
   max-height: 600px;
   overflow-y: auto;
+  overflow-x: auto;
   scrollbar-width: thin;
   width: 100%;
-  max-width: 600px;
+  max-width: 760px;
   border-radius: 5px;
+  box-shadow: 0 8px 20px rgba(30, 49, 73, 0.12);
 }
 
 // Stats Table
 .stats-table {
   width: 100%;
+  min-width: 700px;
   background: var(--background-color);
   border-radius: $border-radius;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 18px rgba(30, 49, 73, 0.1);
 }
 
 // Header
 .stats-header {
   display: grid;
-  grid-template-columns: 0.5fr 1fr 1fr 1fr;
+  grid-template-columns: 0.45fr 0.9fr 0.7fr 0.8fr 1.5fr;
   background: var(--header-bg-color);
   position: sticky;
   top: 0;
@@ -70,7 +74,7 @@ $transition-duration: 0.3s;
 
 .stat-row {
   display: grid;
-  grid-template-columns: 0.5fr 1fr 1fr 1fr;
+  grid-template-columns: 0.45fr 0.9fr 0.7fr 0.8fr 1.5fr;
   height: $row-height;
   border-bottom: 1px solid var(--border-color);
   animation: fadeIn 0.5s ease forwards;
@@ -89,6 +93,34 @@ $transition-duration: 0.3s;
   white-space: nowrap;
 }
 
+.stats-load-more-container {
+  display: flex;
+  justify-content: center;
+  padding: 14px 0 4px;
+}
+
+.stats-load-more-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-white);
+  background: var(--gradient-primary);
+  box-shadow: 0 6px 14px rgba(30, 49, 73, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(30, 49, 73, 0.24);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
 // Animations
 @keyframes fadeIn {
   from {
@@ -105,7 +137,7 @@ $transition-duration: 0.3s;
 @media (max-width: 768px) {
   .stats-header,
   .stat-row {
-    grid-template-columns: 0.3fr 1fr 0.8fr 0.8fr;
+    grid-template-columns: 0.3fr 0.9fr 0.7fr 0.8fr 1.3fr;
   }
 
   .header-cell,

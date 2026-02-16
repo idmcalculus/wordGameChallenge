@@ -23,7 +23,7 @@
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(v.$color-white, 0.3);
     transform: translate(-50%, -50%);
     transition: width v.$animation-duration-medium, height v.$animation-duration-medium;
   }
@@ -74,7 +74,7 @@
   color: v.$color-white;
   
   &:hover:not(:disabled) {
-    box-shadow: v.$shadow-lg, 0 0 20px rgba(79, 172, 254, 0.4);
+    box-shadow: v.$shadow-lg, 0 0 20px rgba(v.$color-secondary, 0.35);
   }
   
   &:disabled {
@@ -99,7 +99,7 @@
   background: v.$gradient-success;
   width: 0%;
   transition: width 0.05s linear;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 10px rgba(v.$color-success, 0.5);
   border-radius: 0 0 v.$border-radius-medium v.$border-radius-medium;
 }
 

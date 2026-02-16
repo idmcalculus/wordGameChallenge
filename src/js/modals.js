@@ -1,4 +1,5 @@
 import { createConfetti } from './utils/confetti.js';
+import { logger } from './utils/logger.js';
 
 let alertCallback = null;
 let tryAgainCallback = null;
@@ -75,7 +76,7 @@ export function setupModals() {
         game.displayStats();
       }, 50);
     } else {
-      console.error('Game instance not found');
+      logger.error(new Error('Game instance not found'), { source: 'statsModal.open' });
     }
   };
 

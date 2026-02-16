@@ -2,7 +2,7 @@
  * Creates a confetti celebration effect
  */
 export function createConfetti() {
-  const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#10b981', '#fbbf24', '#ef4444'];
+  const colors = ['#3b63a4', '#5f84bf', '#a7ceda', '#4caf50', '#f57c00', '#6e809a', '#ffffff'];
   const confettiCount = 50;
   
   for (let i = 0; i < confettiCount; i++) {
@@ -52,7 +52,7 @@ function createConfettiPiece(colors) {
  * Creates a firework particle effect at a specific position
  */
 export function createFirework(x, y) {
-  const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#10b981', '#fbbf24'];
+  const colors = ['#3b63a4', '#5f84bf', '#a7ceda', '#4caf50', '#f57c00', '#6e809a'];
   const particleCount = 20;
   
   for (let i = 0; i < particleCount; i++) {

@@ -15,12 +15,12 @@
 .modal-content {
   @include m.modal-content;
   max-width: 650px;
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(v.$color-white, 0.97);
   backdrop-filter: blur(20px);
   border-radius: v.$border-radius-large;
   box-shadow: v.$shadow-xl;
   animation: scaleIn v.$animation-duration-long v.$animation-bounce;
-  border: 2px solid rgba(255, 255, 255, 0.5);
+  border: 2px solid rgba(v.$color-accent, 0.5);
 }
 
 .how-to-play-btn {
@@ -107,7 +107,7 @@
 .stats-content {
   text-align: left;
   width: 90%;
-  max-width: 650px;
+  max-width: 860px;
   
   h2 {
     @include m.heading;
@@ -141,7 +141,7 @@
   }
   
   .stat-item {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9));
+    background: linear-gradient(135deg, rgba(v.$color-white, 0.92), rgba(v.$color-grey-light, 0.92));
     border-radius: v.$border-radius-medium;
     padding: v.$spacing-large;
     margin-bottom: v.$spacing-medium;
@@ -211,24 +211,24 @@
   }
   
   .green-highlight {
-    background: v.$color-correct;
-    color: white;
+    background: var(--clue-correct-bg);
+    color: var(--clue-text-color);
     padding: v.$spacing-xxsmall v.$spacing-small;
     border-radius: v.$border-radius-small;
     font-weight: v.$font-weight-semibold;
   }
   
   .orange-highlight {
-    background: v.$color-contains;
-    color: white;
+    background: var(--clue-contains-bg);
+    color: var(--clue-text-color);
     padding: v.$spacing-xxsmall v.$spacing-small;
     border-radius: v.$border-radius-small;
     font-weight: v.$font-weight-semibold;
   }
   
-  .grey-highlight {
-    background: v.$color-not-contains;
-    color: white;
+  .red-highlight {
+    background: var(--clue-notcontains-bg);
+    color: var(--clue-text-color);
     padding: v.$spacing-xxsmall v.$spacing-small;
     border-radius: v.$border-radius-small;
     font-weight: v.$font-weight-semibold;
@@ -251,12 +251,12 @@
   justify-content: center;
   border-radius: 50%;
   transition: all v.$animation-duration-short v.$animation-smooth;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(v.$color-black, 0.07);
   
   &:hover,
   &:focus {
     color: v.$color-danger;
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(v.$color-danger, 0.12);
     transform: rotate(90deg) scale(1.1);
     text-decoration: none;
     cursor: pointer;
@@ -293,7 +293,7 @@
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(v.$color-white, 0.3);
     transform: translate(-50%, -50%);
     transition: width v.$animation-duration-medium, height v.$animation-duration-medium;
   }
@@ -318,7 +318,7 @@
   font-weight: v.$font-weight-bold;
   cursor: pointer;
   transition: all v.$animation-duration-medium v.$animation-smooth;
-  background: v.$gradient-success;
+  background: v.$gradient-secondary;
   box-shadow: v.$shadow-base;
   position: relative;
   overflow: hidden;
@@ -331,7 +331,7 @@
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(v.$color-white, 0.3);
     transform: translate(-50%, -50%);
     transition: width v.$animation-duration-medium, height v.$animation-duration-medium;
   }
@@ -379,51 +379,50 @@
   }
 }
 
-// Invalid word alert (red theme)
+// Invalid word alert (orange theme)
 .invalid-word-alert {
-  background: linear-gradient(135deg, #fff5f5, #ffe5e5);
-  border: 3px solid v.$color-danger;
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+  background: linear-gradient(135deg, rgba(v.$color-secondary-light, 0.18), rgba(v.$color-white, 0.92));
+  border: 3px solid v.$color-secondary;
+  box-shadow: 0 0 20px rgba(v.$color-secondary, 0.28);
   
   h3 {
-    color: v.$color-danger;
+    color: v.$color-secondary-dark;
   }
   
   .alert-icon {
-    filter: drop-shadow(0 4px 8px rgba(239, 68, 68, 0.3));
+    filter: drop-shadow(0 4px 8px rgba(v.$color-secondary, 0.3));
   }
 }
 
 // Success alert (green theme)
 .success-alert {
-  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  background: linear-gradient(135deg, rgba(v.$color-correct-light, 0.2), rgba(v.$color-white, 0.92));
   border: 3px solid v.$color-success;
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-  animation: bounceIn v.$animation-duration-long v.$animation-bounce, 
-             rainbow 3s linear infinite;
+  box-shadow: 0 0 20px rgba(v.$color-success, 0.28);
+  animation: bounceIn v.$animation-duration-long v.$animation-bounce;
   
   h3 {
     color: v.$color-success;
   }
   
   .alert-icon {
-    filter: drop-shadow(0 4px 8px rgba(16, 185, 129, 0.3));
+    filter: drop-shadow(0 4px 8px rgba(v.$color-success, 0.3));
     animation: celebrate v.$animation-duration-long v.$animation-bounce infinite;
   }
 }
 
-// Failure alert (orange/yellow theme)
+// Failure alert (cool slate-blue theme)
 .failure-alert {
-  background: linear-gradient(135deg, #fffbeb, #fef3c7);
-  border: 3px solid #f59e0b;
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, rgba(v.$color-accent, 0.34), rgba(v.$color-white, 0.92));
+  border: 3px solid v.$color-not-contains;
+  box-shadow: 0 0 20px rgba(v.$color-not-contains, 0.28);
   
   h3 {
-    color: #d97706;
+    color: v.$color-not-contains-dark;
   }
   
   .alert-icon {
-    filter: drop-shadow(0 4px 8px rgba(245, 158, 11, 0.3));
+    filter: drop-shadow(0 4px 8px rgba(v.$color-not-contains, 0.3));
   }
 }
 

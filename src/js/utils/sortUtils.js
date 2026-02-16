@@ -45,6 +45,9 @@ export const sortStats = (stats, field, direction) => {
   if (direction === SORT_DIRECTIONS.DEFAULT) return stats;
 
   return [...stats].sort((a, b) => {
+    const dateA = Number.isNaN(Date.parse(a.date)) ? 0 : Date.parse(a.date);
+    const dateB = Number.isNaN(Date.parse(b.date)) ? 0 : Date.parse(b.date);
+
     switch (field) {
     case SORT_FIELDS.SERIAL:
       return compareValues(a.index, b.index, direction);
@@ -54,6 +57,8 @@ export const sortStats = (stats, field, direction) => {
       return compareValues(a.time, b.time, direction);
     case SORT_FIELDS.ATTEMPTS:
       return compareValues(a.attempts, b.attempts, direction);
+    case SORT_FIELDS.DATE:
+      return compareValues(dateA, dateB, direction);
     case SORT_FIELDS.WORD_LENGTH:
       return compareValues(a.word.length, b.word.length, direction);
     default:

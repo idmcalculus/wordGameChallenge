@@ -1,0 +1,149 @@
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --primary-color: #a7ceda;
+  --secondary-color: #ff9f45;
+  --background-color: #15263a;
+  --text-color: #e5effb;
+  --text-muted-color: #b6c9de;
+  --border-color: #355170;
+  --danger-color: #ff9f45;
+  --header-bg-color: #1c3047;
+  --hover-bg-color: #223b56;
+  --chip-bg-color: #233a56;
+  --chip-hover-bg-color: #2a4665;
+  --chip-hover-border-color: #4e6e92;
+  --active-filters-bg-color: #132439;
+  --clue-correct-bg: #68c377;
+  --clue-correct-border: #4ead5d;
+  --clue-correct-shadow: rgba(104, 195, 119, 0.46);
+  --clue-contains-bg: #f1cc62;
+  --clue-contains-border: #dcb445;
+  --clue-contains-shadow: rgba(241, 204, 98, 0.46);
+  --clue-notcontains-bg: #ff6b6b;
+  --clue-notcontains-border: #e04f4f;
+  --clue-notcontains-shadow: rgba(255, 107, 107, 0.48);
+  --clue-text-color: #f3f7ff;
+}
+
+:root[data-theme='dark'] body {
+  color: #e5effb;
+  background: linear-gradient(-45deg, #091321, #12243a, #1f3b60, #2f4f84);
+}
+
+:root[data-theme='dark'] body::before {
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(59, 99, 164, 0.34) 0%, transparent 55%),
+    radial-gradient(circle at 80% 80%, rgba(245, 124, 0, 0.2) 0%, transparent 52%),
+    radial-gradient(circle at 40% 20%, rgba(167, 206, 218, 0.12) 0%, transparent 45%);
+}
+
+:root[data-theme='dark'] .outerWrapper::before {
+  background: linear-gradient(160deg, rgba(15, 29, 46, 0.88), rgba(20, 36, 57, 0.92));
+  border-color: rgba(95, 132, 191, 0.4);
+}
+
+:root[data-theme='dark'] .leftMeta,
+:root[data-theme='dark'] .wordRow,
+:root[data-theme='dark'] #alphabetContainer,
+:root[data-theme='dark'] .modal-content,
+:root[data-theme='dark'] .stats-container .stat-item {
+  background: rgba(15, 30, 47, 0.9);
+  border-color: rgba(95, 132, 191, 0.4);
+  color: #e5effb;
+}
+
+:root[data-theme='dark'] .theme-switcher {
+  background: rgba(15, 29, 46, 0.72);
+  border-color: rgba(95, 132, 191, 0.55);
+}
+
+:root[data-theme='dark'] .theme-switcher select {
+  background: #11253b;
+  color: #e5effb;
+  border-color: #4e6e92;
+}
+
+:root[data-theme='dark'] .wordLengthInputContainer p,
+:root[data-theme='dark'] .stats-container .stat-item .stat-time,
+:root[data-theme='dark'] .stats-container .stat-item .stat-details,
+:root[data-theme='dark'] .rules-container li,
+:root[data-theme='dark'] .close {
+  color: #e5effb;
+}
+
+:root[data-theme='dark'] .alphabet-label {
+  color: #9fc7ff;
+  text-shadow: 0 0 14px rgba(159, 199, 255, 0.35);
+}
+
+:root[data-theme='dark'] #wordLengthInput,
+:root[data-theme='dark'] .wordLetterBox:not(.correct):not(.contains):not(.notContains),
+:root[data-theme='dark'] .timerDifficultyInfo #timerDisplay,
+:root[data-theme='dark'] .timerDifficultyInfo #difficulty {
+  background: #11253b;
+  color: #e5effb;
+  border-color: #6c8fbe;
+}
+
+:root[data-theme='dark'] .timerDifficultyInfo #timerDisplay {
+  color: #a7ceda;
+  border-color: #a7ceda;
+}
+
+:root[data-theme='dark'] .timerDifficultyInfo #difficulty {
+  color: #ff9f45;
+  border-color: #ff9f45;
+}
+
+:root[data-theme='dark'] #alphabetContainer .alphabet-grid .keyboard-key {
+  background: linear-gradient(135deg, #1c3047, #14263b);
+  color: #dce9fb;
+  border-color: #4a6586;
+}
+
+:root[data-theme='dark'] #alphabetContainer .alphabet-grid .keyboard-key.correct {
+  background: var(--clue-correct-bg);
+  color: var(--clue-text-color);
+  border-color: var(--clue-correct-border);
+  box-shadow: 0 4px 12px var(--clue-correct-shadow);
+}
+
+:root[data-theme='dark'] #alphabetContainer .alphabet-grid .keyboard-key.contains {
+  background: var(--clue-contains-bg);
+  color: var(--clue-text-color);
+  border-color: var(--clue-contains-border);
+  box-shadow: 0 4px 12px var(--clue-contains-shadow);
+}
+
+:root[data-theme='dark'] #alphabetContainer .alphabet-grid .keyboard-key.notContains {
+  background: var(--clue-notcontains-bg);
+  color: var(--clue-text-color);
+  border-color: var(--clue-notcontains-border);
+  box-shadow: 0 4px 12px var(--clue-notcontains-shadow);
+}
+
+:root[data-theme='dark'] #alphabetContainer .alphabet-grid .keyboard-key.notGuessed {
+  background: linear-gradient(135deg, #1c3047, #14263b);
+  color: #d3e3f6;
+  border-color: #4a6586;
+}
+
+:root[data-theme='dark'] #alphabetContainer .alphabet-grid .keyboard-key.keyboard-key--control {
+  background: linear-gradient(135deg, #1a3550, #16304a);
+  color: #c8def7;
+  border-color: #4d77a2;
+}
+
+:root[data-theme='dark'] #statsList {
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme='dark'] .invalid-word-alert,
+:root[data-theme='dark'] .success-alert,
+:root[data-theme='dark'] .failure-alert {
+  background: rgba(15, 30, 47, 0.95);
+}

@@ -2,11 +2,17 @@ import { SORT_DIRECTIONS, SORT_FIELDS, DEFAULT_SORT, ANIMATION_DURATION, FILTER_
 import { sortStats, getNextSortDirection, getSortIndicatorClass } from '../utils/sortUtils.js';
 import { applyFilters, getAvailableFilters, saveFilterPreferences, loadFilterPreferences } from '../utils/filterUtils.js';
 
+const INITIAL_VISIBLE_ROWS = 20;
+const LOAD_MORE_BATCH_SIZE = 10;
+
 export class StatsManager {
   constructor(container, stats) {
     this.container = container;
     this.originalStats = stats;
     this.displayedStats = [...stats];
+    this.visibleRows = INITIAL_VISIBLE_ROWS;
+    this.loadMoreButton = null;
+    this.loadMoreContainer = null;
     this.currentSort = { ...DEFAULT_SORT };
     this.activeFilters = loadFilterPreferences();
     this.availableFilters = getAvailableFilters(stats);
@@ -17,7 +23,7 @@ export class StatsManager {
   init() {
     this.createStatsTable();
     this.attachEventListeners();
-    this.applyCurrentSortAndFilters();
+    this.applyCurrentSortAndFilters({ resetVisibleRows: true });
   }
 
   createStatsTable() {
@@ -34,6 +40,20 @@ export class StatsManager {
     body.classList.add('stats-body');
     table.appendChild(body);
 
+    // Create load more controls
+    const loadMoreContainer = document.createElement('div');
+    loadMoreContainer.classList.add('stats-load-more-container');
+
+    const loadMoreButton = document.createElement('button');
+    loadMoreButton.classList.add('stats-load-more-btn');
+    loadMoreButton.textContent = 'Load More';
+    loadMoreButton.addEventListener('click', () => this.handleLoadMore());
+
+    loadMoreContainer.appendChild(loadMoreButton);
+
+    this.loadMoreContainer = loadMoreContainer;
+    this.loadMoreButton = loadMoreButton;
+
     // Create filter panel
     const filterPanel = this.createFilterPanel();
     
@@ -41,6 +61,7 @@ export class StatsManager {
     this.container.innerHTML = '';
     this.container.appendChild(filterPanel);
     this.container.appendChild(table);
+    this.container.appendChild(loadMoreContainer);
   }
 
   createHeader() {
@@ -51,7 +72,8 @@ export class StatsManager {
       { field: SORT_FIELDS.SERIAL, label: 'S/N' },
       { field: SORT_FIELDS.WORD, label: 'Word' },
       { field: SORT_FIELDS.TIME, label: 'Time(s)' },
-      { field: SORT_FIELDS.ATTEMPTS, label: 'Attempts' }
+      { field: SORT_FIELDS.ATTEMPTS, label: 'Attempts' },
+      { field: SORT_FIELDS.DATE, label: 'Played' }
     ];
 
     headers.forEach(({ field, label }) => {
@@ -78,6 +100,21 @@ export class StatsManager {
     });
 
     return header;
+  }
+
+  formatPlayedAt(dateValue) {
+    const parsedDate = new Date(dateValue);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return 'Unknown';
+    }
+
+    const month = parsedDate.toLocaleString('en-US', { month: 'short' });
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    const year = parsedDate.getFullYear();
+    const hours = String(parsedDate.getHours()).padStart(2, '0');
+    const minutes = String(parsedDate.getMinutes()).padStart(2, '0');
+
+    return `${month} ${day}, ${year} ${hours}:${minutes}`;
   }
 
   createFilterPanel() {
@@ -189,7 +226,7 @@ export class StatsManager {
 
     // Update display
     this.updateActiveFiltersDisplay();
-    this.applyCurrentSortAndFilters();
+    this.applyCurrentSortAndFilters({ resetVisibleRows: true });
   }
 
   updateFilterPanelState() {
@@ -224,7 +261,7 @@ export class StatsManager {
     // Update display state
     this.updateFilterPanelState();
     this.updateActiveFiltersDisplay();
-    this.applyCurrentSortAndFilters();
+    this.applyCurrentSortAndFilters({ resetVisibleRows: true });
   }
 
   updateActiveFiltersDisplay() {
@@ -293,18 +330,37 @@ export class StatsManager {
       };
     }
 
-    this.applyCurrentSortAndFilters();
+    this.applyCurrentSortAndFilters({ resetVisibleRows: true });
   }
 
-  applyCurrentSortAndFilters() {
+  applyCurrentSortAndFilters({ resetVisibleRows = false } = {}) {
+    if (resetVisibleRows) {
+      this.visibleRows = INITIAL_VISIBLE_ROWS;
+    }
+
     // First apply filters
-    let filteredStats = applyFilters(this.originalStats, this.activeFilters);
+    const filteredStats = applyFilters(this.originalStats, this.activeFilters);
     
     // Then apply sorting
     this.displayedStats = sortStats(filteredStats, this.currentSort.field, this.currentSort.direction);
     
     // Update the display
     this.updateDisplay();
+  }
+
+  handleLoadMore() {
+    this.visibleRows = Math.min(this.visibleRows + LOAD_MORE_BATCH_SIZE, this.displayedStats.length);
+    this.updateDisplay();
+  }
+
+  updateLoadMoreState() {
+    if (!this.loadMoreContainer || !this.loadMoreButton) {
+      return;
+    }
+
+    const hasMoreRows = this.displayedStats.length > this.visibleRows;
+    this.loadMoreContainer.style.display = hasMoreRows ? 'flex' : 'none';
+    this.loadMoreButton.style.display = hasMoreRows ? 'inline-flex' : 'none';
   }
 
   updateDisplay() {
@@ -325,7 +381,8 @@ export class StatsManager {
     });
 
     // Update rows with animation
-    this.displayedStats.forEach((stat, index) => {
+    const rowsToRender = this.displayedStats.slice(0, this.visibleRows);
+    rowsToRender.forEach((stat, index) => {
       const row = document.createElement('div');
       row.classList.add('stat-row');
       row.style.animationDelay = `${index * 50}ms`;
@@ -334,13 +391,15 @@ export class StatsManager {
         { content: (index + 1).toString() },
         { content: stat.word },
         { content: stat.time.toString() },
-        { content: stat.attempts.toString() }
+        { content: stat.attempts.toString() },
+        { content: this.formatPlayedAt(stat.date) }
       ];
 
       cells.forEach(({ content }) => {
         const cell = document.createElement('div');
         cell.classList.add('stat-cell');
         cell.textContent = content;
+        cell.title = content;
         row.appendChild(cell);
       });
 
@@ -354,5 +413,7 @@ export class StatsManager {
       body.appendChild(fragment);
       body.style.opacity = '1';
     }, ANIMATION_DURATION / 2);
+
+    this.updateLoadMoreState();
   }
-} 
+}

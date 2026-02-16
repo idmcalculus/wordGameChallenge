@@ -1,62 +1,61 @@
-// Color Variables
-// Modern Gradient Theme
-$color-primary: #667eea;
-$color-primary-dark: #5568d3;
-$color-primary-light: #7f9cf5;
-$color-accent: #f093fb;
-$color-accent-dark: #e67de8;
+// Color Variables (aligned with logo palette)
+$color-primary: #3b63a4;
+$color-primary-dark: #2f4f84;
+$color-primary-light: #5f84bf;
+$color-accent: #a7ceda;
+$color-accent-dark: #8bb4c4;
 
 // Secondary Colors
-$color-secondary: #4facfe;
-$color-secondary-dark: #00a8ff;
-$color-secondary-light: #7cc8ff;
+$color-secondary: #f57c00;
+$color-secondary-dark: #d86a00;
+$color-secondary-light: #ff9f45;
 
-// Game Feedback Colors (More vibrant)
-$color-correct: #10b981;        // Vibrant green
-$color-correct-light: #6ee7b7;  // Light green
-$color-correct-dark: #065f46;   // Dark green
-$color-contains: #fbbf24;       // Vibrant yellow/orange
-$color-contains-light: #fde68a; // Light yellow
-$color-contains-dark: #92400e;  // Dark orange
-$color-not-contains: #ef4444;   // Vibrant red
-$color-not-contains-light: #fca5a5; // Light red
-$color-not-contains-dark: #7f1d1d; // Dark red
+// Game Feedback Colors
+$color-correct: #4caf50;
+$color-correct-light: #80cf83;
+$color-correct-dark: #3b8e3f;
+$color-contains: #f57c00;
+$color-contains-light: #ffac59;
+$color-contains-dark: #c65f00;
+$color-not-contains: #e25454;
+$color-not-contains-light: #f38a8a;
+$color-not-contains-dark: #ba3d3d;
 
 // Neutral Colors
 $color-white: #ffffff;
-$color-black: #1a202c;
-$color-grey-light: #f7fafc;
-$color-grey: #e2e8f0;
-$color-grey-dark: #64748b;
-$color-text: #2d3748;
-$color-text-light: #718096;
+$color-black: #102034;
+$color-grey-light: #edf4f8;
+$color-grey: #c7d6e2;
+$color-grey-dark: #5f738a;
+$color-text: #1e3149;
+$color-text-light: #6f8298;
 
 // UI Colors
-$color-background: #f8fafc;
-$color-background-dark: #1e293b;
-$color-background-light: #ffffff;
-$color-text-secondary: #64748b;
-$color-success: #10b981;
-$color-success-dark: #059669;
-$color-danger: #ef4444;
-$color-danger-dark: #dc2626;
-$color-hint: #fbbf24;
-$color-cooldown: #10b981;
+$color-background: #edf4f8;
+$color-background-dark: #1e3149;
+$color-background-light: #f9fcff;
+$color-text-secondary: #5f738a;
+$color-success: #4caf50;
+$color-success-dark: #3b8e3f;
+$color-danger: #d86a00;
+$color-danger-dark: #b95900;
+$color-hint: #f57c00;
+$color-cooldown: #8bb4c4;
 
 // Game Element Colors
-$color-game-header: #1e293b;
-$color-game-border: #e2e8f0;
-$color-game-background: #ffffff;
-$color-card-shadow: rgba(15, 23, 42, 0.08);
-$color-card-shadow-hover: rgba(15, 23, 42, 0.16);
+$color-game-header: #1e3149;
+$color-game-border: #c7d6e2;
+$color-game-background: #f9fcff;
+$color-card-shadow: rgba(19, 34, 53, 0.1);
+$color-card-shadow-hover: rgba(19, 34, 53, 0.18);
 
 // Gradients
-$gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-$gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-$gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-$gradient-danger: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
-$gradient-background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-$gradient-button: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$gradient-primary: linear-gradient(135deg, #3b63a4 0%, #5f84bf 100%);
+$gradient-secondary: linear-gradient(135deg, #f57c00 0%, #ff9f45 100%);
+$gradient-success: linear-gradient(135deg, #3b8e3f 0%, #4caf50 100%);
+$gradient-danger: linear-gradient(135deg, #d86a00 0%, #f57c00 100%);
+$gradient-background: linear-gradient(135deg, #2f4f84 0%, #3b63a4 40%, #a7ceda 100%);
+$gradient-button: linear-gradient(135deg, #3b63a4 0%, #5f84bf 100%);
 
 // Typography
 $font-family-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -117,17 +116,17 @@ $shadow-base: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.
 $shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 $shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 $shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-$shadow-glow: 0 0 20px rgba(102, 126, 234, 0.4);
-$shadow-glow-success: 0 0 20px rgba(16, 185, 129, 0.4);
-$shadow-glow-danger: 0 0 20px rgba(239, 68, 68, 0.4);
+$shadow-glow: 0 0 20px rgba(59, 99, 164, 0.35);
+$shadow-glow-success: 0 0 20px rgba(76, 175, 80, 0.35);
+$shadow-glow-danger: 0 0 20px rgba(216, 106, 0, 0.35);
 
 // Stats Table Colors
-$color-header-bg: #f8f9fa;
-$color-row-hover: #f5f5f5;
-$color-border: #e9ecef;
-$color-chip-bg: #e9ecef;
-$color-chip-hover: #dee2e6;
-$color-active-filters-bg: #f8f9fa;
+$color-header-bg: #dce8f0;
+$color-row-hover: #edf4f8;
+$color-border: #c7d6e2;
+$color-chip-bg: #e4eef5;
+$color-chip-hover: #d4e4ef;
+$color-active-filters-bg: #f3f8fc;
 
 :root {
   // Theme Colors
@@ -138,6 +137,18 @@ $color-active-filters-bg: #f8f9fa;
   --text-muted-color: #{$color-text-secondary};
   --border-color: #{$color-border};
   --danger-color: #{$color-danger};
+  --color-grey: #{$color-grey};
+  --color-white: #{$color-white};
+  --clue-correct-bg: #{$color-correct};
+  --clue-correct-border: #{$color-correct-dark};
+  --clue-correct-shadow: rgba(76, 175, 80, 0.4);
+  --clue-contains-bg: #f2c94c;
+  --clue-contains-border: #d4a62e;
+  --clue-contains-shadow: rgba(242, 201, 76, 0.4);
+  --clue-notcontains-bg: #e25454;
+  --clue-notcontains-border: #ba3d3d;
+  --clue-notcontains-shadow: rgba(226, 84, 84, 0.4);
+  --clue-text-color: #{$color-white};
   
   // Gradients
   --gradient-primary: #{$gradient-primary};

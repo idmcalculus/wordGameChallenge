@@ -1,4 +1,6 @@
 // API configuration from environment variables
+import { logger } from './utils/logger.js';
+
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.datamuse.com';
 const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '5000');
 
@@ -42,7 +44,7 @@ export async function fetchPossibleWords(pattern, wordLength) {
 
     return words;
   } catch (error) {
-    console.error('Error fetching words:', error);
+    logger.error(error, { source: 'fetchPossibleWords', pattern, wordLength });
     throw new Error(`Failed to fetch words: ${error.message}`);
   }
 }
@@ -85,7 +87,7 @@ export async function validateWord(word) {
     return await validateWordWithFreeDictionary(word);
     
   } catch (error) {
-    console.error('Error validating word with Datamuse:', error);
+    logger.error(error, { source: 'validateWord.datamuse', word });
     // Fallback to Free Dictionary API if Datamuse fails
     return await validateWordWithFreeDictionary(word);
   }
@@ -114,7 +116,7 @@ async function validateWordWithFreeDictionary(word) {
     return response.ok;
     
   } catch (error) {
-    console.error('Error validating word with Free Dictionary API:', error);
+    logger.error(error, { source: 'validateWord.freeDictionary', word });
     // If both APIs fail, we'll assume the word is valid to avoid blocking gameplay
     return true;
   }
