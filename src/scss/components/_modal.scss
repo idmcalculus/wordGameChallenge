@@ -121,6 +121,53 @@
   }
 }
 
+.about-content {
+  width: 90%;
+  max-width: 700px;
+
+  h2 {
+    @include m.heading;
+    margin-bottom: v.$spacing-medium;
+    text-align: center;
+    background: v.$gradient-primary;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: v.$font-weight-extrabold;
+  }
+}
+
+.about-container {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: v.$spacing-medium;
+
+  p {
+    margin: 0;
+    color: v.$color-text;
+    line-height: 1.65;
+  }
+
+  a {
+    font-weight: v.$font-weight-bold;
+    color: v.$color-primary-dark;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: v.$color-primary;
+    }
+  }
+
+  .contribute-note {
+    padding: v.$spacing-medium;
+    border-radius: v.$border-radius-medium;
+    background: rgba(v.$color-accent, 0.2);
+    border: 1px solid rgba(v.$color-accent, 0.45);
+  }
+}
+
 .stats-container {
   max-height: 70vh;
   overflow-y: auto;
@@ -237,12 +284,12 @@
 
 .close {
   color: v.$color-grey-dark;
-  float: right;
+  float: none;
   font-size: 32px;
   font-weight: v.$font-weight-bold;
   position: absolute;
-  top: v.$spacing-medium;
-  right: v.$spacing-large;
+  top: v.$spacing-small;
+  right: v.$spacing-medium;
   line-height: 1;
   width: 40px;
   height: 40px;
@@ -261,6 +308,16 @@
     text-decoration: none;
     cursor: pointer;
   }
+}
+
+#alertModal .modal-content {
+  padding-top: calc(#{v.$spacing-xlarge} + 6px);
+}
+
+#alertModal .close {
+  top: 8px;
+  right: 10px;
+  z-index: 2;
 }
 
 .alert-buttons {
@@ -352,6 +409,7 @@
   text-align: center;
   padding: v.$spacing-xlarge;
   border-radius: v.$border-radius-large;
+  margin-top: v.$spacing-medium;
   margin-bottom: v.$spacing-large;
   animation: bounceIn v.$animation-duration-long v.$animation-bounce;
   
@@ -447,6 +505,11 @@
     width: 36px;
     height: 36px;
     right: v.$spacing-medium;
+  }
+
+  #alertModal .close {
+    top: 6px;
+    right: 8px;
   }
   
   .invalid-word-alert,

@@ -17,15 +17,26 @@
         <div class="outerWrapper" id="outerWrapper">
             <div class="headerBar">
                 <h1 id="gameHeader">🎮 Find the word ...</h1>
-                <button
-                    id="themeToggle"
-                    class="theme-toggle"
-                    type="button"
-                    aria-label="Toggle theme"
-                    title="Toggle theme"
-                >
-                    <span class="theme-toggle__icon" aria-hidden="true">🌙</span>
-                </button>
+                <div class="headerControls">
+                    <button
+                        id="themeToggle"
+                        class="theme-toggle header-icon-button"
+                        type="button"
+                        aria-label="Toggle theme"
+                        title="Toggle theme"
+                    >
+                        <span class="theme-toggle__icon" aria-hidden="true">🌙</span>
+                    </button>
+                    <button
+                        id="aboutBtn"
+                        class="about-toggle header-icon-button"
+                        type="button"
+                        aria-label="About this game"
+                        title="About this game"
+                    >
+                        <span class="about-toggle__icon" aria-hidden="true">i</span>
+                    </button>
+                </div>
             </div>
 
             <div class="actionButtons">
@@ -49,6 +60,7 @@
             <div class="wrapper" id="wrapper"></div>
             <div id="alphabetContainer"></div>
             <div class="actionButtons includesHintButtons">
+                <button id="playAgainMain" class="btn-primary" style="display: none;">🔁 Play Again</button>
                 <button id="resetGame" style="display: none;">🔄 Reset Game</button>
             </div>
         </div>
@@ -97,6 +109,32 @@
                 <span class="close">&times;</span>
                 <h2>📊 Your Stats</h2>
                 <div id="statsList" class="stats-container"></div>
+            </div>
+        </div>
+
+        <!-- About Modal Structure -->
+        <div id="aboutModal" class="modal">
+            <div class="modal-content about-content">
+                <span class="close">&times;</span>
+                <h2>ℹ️ About Word Game Challenge</h2>
+                <div class="about-container">
+                    <p>
+                        Word Game Challenge is a modern word puzzle where speed and pattern recognition matter.
+                        Pick a word length, make smart guesses, and use clue colors to solve the word in five attempts.
+                    </p>
+                    <p>
+                        <strong>Credits:</strong> Built with love 💙 by Damilola Michael Ige.
+                        <a href="https://www.buymeacoffee.com/idmcalculus" target="_blank" rel="noopener noreferrer">
+                            Buy me a coffee
+                        </a>.
+                    </p>
+                    <p class="contribute-note">
+                        This game is open source and contributions are welcome:
+                        <a href="https://github.com/wordgamechallenge" target="_blank" rel="noopener noreferrer">
+                            github.com/wordgamechallenge
+                        </a>
+                    </p>
+                </div>
             </div>
         </div>
 

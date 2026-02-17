@@ -233,6 +233,129 @@ class WordGame {
       logger.debug(`Row ${index + 1}: ${values}`);
     });
   }
+
+  detectTouchDevice() {
+    const hasCoarsePointer = typeof window.matchMedia === 'function'
+      ? window.matchMedia('(pointer: coarse)').matches
+      : false;
+
+    return (
+      typeof window !== 'undefined' &&
+      (
+        hasCoarsePointer ||
+        'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0
+      )
+    );
+  }
+
+  stopActiveTimer() {
+    if (this.timerId !== null) {
+      stopTimer(this.timerId);
+      this.timerId = null;
+    }
+  }
+
+  showMainPlayAgainButton() {
+    const playAgainMainButton = document.getElementById('playAgainMain');
+    if (playAgainMainButton) {
+      playAgainMainButton.style.display = 'inline-flex';
+    }
+  }
+
+  hideMainPlayAgainButton() {
+    const playAgainMainButton = document.getElementById('playAgainMain');
+    if (playAgainMainButton) {
+      playAgainMainButton.style.display = 'none';
+    }
+  }
+
+  handleGameResultModalClose() {
+    this.stopActiveTimer();
+    this.showMainPlayAgainButton();
+  }
+
+  enableVirtualInputMode() {
+    if (!this.isTouchDevice || !this.currentRow) {
+      return;
+    }
+
+    this.isVirtualInputMode = true;
+    this.getCurrentRowInputs().forEach((input) => {
+      if (!input.disabled) {
+        input.readOnly = true;
+      }
+    });
+
+    const activeElement = document.activeElement;
+    if (activeElement && activeElement.tagName === 'INPUT') {
+      activeElement.blur();
+    }
+  }
+
+  enableNativeInputMode({ preserveFocus = false } = {}) {
+    if (!this.currentRow) {
+      return;
+    }
+
+    this.isVirtualInputMode = false;
+
+    if (this.isTouchDevice) {
+      this.getCurrentRowInputs().forEach((input) => {
+        if (!input.disabled) {
+          input.readOnly = false;
+        }
+      });
+    }
+
+    if (preserveFocus) {
+      return;
+    }
+
+    this.focusFirstInputOfCurrentRow();
+  }
+
+  focusFirstInputOfCurrentRow() {
+    if (!this.currentRow) {
+      return;
+    }
+
+    const inputs = this.getCurrentRowInputs().filter((input) => !input.disabled);
+    if (inputs.length === 0) {
+      return;
+    }
+
+    const firstInput = inputs[0];
+    setTimeout(() => {
+      if (!this.currentRow || !this.currentRow.contains(firstInput) || firstInput.disabled) {
+        return;
+      }
+
+      firstInput.focus();
+      if (typeof firstInput.setSelectionRange === 'function') {
+        firstInput.setSelectionRange(firstInput.value.length, firstInput.value.length);
+      }
+    }, 0);
+  }
+
+  setupCurrentRowInputMode() {
+    if (!this.currentRow || !this.isTouchDevice) {
+      return;
+    }
+
+    this.getCurrentRowInputs().forEach((input) => {
+      const handleTouchInputIntent = () => {
+        if (!this.currentRow || !this.currentRow.contains(input)) {
+          return;
+        }
+
+        this.enableNativeInputMode({ preserveFocus: true });
+      };
+
+      input.addEventListener('pointerdown', handleTouchInputIntent);
+      input.addEventListener('touchstart', handleTouchInputIntent, { passive: true });
+    });
+  }
   
   constructor() {
     this.possibleWords = [];
@@ -247,6 +370,8 @@ class WordGame {
     this.timerDisplay = null;
     this.timerId = null;
     this.isCheckingRow = false;
+    this.isTouchDevice = this.detectTouchDevice();
+    this.isVirtualInputMode = false;
 
     // Initialize stats from localStorage
     const oldStats = localStorage.getItem('highScores');
@@ -316,9 +441,20 @@ class WordGame {
     document.getElementById('resetGame').addEventListener('click', () => {
       this.resetGame();
     });
+
+    const playAgainMainButton = document.getElementById('playAgainMain');
+    if (playAgainMainButton) {
+      playAgainMainButton.addEventListener('click', () => {
+        this.playAgain();
+      });
+    }
   }
 
   async play() {
+    this.stopActiveTimer();
+    this.hideMainPlayAgainButton();
+    this.isVirtualInputMode = false;
+
     // Reset round tracking before creating the first row.
     this.rowCount = 0;
     this.attempts = 0;
@@ -528,6 +664,8 @@ class WordGame {
     }
 
     const normalizedKey = key.toLowerCase();
+    this.enableVirtualInputMode();
+
     if (/^[a-z]$/.test(normalizedKey)) {
       this.handleVirtualLetterInput(normalizedKey, inputs);
       return;
@@ -552,7 +690,8 @@ class WordGame {
     this.currentRow = createRow(this.wordLength, this.checkRowLetters.bind(this));
     document.querySelector('.wrapper').appendChild(this.currentRow);
     this.rowCount++;
-    this.currentRow.firstChild.focus();
+    this.enableNativeInputMode();
+    this.setupCurrentRowInputMode();
     
     // Explicitly reset the hint button states for the new row
     resetHintButtonStates();
@@ -707,7 +846,7 @@ class WordGame {
   }
 
   gameWon() {
-    stopTimer(this.timerId);
+    this.stopActiveTimer();
 
     const timeTaken = Math.floor((new Date() - this.startTime) / 1000);
         
@@ -761,11 +900,15 @@ class WordGame {
     () => { this.resetGame(); }, 
     false, 
     'Play Again', 
-    'New Game');
+    'New Game',
+    {
+      isGameResult: true,
+      onClose: () => this.handleGameResultModalClose()
+    });
   }
 
   gameLost() {
-    stopTimer(this.timerId);
+    this.stopActiveTimer();
 
     // For game lost, show Play Again and New Game options
     showAlert(`<div class="failure-alert">
@@ -778,7 +921,11 @@ class WordGame {
     () => { this.resetGame(); }, 
     false, 
     'Play Again', 
-    'New Game');
+    'New Game',
+    {
+      isGameResult: true,
+      onClose: () => this.handleGameResultModalClose()
+    });
   }
 
   displayStats() {
@@ -803,6 +950,10 @@ class WordGame {
   }
 
   playAgain() {
+    this.stopActiveTimer();
+    this.hideMainPlayAgainButton();
+    this.isVirtualInputMode = false;
+
     // Clear the board
     document.getElementById('wrapper').innerHTML = '';
     
@@ -834,6 +985,10 @@ class WordGame {
   }
 
   resetGame() {
+    this.stopActiveTimer();
+    this.hideMainPlayAgainButton();
+    this.isVirtualInputMode = false;
+
     resetGameUI();
     resetHintButtons();
     this.rowCount = 0;

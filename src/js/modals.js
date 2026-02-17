@@ -4,6 +4,28 @@ import { logger } from './utils/logger.js';
 let alertCallback = null;
 let tryAgainCallback = null;
 let isGameStartAlert = false;
+let isGameResultAlert = false;
+let alertCloseCallback = null;
+
+function resetAlertState() {
+  alertCallback = null;
+  tryAgainCallback = null;
+  isGameStartAlert = false;
+  isGameResultAlert = false;
+  alertCloseCallback = null;
+}
+
+function handleAlertCloseFromDismiss() {
+  if (isGameStartAlert && alertCallback) {
+    alertCallback();
+  }
+
+  if (isGameResultAlert && alertCloseCallback) {
+    alertCloseCallback();
+  }
+
+  resetAlertState();
+}
 
 /**
  * Sets up the modal event listeners and elements.
@@ -25,31 +47,31 @@ export function setupModals() {
   const statsModal = document.getElementById('statsModal');
   const statsClose = document.querySelector('#statsModal .close');
 
+  // About Modal Elements
+  const aboutBtn = document.getElementById('aboutBtn');
+  const aboutModal = document.getElementById('aboutModal');
+  const aboutClose = document.querySelector('#aboutModal .close');
+
   // Alert Modal Event Listeners
   alertClose.onclick = () => {
     alertModal.style.display = 'none';
-    // If this is a game start alert, reset the game when the X is clicked
-    if (isGameStartAlert && alertCallback) {
-      alertCallback();
-      alertCallback = null;
-      isGameStartAlert = false;
-    }
+    handleAlertCloseFromDismiss();
   };
 
   alertTryAgainButton.onclick = () => {
     alertModal.style.display = 'none';
     if (tryAgainCallback) {
       tryAgainCallback();
-      tryAgainCallback = null;
     }
+    resetAlertState();
   };
 
   alertResetButton.onclick = () => {
     alertModal.style.display = 'none';
     if (alertCallback) {
       alertCallback();
-      alertCallback = null;
     }
+    resetAlertState();
   };
 
   // How to Play Modal Event Listeners
@@ -85,16 +107,24 @@ export function setupModals() {
     document.body.style.overflow = 'auto'; // Re-enable scrolling
   };
 
+  // About Modal Event Listeners
+  if (aboutBtn && aboutModal && aboutClose) {
+    aboutBtn.onclick = () => {
+      aboutModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    };
+
+    aboutClose.onclick = () => {
+      aboutModal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    };
+  }
+
   // Close modals when clicking outside
   window.onclick = (event) => {
     if (event.target === alertModal) {
       alertModal.style.display = 'none';
-      // If this is a game start alert, reset the game when clicking outside
-      if (isGameStartAlert && alertCallback) {
-        alertCallback();
-        alertCallback = null;
-        isGameStartAlert = false;
-      }
+      handleAlertCloseFromDismiss();
     }
     if (event.target === howToPlayModal) {
       howToPlayModal.style.display = 'none';
@@ -103,6 +133,10 @@ export function setupModals() {
     if (event.target === statsModal) {
       statsModal.style.display = 'none';
       document.body.style.overflow = 'auto'; // Re-enable scrolling
+    }
+    if (aboutModal && event.target === aboutModal) {
+      aboutModal.style.display = 'none';
+      document.body.style.overflow = 'auto';
     }
   };
 
@@ -115,12 +149,11 @@ export function setupModals() {
       }
       if (alertModal.style.display === 'flex') {
         alertModal.style.display = 'none';
-        // If this is a game start alert, reset the game when ESC is pressed
-        if (isGameStartAlert && alertCallback) {
-          alertCallback();
-          alertCallback = null;
-          isGameStartAlert = false;
-        }
+        handleAlertCloseFromDismiss();
+      }
+      if (aboutModal && aboutModal.style.display === 'flex') {
+        aboutModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
       }
     }
   });
@@ -134,8 +167,19 @@ export function setupModals() {
  * @param {boolean} isGameStart - Indicates if this is a game start alert.
  * @param {string} tryAgainText - Text for the "Try Again" button.
  * @param {string} resetText - Text for the "Reset" button.
+ * @param {Object} options - Additional options.
+ * @param {boolean} options.isGameResult - Indicates if this is an end-game result alert.
+ * @param {function} options.onClose - Callback invoked when the alert is dismissed with X/backdrop/ESC.
  */
-export function showAlert(message, tryAgainCb, resetCb, isGameStart = false, tryAgainText = 'Try Again', resetText = 'Reset Game') {
+export function showAlert(
+  message,
+  tryAgainCb,
+  resetCb,
+  isGameStart = false,
+  tryAgainText = 'Try Again',
+  resetText = 'Reset Game',
+  options = {}
+) {
   const alertMessage = document.getElementById('alertMessage');
   const alertModal = document.getElementById('alertModal');
   const alertTryAgainButton = document.getElementById('alertTryAgainButton');
@@ -170,6 +214,8 @@ export function showAlert(message, tryAgainCb, resetCb, isGameStart = false, try
   
   // Set the game start alert flag
   isGameStartAlert = isGameStart;
+  isGameResultAlert = Boolean(options.isGameResult);
+  alertCloseCallback = typeof options.onClose === 'function' ? options.onClose : null;
   
   // Center the Reset Game button when Try Again is hidden
   if (!tryAgainCb && alertButtonsContainer) {

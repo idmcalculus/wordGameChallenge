@@ -56,13 +56,15 @@
   color: #e5effb;
 }
 
-:root[data-theme='dark'] .theme-toggle {
+:root[data-theme='dark'] .theme-toggle,
+:root[data-theme='dark'] .about-toggle {
   background: linear-gradient(160deg, rgba(17, 37, 59, 0.95), rgba(31, 59, 96, 0.78));
   border-color: rgba(117, 162, 226, 0.55);
   color: #f1f7ff;
 }
 
-:root[data-theme='dark'] .theme-toggle:hover {
+:root[data-theme='dark'] .theme-toggle:hover,
+:root[data-theme='dark'] .about-toggle:hover {
   box-shadow: 0 8px 16px rgba(6, 13, 21, 0.35);
 }
 
@@ -74,9 +76,23 @@
 :root[data-theme='dark'] .wordLengthInputContainer p,
 :root[data-theme='dark'] .stats-container .stat-item .stat-time,
 :root[data-theme='dark'] .stats-container .stat-item .stat-details,
+:root[data-theme='dark'] .about-container p,
 :root[data-theme='dark'] .rules-container li,
 :root[data-theme='dark'] .close {
   color: #e5effb;
+}
+
+:root[data-theme='dark'] .about-container .contribute-note {
+  background: rgba(19, 36, 57, 0.82);
+  border-color: rgba(95, 132, 191, 0.45);
+}
+
+:root[data-theme='dark'] .about-container a {
+  color: #9fc7ff;
+}
+
+:root[data-theme='dark'] .about-container a:hover {
+  color: #d1e6ff;
 }
 
 :root[data-theme='dark'] .alphabet-label {

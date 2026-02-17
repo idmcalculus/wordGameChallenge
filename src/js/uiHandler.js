@@ -222,6 +222,10 @@ export function resetGameUI() {
   document.getElementById('alphabetContainer').style.display = 'none';
   document.getElementById('difficulty').style.display = 'none';
   document.getElementById('resetGame').style.display = 'none';
+  const playAgainMainButton = document.getElementById('playAgainMain');
+  if (playAgainMainButton) {
+    playAgainMainButton.style.display = 'none';
+  }
   
   // Reset hint system
   resetHintButtons();
