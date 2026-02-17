@@ -1,13 +1,15 @@
-import { resetHintButtons } from './hintHandler.js';
+import { resetHintButtons } from './hintHandler';
+import type { KeyboardKey, LetterState } from './types/types';
+import type { OnKeyboardInput } from './types/interface';
 
-const KEYBOARD_LAYOUT = [
+const KEYBOARD_LAYOUT: KeyboardKey[][] = [
   ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
   ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
   ['enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'delete'],
   ['arrowleft', 'arrowright']
 ];
 
-function getKeyLabel(key) {
+function getKeyLabel(key: KeyboardKey): string {
   if (key === 'enter') return 'Enter';
   if (key === 'delete') return 'Delete';
   if (key === 'arrowleft') return '←';
@@ -15,7 +17,7 @@ function getKeyLabel(key) {
   return key.toUpperCase();
 }
 
-function getKeyAriaLabel(key) {
+function getKeyAriaLabel(key: KeyboardKey): string {
   if (key === 'enter') return 'Enter key';
   if (key === 'delete') return 'Delete key';
   if (key === 'arrowleft') return 'Move cursor left';
@@ -25,26 +27,29 @@ function getKeyAriaLabel(key) {
 
 /**
  * Creates the alphabet container and populates it with letters.
- * @param {Array<string>} alphabet - An array of letters to display in the container.
- * @param {function} onKeyInput - Callback invoked when an on-screen key is clicked.
  */
-export function createAlphabetContainer(alphabet, onKeyInput = null) {
+export function createAlphabetContainer(
+  alphabet: string[],
+  onKeyInput: OnKeyboardInput | null = null
+): void {
   const container = document.getElementById('alphabetContainer');
-  container.innerHTML = '';  // Clear container
-  
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = '';
+
   const letterSet = new Set(alphabet.map((letter) => letter.toLowerCase()));
 
-  // Add a title/label above the keyboard to clarify its purpose
   const label = document.createElement('div');
   label.classList.add('alphabet-label');
   label.textContent = 'Keyboard & Letter Status';
   container.appendChild(label);
-  
-  // Create keyboard layout container
+
   const gridContainer = document.createElement('div');
   gridContainer.classList.add('alphabet-grid');
 
-  const createKeyTile = (key) => {
+  const createKeyTile = (key: KeyboardKey): HTMLButtonElement => {
     const keyButton = document.createElement('button');
     keyButton.type = 'button';
     keyButton.classList.add('keyboard-key');
@@ -67,8 +72,7 @@ export function createAlphabetContainer(alphabet, onKeyInput = null) {
     }
 
     if (typeof onKeyInput === 'function') {
-      const emitKey = () => onKeyInput(key);
-      // Keep focus on the active input so virtual arrows/delete operate on the row cursor.
+      const emitKey = (): void => onKeyInput(key);
       keyButton.addEventListener('pointerdown', (event) => {
         event.preventDefault();
       });
@@ -83,7 +87,7 @@ export function createAlphabetContainer(alphabet, onKeyInput = null) {
 
     return keyButton;
   };
-  
+
   KEYBOARD_LAYOUT.forEach((rowKeys, rowIndex) => {
     const row = document.createElement('div');
     row.classList.add('keyboard-row', `keyboard-row-${rowIndex + 1}`);
@@ -92,115 +96,120 @@ export function createAlphabetContainer(alphabet, onKeyInput = null) {
     });
     gridContainer.appendChild(row);
   });
-  
+
   container.appendChild(gridContainer);
-  // Visibility is controlled by the game flow.
   container.classList.remove('visible');
 }
 
 /**
  * Updates the alphabet container to reflect the status of a guessed letter.
- * @param {string} guessedLetter - The letter that was guessed.
- * @param {string} letterClass - The class to apply to the letter (e.g., 'correct', 'contains', 'notContains').
  */
-export function updateAlphabetContainer(guessedLetter, letterClass) {
+export function updateAlphabetContainer(guessedLetter: string, letterClass: LetterState): void {
   const container = document.getElementById('alphabetContainer');
-  
-  // Show the container if it's not already visible
+  if (!container) {
+    return;
+  }
+
   if (!container.classList.contains('visible')) {
     container.classList.add('visible');
   }
-  
+
   const normalizedLetter = guessedLetter.toLowerCase();
-  const letterElement = container.querySelector(`.keyboard-key[data-letter="${normalizedLetter}"]`);
-  if (!letterElement) return; // Safety check
-  
+  const letterElement = container.querySelector<HTMLElement>(`.keyboard-key[data-letter="${normalizedLetter}"]`);
+  if (!letterElement) {
+    return;
+  }
+
   letterElement.classList.remove('notGuessed', 'correct', 'contains', 'notContains');
   letterElement.classList.add(letterClass);
-  
-  // Update the aria-label for accessibility
-  let status = 'unknown';
+
+  let statusDescription: string;
   if (letterClass === 'correct') {
-    status = 'correct, in the right position';
+    statusDescription = 'correct, in the right position';
   } else if (letterClass === 'contains') {
-    status = 'in the word but wrong position';
-  } else if (letterClass === 'notContains') {
-    status = 'not in the word';
+    statusDescription = 'in the word but wrong position';
+  } else {
+    statusDescription = 'not in the word';
   }
-  
-  letterElement.setAttribute('aria-label', `Letter ${guessedLetter.toUpperCase()}, ${status}`);
+
+  letterElement.setAttribute('aria-label', `Letter ${guessedLetter.toUpperCase()}, ${statusDescription}`);
 }
 
 /**
  * Creates a new row of input boxes for letter entry.
- * @param {number} wordLength - The length of the word to be guessed.
- * @param {function} checkRowLetters - A callback function to check the letters in the row.
- * @returns {HTMLElement} The newly created row element.
  */
-export function createRow(wordLength, checkRowLetters) {
+export function createRow(wordLength: number, checkRowLetters: () => void): HTMLDivElement {
   const newRow = document.createElement('div');
   newRow.classList.add('wordRow');
-  newRow.id = 'row_' + Math.random().toString(36).substr(2, 9);
+  newRow.id = `row_${Math.random().toString(36).substring(2, 11)}`;
 
-  for (let i = 0; i < wordLength; i++) {
-    let newInputBox = document.createElement('input');
+  const getInputs = (): HTMLInputElement[] =>
+    Array.from(newRow.querySelectorAll<HTMLInputElement>('input.wordLetterBox'));
+
+  for (let index = 0; index < wordLength; index++) {
+    const newInputBox = document.createElement('input');
     newInputBox.type = 'text';
     newInputBox.classList.add('wordLetterBox');
     newInputBox.maxLength = 1;
     newInputBox.autocomplete = 'off';
-    newInputBox.autocorrect = 'off';
-    newInputBox.autocapitalize = 'off';
+    newInputBox.setAttribute('autocorrect', 'off');
+    newInputBox.setAttribute('autocapitalize', 'off');
     newInputBox.spellcheck = false;
 
-    // Handle input events for letter entry
     newInputBox.addEventListener('input', () => {
-      // Normalize the input to lowercase
       if (newInputBox.value) {
         newInputBox.value = newInputBox.value.toLowerCase();
       }
-            
-      // Validate the input is a letter
-      if (!newInputBox.value.match(/^[a-z]$/i)) {
-        newInputBox.value = ''; // clear the box if not a letter
+
+      if (!/^[a-z]$/i.test(newInputBox.value)) {
+        newInputBox.value = '';
         return;
       }
 
-      // Move focus to next input after valid entry
-      if (newInputBox.value && i < wordLength - 1) {
-        // Small timeout to ensure the focus change works on mobile
-        setTimeout(() => {
-          newRow.children[i + 1].focus();
+      if (newInputBox.value && index < wordLength - 1) {
+        window.setTimeout(() => {
+          const inputs = getInputs();
+          const nextInput = inputs[index + 1];
+          if (nextInput) {
+            nextInput.focus();
+          }
         }, 10);
       }
-            
-      // Check if the row is complete
+
       checkRowLetters();
     });
 
-    // Handle keyboard navigation
     newInputBox.addEventListener('keydown', (event) => {
-      // Backspace to previous input
-      if (event.key === 'Backspace' && i > 0 && newInputBox.value === '') {
-        newRow.children[i - 1].value = '';
-        newRow.children[i - 1].focus();
+      const inputs = getInputs();
+
+      if (event.key === 'Backspace' && index > 0 && newInputBox.value === '') {
+        const previousInput = inputs[index - 1];
+        if (previousInput) {
+          previousInput.value = '';
+          previousInput.focus();
+        }
         event.preventDefault();
       }
-            
-      // Arrow key navigation
-      if (event.key === 'ArrowLeft' && i > 0) {
-        newRow.children[i - 1].focus();
+
+      if (event.key === 'ArrowLeft' && index > 0) {
+        const previousInput = inputs[index - 1];
+        if (previousInput) {
+          previousInput.focus();
+        }
         event.preventDefault();
       }
-      if (event.key === 'ArrowRight' && i < wordLength - 1) {
-        newRow.children[i + 1].focus();
+
+      if (event.key === 'ArrowRight' && index < wordLength - 1) {
+        const nextInput = inputs[index + 1];
+        if (nextInput) {
+          nextInput.focus();
+        }
         event.preventDefault();
       }
     });
-        
-    // Touch-specific handling for mobile
-    newInputBox.addEventListener('touchend', (e) => {
-      // Prevent zoom on double-tap
-      e.preventDefault();
+
+    newInputBox.addEventListener('touchend', (event) => {
+      event.preventDefault();
       newInputBox.focus();
     });
 
@@ -213,30 +222,54 @@ export function createRow(wordLength, checkRowLetters) {
 /**
  * Resets the game UI to its initial state.
  */
-export function resetGameUI() {
-  document.getElementById('wrapper').innerHTML = '';
-  document.getElementById('startGame').style.display = 'block';
-  document.querySelector('.wordLengthInputContainer').style.display = 'block';
-  document.getElementById('wordLengthInput').value = '';
-  document.getElementById('alphabetContainer').innerHTML = '';
-  document.getElementById('alphabetContainer').style.display = 'none';
-  document.getElementById('difficulty').style.display = 'none';
-  document.getElementById('resetGame').style.display = 'none';
+export function resetGameUI(): void {
+  const wrapper = document.getElementById('wrapper');
+  const startGameButton = document.getElementById('startGame');
+  const wordLengthInputContainer = document.querySelector<HTMLElement>('.wordLengthInputContainer');
+  const wordLengthInput = document.getElementById('wordLengthInput') as HTMLInputElement | null;
+  const alphabetContainer = document.getElementById('alphabetContainer');
+  const difficulty = document.getElementById('difficulty');
+  const resetGameButton = document.getElementById('resetGame');
   const playAgainMainButton = document.getElementById('playAgainMain');
+
+  if (wrapper) {
+    wrapper.innerHTML = '';
+  }
+  if (startGameButton) {
+    startGameButton.style.display = 'block';
+  }
+  if (wordLengthInputContainer) {
+    wordLengthInputContainer.style.display = 'block';
+  }
+  if (wordLengthInput) {
+    wordLengthInput.value = '';
+  }
+  if (alphabetContainer) {
+    alphabetContainer.innerHTML = '';
+    alphabetContainer.style.display = 'none';
+  }
+  if (difficulty) {
+    difficulty.style.display = 'none';
+  }
+  if (resetGameButton) {
+    resetGameButton.style.display = 'none';
+  }
   if (playAgainMainButton) {
     playAgainMainButton.style.display = 'none';
   }
-  
-  // Reset hint system
+
   resetHintButtons();
 }
 
 /**
  * Updates the displayed difficulty level based on the word length.
- * @param {number} wordLength - The length of the word to determine the difficulty.
  */
-export function updateDifficulty(wordLength) {
+export function updateDifficulty(wordLength: number): void {
   const difficulty = document.getElementById('difficulty');
+  if (!difficulty) {
+    return;
+  }
+
   if (wordLength <= 4) {
     difficulty.innerHTML = 'Difficulty: Easy';
   } else if (wordLength <= 6) {

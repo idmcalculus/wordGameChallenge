@@ -10,7 +10,7 @@ export function createConfetti() {
   }
 }
 
-function createConfettiPiece(colors) {
+function createConfettiPiece(colors: string[]): void {
   const confetti = document.createElement('div');
   confetti.className = 'confetti-piece';
   
@@ -51,7 +51,7 @@ function createConfettiPiece(colors) {
 /**
  * Creates a firework particle effect at a specific position
  */
-export function createFirework(x, y) {
+export function createFirework(x: number, y: number): void {
   const colors = ['#3b63a4', '#5f84bf', '#a7ceda', '#4caf50', '#f57c00', '#6e809a'];
   const particleCount = 20;
   

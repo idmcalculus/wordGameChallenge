@@ -1,8 +1,10 @@
+import type { RangeDefinition, SortState } from '../types/interface';
+
 export const SORT_DIRECTIONS = {
   DEFAULT: 'default',
   ASC: 'ascending',
   DESC: 'descending'
-};
+} as const;
 
 export const SORT_FIELDS = {
   SERIAL: 'serial',
@@ -11,13 +13,13 @@ export const SORT_FIELDS = {
   ATTEMPTS: 'attempts',
   DATE: 'date',
   WORD_LENGTH: 'wordLength'
-};
+} as const;
 
 export const FILTER_TYPES = {
   WORD_LENGTH: 'WORD_LENGTH',
   TIME: 'TIME',
   ATTEMPTS: 'ATTEMPTS'
-};
+} as const;
 
 export const FILTER_RANGES = {
   WORD_LENGTH: [
@@ -39,11 +41,11 @@ export const FILTER_RANGES = {
     { label: '3-4 attempts', min: 3, max: 4 },
     { label: '5 attempts', min: 5, max: 5 }
   ]
-};
+} as const satisfies Record<(typeof FILTER_TYPES)[keyof typeof FILTER_TYPES], readonly RangeDefinition[]>;
 
 export const DEFAULT_SORT = {
   field: SORT_FIELDS.TIME,
   direction: SORT_DIRECTIONS.ASC
-};
+} as const satisfies SortState;
 
 export const ANIMATION_DURATION = 300; // milliseconds 

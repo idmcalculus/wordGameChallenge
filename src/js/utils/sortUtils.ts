@@ -1,11 +1,13 @@
-import { SORT_DIRECTIONS, SORT_FIELDS } from '../constants/statConstants.js';
+import { SORT_DIRECTIONS, SORT_FIELDS } from '../constants/statConstants';
+import type { IndexedStatEntry } from '../types/interface';
+import type { SortDirection, SortField } from '../types/types';
 
 /**
  * Cycles through sort directions: default -> ascending -> descending -> default
  * @param {string} currentDirection - The current sort direction
  * @returns {string} - The next sort direction
  */
-export const getNextSortDirection = (currentDirection) => {
+export const getNextSortDirection = (currentDirection: SortDirection): SortDirection => {
   switch (currentDirection) {
   case SORT_DIRECTIONS.DEFAULT:
     return SORT_DIRECTIONS.ASC;
@@ -19,12 +21,16 @@ export const getNextSortDirection = (currentDirection) => {
 
 /**
  * Compares two values based on sort direction
- * @param {any} a - The first value
- * @param {any} b - The second value
+ * @param {number|string} a - The first value
+ * @param {number|string} b - The second value
  * @param {string} direction - The sort direction
  * @returns {number} - Comparison result
  */
-export const compareValues = (a, b, direction) => {
+export const compareValues = (
+  a: number | string,
+  b: number | string,
+  direction: SortDirection
+): number => {
   if (direction === SORT_DIRECTIONS.DEFAULT) return 0;
   
   const multiplier = direction === SORT_DIRECTIONS.ASC ? 1 : -1;
@@ -41,7 +47,11 @@ export const compareValues = (a, b, direction) => {
  * @param {string} direction - The sort direction
  * @returns {Array<Object>} - The sorted stats
  */
-export const sortStats = (stats, field, direction) => {
+export const sortStats = (
+  stats: IndexedStatEntry[],
+  field: SortField,
+  direction: SortDirection
+): IndexedStatEntry[] => {
   if (direction === SORT_DIRECTIONS.DEFAULT) return stats;
 
   return [...stats].sort((a, b) => {
@@ -50,7 +60,7 @@ export const sortStats = (stats, field, direction) => {
 
     switch (field) {
     case SORT_FIELDS.SERIAL:
-      return compareValues(a.index, b.index, direction);
+      return compareValues(a.__originalIndex ?? 0, b.__originalIndex ?? 0, direction);
     case SORT_FIELDS.WORD:
       return compareValues(a.word.toLowerCase(), b.word.toLowerCase(), direction);
     case SORT_FIELDS.TIME:
@@ -72,7 +82,7 @@ export const sortStats = (stats, field, direction) => {
  * @param {string} direction - The sort direction
  * @returns {string} - The class name for the sort indicator
  */
-export const getSortIndicatorClass = (direction) => {
+export const getSortIndicatorClass = (direction: SortDirection): string => {
   switch (direction) {
   case SORT_DIRECTIONS.ASC:
     return 'sort-indicator--asc';

@@ -4,13 +4,14 @@
  * @param {HTMLElement} timerDisplay - The element to display the timer
  * @returns {number} - The timer interval ID
  */
-export function startTimer(startTime, timerDisplay) {
+export function startTimer(startTime: Date, timerDisplay: HTMLElement): number {
+
   // Show the timer display if it's hidden
   timerDisplay.style.display = 'inline-flex';
   
   return setInterval(() => {
     const now = new Date();
-    const elapsedMilliseconds = now - startTime;
+    const elapsedMilliseconds = now.getTime() - startTime.getTime();
     
     // Format time as MM:SS
     const totalSeconds = Math.floor(elapsedMilliseconds / 1000);
@@ -29,6 +30,6 @@ export function startTimer(startTime, timerDisplay) {
  * Stop the timer
  * @param {number} timerId - The timer interval ID to clear
  */
-export function stopTimer(timerId) {
+export function stopTimer(timerId: number) {
   clearInterval(timerId);
 }

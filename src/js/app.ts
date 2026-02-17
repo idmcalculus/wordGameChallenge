@@ -2,11 +2,11 @@
 import '../scss/main.scss';
 
 // Import game modules
-import WordGame from './WordGame.js';
-import { setupModals } from './modals.js';
-import { registerServiceWorker } from './serviceWorkerRegistration.js';
-import { initializeThemeManager } from './themeManager.js';
-import { installGlobalErrorHandlers, getCapturedErrors, clearCapturedErrors } from './utils/errorReporter.js';
+import WordGame from './WordGame';
+import { setupModals } from './modals';
+import { registerServiceWorker } from './serviceWorkerRegistration';
+import { initializeThemeManager } from './themeManager';
+import { installGlobalErrorHandlers, getCapturedErrors, clearCapturedErrors } from './utils/errorReporter';
 
 installGlobalErrorHandlers();
 
@@ -19,9 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
   window.clearWordGameClientErrors = clearCapturedErrors;
 
   initializeThemeManager();
-  setupModals();
-  // Initialize the game and store instance on window for access by modals
-  window.game = new WordGame();
+  const game = new WordGame();
+  window.game = game;
+  setupModals({
+    getGame: () => game
+  });
 });
 
 // Register service worker for offline functionality

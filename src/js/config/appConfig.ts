@@ -1,5 +1,5 @@
-const parsePositiveInt = (value, fallback) => {
-  const parsed = Number.parseInt(value || '', 10);
+const parsePositiveInt = (value: string | undefined, fallback: number): number => {
+  const parsed = Number.parseInt(value ?? '', 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
@@ -16,4 +16,3 @@ export const appConfig = {
     maxStoredErrors: parsePositiveInt(import.meta.env.VITE_MAX_STORED_CLIENT_ERRORS, 50)
   }
 };
-

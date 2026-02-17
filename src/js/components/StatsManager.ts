@@ -1,52 +1,90 @@
-import { SORT_DIRECTIONS, SORT_FIELDS, DEFAULT_SORT, ANIMATION_DURATION, FILTER_TYPES, FILTER_RANGES } from '../constants/statConstants.js';
-import { sortStats, getNextSortDirection, getSortIndicatorClass } from '../utils/sortUtils.js';
-import { applyFilters, getAvailableFilters, saveFilterPreferences, loadFilterPreferences } from '../utils/filterUtils.js';
+import {
+  ANIMATION_DURATION,
+  DEFAULT_SORT,
+  FILTER_RANGES,
+  FILTER_TYPES,
+  SORT_DIRECTIONS,
+  SORT_FIELDS
+} from '../constants/statConstants';
+import { applyFilters, loadFilterPreferences, saveFilterPreferences } from '../utils/filterUtils';
+import { getNextSortDirection, getSortIndicatorClass, sortStats } from '../utils/sortUtils';
+import type { ActiveFilters, IndexedStatEntry, SortState } from '../types/interface';
+import type { FilterType, SortField } from '../types/types';
 
 const INITIAL_VISIBLE_ROWS = 20;
 const LOAD_MORE_BATCH_SIZE = 10;
 
+const SORT_FIELD_VALUES = Object.values(SORT_FIELDS) as SortField[];
+
+type FilterGroupKey = keyof typeof FILTER_TYPES;
+
+interface HeaderConfig {
+  field: SortField;
+  label: string;
+}
+
+interface ApplyDisplayOptions {
+  resetVisibleRows?: boolean;
+}
+
+function isSortField(value: string): value is SortField {
+  return SORT_FIELD_VALUES.includes(value as SortField);
+}
+
 export class StatsManager {
-  constructor(container, stats) {
+  private readonly container: HTMLElement;
+  private readonly originalStats: IndexedStatEntry[];
+  private displayedStats: IndexedStatEntry[];
+  private visibleRows: number;
+  private loadMoreButton: HTMLButtonElement | null;
+  private loadMoreContainer: HTMLDivElement | null;
+  private pendingRenderTimeoutId: number | null;
+  private currentSort: SortState;
+  private activeFilters: ActiveFilters;
+
+  constructor(container: HTMLElement, stats: IndexedStatEntry[]) {
     this.container = container;
-    this.originalStats = stats;
-    this.displayedStats = [...stats];
+    this.originalStats = (stats || []).map((stat, index) => ({
+      ...stat,
+      __originalIndex: index
+    }));
+    this.displayedStats = [...this.originalStats];
     this.visibleRows = INITIAL_VISIBLE_ROWS;
     this.loadMoreButton = null;
     this.loadMoreContainer = null;
+    this.pendingRenderTimeoutId = null;
     this.currentSort = { ...DEFAULT_SORT };
     this.activeFilters = loadFilterPreferences();
-    this.availableFilters = getAvailableFilters(stats);
-    
+
     this.init();
   }
 
-  init() {
+  private init(): void {
     this.createStatsTable();
     this.attachEventListeners();
+    this.updateFilterPanelState();
+    this.updateActiveFiltersDisplay();
     this.applyCurrentSortAndFilters({ resetVisibleRows: true });
   }
 
-  createStatsTable() {
-    // Create table structure
+  private createStatsTable(): void {
     const table = document.createElement('div');
     table.classList.add('stats-table');
 
-    // Create header
     const header = this.createHeader();
     table.appendChild(header);
 
-    // Create body
     const body = document.createElement('div');
     body.classList.add('stats-body');
     table.appendChild(body);
 
-    // Create load more controls
     const loadMoreContainer = document.createElement('div');
     loadMoreContainer.classList.add('stats-load-more-container');
 
     const loadMoreButton = document.createElement('button');
     loadMoreButton.classList.add('stats-load-more-btn');
     loadMoreButton.textContent = 'Load More';
+    loadMoreButton.type = 'button';
     loadMoreButton.addEventListener('click', () => this.handleLoadMore());
 
     loadMoreContainer.appendChild(loadMoreButton);
@@ -54,21 +92,19 @@ export class StatsManager {
     this.loadMoreContainer = loadMoreContainer;
     this.loadMoreButton = loadMoreButton;
 
-    // Create filter panel
     const filterPanel = this.createFilterPanel();
-    
-    // Add to container
+
     this.container.innerHTML = '';
     this.container.appendChild(filterPanel);
     this.container.appendChild(table);
     this.container.appendChild(loadMoreContainer);
   }
 
-  createHeader() {
+  private createHeader(): HTMLDivElement {
     const header = document.createElement('div');
     header.classList.add('stats-header');
 
-    const headers = [
+    const headers: HeaderConfig[] = [
       { field: SORT_FIELDS.SERIAL, label: 'S/N' },
       { field: SORT_FIELDS.WORD, label: 'Word' },
       { field: SORT_FIELDS.TIME, label: 'Time(s)' },
@@ -87,7 +123,7 @@ export class StatsManager {
 
       const sortIndicator = document.createElement('span');
       sortIndicator.classList.add('sort-indicator');
-      
+
       if (field === this.currentSort.field) {
         sortIndicator.classList.add(getSortIndicatorClass(this.currentSort.direction));
       } else {
@@ -102,7 +138,7 @@ export class StatsManager {
     return header;
   }
 
-  formatPlayedAt(dateValue) {
+  private formatPlayedAt(dateValue: string): string {
     const parsedDate = new Date(dateValue);
     if (Number.isNaN(parsedDate.getTime())) {
       return 'Unknown';
@@ -117,24 +153,22 @@ export class StatsManager {
     return `${month} ${day}, ${year} ${hours}:${minutes}`;
   }
 
-  createFilterPanel() {
+  private createFilterPanel(): HTMLDivElement {
     const panel = document.createElement('div');
     panel.classList.add('filter-panel');
 
-    // Create sections for each filter type
-    Object.entries(FILTER_TYPES).forEach(([type, value]) => {
-      const section = this.createFilterSection(type, value);
+    (Object.entries(FILTER_TYPES) as Array<[FilterGroupKey, FilterType]>).forEach(([groupKey, filterType]) => {
+      const section = this.createFilterSection(groupKey, filterType);
       panel.appendChild(section);
     });
 
-    // Create active filters display
     const activeFiltersDisplay = document.createElement('div');
     activeFiltersDisplay.classList.add('active-filters');
     panel.appendChild(activeFiltersDisplay);
 
-    // Create clear filters button
     const clearButton = document.createElement('button');
     clearButton.classList.add('clear-filters');
+    clearButton.type = 'button';
     clearButton.textContent = 'Clear All Filters';
     clearButton.disabled = Object.keys(this.activeFilters).length === 0;
     clearButton.addEventListener('click', () => this.clearAllFilters());
@@ -143,28 +177,28 @@ export class StatsManager {
     return panel;
   }
 
-  createFilterSection(type, value) {
+  private createFilterSection(groupKey: FilterGroupKey, filterType: FilterType): HTMLDivElement {
     const section = document.createElement('div');
     section.classList.add('filter-section');
+    section.dataset.filterType = filterType;
 
     const title = document.createElement('h3');
-    title.textContent = this.getFilterTitle(type);
+    title.textContent = this.getFilterTitle(groupKey);
     section.appendChild(title);
 
     const chipsContainer = document.createElement('div');
     chipsContainer.classList.add('filter-chips');
 
-    FILTER_RANGES[value].forEach((range, index) => {
+    FILTER_RANGES[filterType].forEach((range, index) => {
       const chip = document.createElement('div');
       chip.classList.add('filter-chip');
       chip.textContent = range.label;
-      
-      // Check if this filter is active
-      if (this.activeFilters[value]?.includes(index)) {
+
+      if (this.activeFilters[filterType]?.includes(index)) {
         chip.classList.add('active');
       }
 
-      chip.addEventListener('click', () => this.toggleFilter(value, index, chip));
+      chip.addEventListener('click', () => this.toggleFilter(filterType, index, chip));
       chipsContainer.appendChild(chip);
     });
 
@@ -172,7 +206,7 @@ export class StatsManager {
     return section;
   }
 
-  getFilterTitle(type) {
+  private getFilterTitle(type: FilterGroupKey): string {
     switch (type) {
     case 'WORD_LENGTH':
       return 'Word Length';
@@ -185,57 +219,57 @@ export class StatsManager {
     }
   }
 
-  toggleFilter(filterType, rangeIndex, chipElement) {
-    // Initialize filter type array if it doesn't exist
+  private toggleFilter(filterType: FilterType, rangeIndex: number, chipElement: Element | null = null): void {
     if (!this.activeFilters[filterType]) {
       this.activeFilters[filterType] = [];
     }
 
-    const index = this.activeFilters[filterType].indexOf(rangeIndex);
+    const selected = this.activeFilters[filterType] ?? [];
+    const index = selected.indexOf(rangeIndex);
+
     if (index === -1) {
-      // Add filter
-      this.activeFilters[filterType].push(rangeIndex);
+      selected.push(rangeIndex);
+      this.activeFilters[filterType] = selected;
       if (chipElement) {
         chipElement.classList.add('adding');
-        setTimeout(() => chipElement.classList.add('active'), 150);
-        setTimeout(() => chipElement.classList.remove('adding'), 300);
+        window.setTimeout(() => chipElement.classList.add('active'), 150);
+        window.setTimeout(() => chipElement.classList.remove('adding'), 300);
       }
     } else {
-      // Remove filter
       if (chipElement) {
         chipElement.classList.add('removing');
-        setTimeout(() => {
+        window.setTimeout(() => {
           chipElement.classList.remove('active');
           chipElement.classList.remove('removing');
         }, 150);
       }
-      
-      this.activeFilters[filterType].splice(index, 1);
-      
-      // Remove empty filter type
-      if (this.activeFilters[filterType].length === 0) {
+
+      selected.splice(index, 1);
+
+      if (selected.length === 0) {
         delete this.activeFilters[filterType];
+      } else {
+        this.activeFilters[filterType] = selected;
       }
     }
 
-    // Update clear button state and panel styling
     this.updateFilterPanelState();
-
-    // Save preferences
     saveFilterPreferences(this.activeFilters);
-
-    // Update display
     this.updateActiveFiltersDisplay();
     this.applyCurrentSortAndFilters({ resetVisibleRows: true });
   }
 
-  updateFilterPanelState() {
-    const filterPanel = this.container.querySelector('.filter-panel');
-    const clearButton = this.container.querySelector('.clear-filters');
-    
+  private updateFilterPanelState(): void {
+    const filterPanel = this.container.querySelector<HTMLElement>('.filter-panel');
+    const clearButton = this.container.querySelector<HTMLButtonElement>('.clear-filters');
+
+    if (!filterPanel || !clearButton) {
+      return;
+    }
+
     const hasActiveFilters = Object.keys(this.activeFilters).length > 0;
     clearButton.disabled = !hasActiveFilters;
-    
+
     if (hasActiveFilters) {
       filterPanel.classList.add('has-active-filters');
     } else {
@@ -243,49 +277,56 @@ export class StatsManager {
     }
   }
 
-  clearAllFilters() {
+  private clearAllFilters(): void {
     this.activeFilters = {};
     saveFilterPreferences(this.activeFilters);
 
-    // Reset all chips with animation
-    const chips = this.container.querySelectorAll('.filter-chip');
+    const chips = this.container.querySelectorAll<HTMLElement>('.filter-chip');
     chips.forEach((chip, index) => {
-      setTimeout(() => {
+      window.setTimeout(() => {
         chip.classList.add('removing');
-        setTimeout(() => {
+        window.setTimeout(() => {
           chip.classList.remove('active', 'removing');
         }, 150);
       }, index * 50);
     });
 
-    // Update display state
     this.updateFilterPanelState();
     this.updateActiveFiltersDisplay();
     this.applyCurrentSortAndFilters({ resetVisibleRows: true });
   }
 
-  updateActiveFiltersDisplay() {
-    const display = this.container.querySelector('.active-filters');
+  private updateActiveFiltersDisplay(): void {
+    const display = this.container.querySelector<HTMLElement>('.active-filters');
+    if (!display) {
+      return;
+    }
+
     display.innerHTML = '';
 
-    Object.entries(this.activeFilters).forEach(([type, indices]) => {
+    (Object.entries(this.activeFilters) as Array<[FilterType, number[]]>).forEach(([filterType, indices]) => {
+      const title = this.getFilterTitle(filterType as FilterGroupKey);
       indices.forEach((index, filterIndex) => {
-        const range = FILTER_RANGES[type][index];
+        const range = FILTER_RANGES[filterType][index];
+        if (!range) {
+          return;
+        }
+
         const filter = document.createElement('div');
         filter.classList.add('active-filter');
         filter.style.animation = `activeFilterIn ${ANIMATION_DURATION}ms ease forwards`;
         filter.style.animationDelay = `${filterIndex * 100}ms`;
-        
+
         const label = document.createElement('span');
-        label.textContent = `${this.getFilterTitle(type)}: ${range.label}`;
-        
+        label.textContent = `${title}: ${range.label}`;
+
         const removeButton = document.createElement('span');
         removeButton.classList.add('remove-filter');
-        removeButton.setAttribute('data-filter-type', type);
-        removeButton.setAttribute('data-filter-index', index);
-        removeButton.setAttribute('aria-label', `Remove ${this.getFilterTitle(type)} filter: ${range.label}`);
+        removeButton.setAttribute('data-filter-type', filterType);
+        removeButton.setAttribute('data-filter-index', String(index));
+        removeButton.setAttribute('aria-label', `Remove ${title} filter: ${range.label}`);
         removeButton.addEventListener('click', () => {
-          this.removeFilter(type, index);
+          this.removeFilter(filterType, index);
         });
 
         filter.appendChild(label);
@@ -295,32 +336,26 @@ export class StatsManager {
     });
   }
 
-  removeFilter(filterType, rangeIndex) {
-    // Find the correct chip element within the specific filter section
-    const section = this.container.querySelector(`.filter-section:nth-of-type(${this.getSectionIndex(filterType)})`);
-    const chips = section?.querySelectorAll('.filter-chip');
-    const chip = chips?.[rangeIndex];
+  private removeFilter(filterType: FilterType, rangeIndex: number): void {
+    const section = this.container.querySelector<HTMLElement>(`.filter-section[data-filter-type="${filterType}"]`);
+    const chips = section?.querySelectorAll<HTMLElement>('.filter-chip');
+    const chip = chips?.[rangeIndex] ?? null;
 
     this.toggleFilter(filterType, rangeIndex, chip);
   }
 
-  getSectionIndex(filterType) {
-    const filterTypes = Object.keys(FILTER_TYPES);
-    const currentType = Object.entries(FILTER_TYPES).find(([, value]) => value === filterType)?.[0];
-    return filterTypes.indexOf(currentType) + 1; // nth-of-type is 1-indexed
-  }
-
-  attachEventListeners() {
-    // Attach sort listeners to headers
-    const headers = this.container.querySelectorAll('.header-cell');
-    headers.forEach(header => {
+  private attachEventListeners(): void {
+    const headers = this.container.querySelectorAll<HTMLElement>('.header-cell');
+    headers.forEach((header) => {
       header.addEventListener('click', () => this.handleSort(header.dataset.field));
     });
-
-    // Filter listeners will be added here
   }
 
-  handleSort(field) {
+  private handleSort(field: string | undefined): void {
+    if (!field || !isSortField(field)) {
+      return;
+    }
+
     if (field === this.currentSort.field) {
       this.currentSort.direction = getNextSortDirection(this.currentSort.direction);
     } else {
@@ -333,54 +368,75 @@ export class StatsManager {
     this.applyCurrentSortAndFilters({ resetVisibleRows: true });
   }
 
-  applyCurrentSortAndFilters({ resetVisibleRows = false } = {}) {
+  private applyCurrentSortAndFilters({ resetVisibleRows = false }: ApplyDisplayOptions = {}): void {
     if (resetVisibleRows) {
       this.visibleRows = INITIAL_VISIBLE_ROWS;
     }
 
-    // First apply filters
     const filteredStats = applyFilters(this.originalStats, this.activeFilters);
-    
-    // Then apply sorting
     this.displayedStats = sortStats(filteredStats, this.currentSort.field, this.currentSort.direction);
-    
-    // Update the display
+
     this.updateDisplay();
   }
 
-  handleLoadMore() {
+  private handleLoadMore(): void {
+    if (this.visibleRows >= this.displayedStats.length) {
+      return;
+    }
+
     this.visibleRows = Math.min(this.visibleRows + LOAD_MORE_BATCH_SIZE, this.displayedStats.length);
     this.updateDisplay();
   }
 
-  updateLoadMoreState() {
+  private updateLoadMoreState(): void {
     if (!this.loadMoreContainer || !this.loadMoreButton) {
       return;
     }
 
-    const hasMoreRows = this.displayedStats.length > this.visibleRows;
+    const remainingRows = Math.max(0, this.displayedStats.length - this.visibleRows);
+    const hasMoreRows = remainingRows > 0;
+    const nextBatchSize = Math.min(LOAD_MORE_BATCH_SIZE, remainingRows);
+
+    if (hasMoreRows) {
+      this.loadMoreButton.textContent = `Load ${nextBatchSize} More`;
+      this.loadMoreButton.setAttribute(
+        'aria-label',
+        `Load ${nextBatchSize} more rows. ${remainingRows} rows remaining in total`
+      );
+    }
+
     this.loadMoreContainer.style.display = hasMoreRows ? 'flex' : 'none';
     this.loadMoreButton.style.display = hasMoreRows ? 'inline-flex' : 'none';
   }
 
-  updateDisplay() {
-    const body = this.container.querySelector('.stats-body');
+  private updateDisplay(): void {
+    const body = this.container.querySelector<HTMLElement>('.stats-body');
+    if (!body) {
+      return;
+    }
+
     const fragment = document.createDocumentFragment();
 
-    // Update headers
-    const headers = this.container.querySelectorAll('.header-cell');
-    headers.forEach(header => {
-      const indicator = header.querySelector('.sort-indicator');
+    if (this.pendingRenderTimeoutId !== null) {
+      clearTimeout(this.pendingRenderTimeoutId);
+      this.pendingRenderTimeoutId = null;
+    }
+
+    const headers = this.container.querySelectorAll<HTMLElement>('.header-cell');
+    headers.forEach((header) => {
+      const indicator = header.querySelector<HTMLElement>('.sort-indicator');
       const field = header.dataset.field;
-      
-      indicator.className = 'sort-indicator ' + (
+      if (!indicator || !field || !isSortField(field)) {
+        return;
+      }
+
+      indicator.className = `sort-indicator ${
         field === this.currentSort.field
           ? getSortIndicatorClass(this.currentSort.direction)
           : getSortIndicatorClass(SORT_DIRECTIONS.DEFAULT)
-      );
+      }`;
     });
 
-    // Update rows with animation
     const rowsToRender = this.displayedStats.slice(0, this.visibleRows);
     rowsToRender.forEach((stat, index) => {
       const row = document.createElement('div');
@@ -388,10 +444,10 @@ export class StatsManager {
       row.style.animationDelay = `${index * 50}ms`;
 
       const cells = [
-        { content: (index + 1).toString() },
+        { content: String(index + 1) },
         { content: stat.word },
-        { content: stat.time.toString() },
-        { content: stat.attempts.toString() },
+        { content: String(stat.time) },
+        { content: String(stat.attempts) },
         { content: this.formatPlayedAt(stat.date) }
       ];
 
@@ -406,12 +462,12 @@ export class StatsManager {
       fragment.appendChild(row);
     });
 
-    // Replace body content with animation
     body.style.opacity = '0';
-    setTimeout(() => {
+    this.pendingRenderTimeoutId = window.setTimeout(() => {
       body.innerHTML = '';
       body.appendChild(fragment);
       body.style.opacity = '1';
+      this.pendingRenderTimeoutId = null;
     }, ANIMATION_DURATION / 2);
 
     this.updateLoadMoreState();

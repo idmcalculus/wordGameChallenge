@@ -1,8 +1,61 @@
 // API configuration from environment variables
-import { logger } from './utils/logger.js';
+import { logger } from './utils/logger';
+import type { JsonValue } from './types/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.datamuse.com';
-const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '5000');
+const API_TIMEOUT = Number.parseInt(import.meta.env.VITE_API_TIMEOUT || '5000', 10);
+
+interface DatamuseWord {
+  word: string;
+  tags?: string[];
+}
+
+function toError(reason: Error | string | object | null | undefined): Error {
+  if (reason instanceof Error) {
+    return reason;
+  }
+
+  if (typeof reason === 'string') {
+    return new Error(reason);
+  }
+
+  return new Error(String(reason));
+}
+
+function toDatamuseWord(value: JsonValue): DatamuseWord | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+
+  const record = value as Record<string, JsonValue>;
+  const tags = record.tags;
+  if (typeof record.word !== 'string') {
+    return null;
+  }
+
+  if (tags !== undefined && (!Array.isArray(tags) || !tags.every((item) => typeof item === 'string'))) {
+    return null;
+  }
+
+  return {
+    word: record.word,
+    tags: tags as string[] | undefined
+  };
+}
+
+function normalizeDatamuseWords(payload: JsonValue): DatamuseWord[] {
+  if (!Array.isArray(payload)) {
+    return [];
+  }
+
+  return payload.reduce<DatamuseWord[]>((accumulator, item) => {
+    const normalized = toDatamuseWord(item);
+    if (normalized) {
+      accumulator.push(normalized);
+    }
+    return accumulator;
+  }, []);
+}
 
 /**
  * Fetches possible words matching the given pattern and length
@@ -10,7 +63,7 @@ const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '5000');
  * @param {number} wordLength - The length of words to return
  * @returns {Promise<string[]>} - Array of matching words
  */
-export async function fetchPossibleWords(pattern, wordLength) {
+export async function fetchPossibleWords(pattern: string, wordLength: number): Promise<string[]> {
   try {
     // Create AbortController for timeout handling
     const controller = new AbortController();
@@ -28,15 +81,16 @@ export async function fetchPossibleWords(pattern, wordLength) {
       throw new Error(`Network response error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = normalizeDatamuseWords(await response.json() as JsonValue);
     
     // Filter words: must be exact length and have frequency score > 0.5
     const words = data
-      .filter(wordObj => {
-        const freq = parseFloat(wordObj.tags?.[0]?.slice(2)) || 0; // freq tags look like 'f:1.23'
+      .filter((wordObj) => {
+        const freqTag = wordObj.tags?.[0] ?? '';
+        const freq = parseFloat(freqTag.slice(2)) || 0; // freq tags look like 'f:1.23'
         return wordObj.word.length === wordLength && freq > 0.5;
       })
-      .map(wordObj => wordObj.word.toLowerCase());
+      .map((wordObj) => wordObj.word.toLowerCase());
 
     if (words.length === 0) {
       throw new Error(`No common words of length ${wordLength} found.`);
@@ -44,8 +98,11 @@ export async function fetchPossibleWords(pattern, wordLength) {
 
     return words;
   } catch (error) {
-    logger.error(error, { source: 'fetchPossibleWords', pattern, wordLength });
-    throw new Error(`Failed to fetch words: ${error.message}`);
+    const normalizedError = toError(error as Error | string | object | null | undefined);
+    logger.error(normalizedError, { source: 'fetchPossibleWords', pattern, wordLength });
+    throw new Error(`Failed to fetch words: ${normalizedError.message}`, {
+      cause: error
+    });
   }
 }
 
@@ -54,7 +111,7 @@ export async function fetchPossibleWords(pattern, wordLength) {
  * @param {string} word - The word to validate
  * @returns {Promise<boolean>} - True if the word is valid, false otherwise
  */
-export async function validateWord(word) {
+export async function validateWord(word: string): Promise<boolean> {
   if (!word || word.trim() === '') {
     return false;
   }
@@ -76,7 +133,7 @@ export async function validateWord(word) {
       throw new Error(`Network response error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = normalizeDatamuseWords(await response.json() as JsonValue);
     
     // If we found an exact match with the same spelling, it's a valid word
     if (data.length > 0 && data[0].word.toLowerCase() === word.toLowerCase()) {
@@ -87,7 +144,7 @@ export async function validateWord(word) {
     return await validateWordWithFreeDictionary(word);
     
   } catch (error) {
-    logger.error(error, { source: 'validateWord.datamuse', word });
+    logger.error(toError(error as Error | string | object | null | undefined), { source: 'validateWord.datamuse', word });
     // Fallback to Free Dictionary API if Datamuse fails
     return await validateWordWithFreeDictionary(word);
   }
@@ -98,7 +155,7 @@ export async function validateWord(word) {
  * @param {string} word - The word to validate
  * @returns {Promise<boolean>} - True if the word is valid, false otherwise
  */
-async function validateWordWithFreeDictionary(word) {
+async function validateWordWithFreeDictionary(word: string): Promise<boolean> {
   try {
     // Create AbortController for timeout handling
     const controller = new AbortController();
@@ -116,7 +173,7 @@ async function validateWordWithFreeDictionary(word) {
     return response.ok;
     
   } catch (error) {
-    logger.error(error, { source: 'validateWord.freeDictionary', word });
+    logger.error(toError(error as Error | string | object | null | undefined), { source: 'validateWord.freeDictionary', word });
     // If both APIs fail, we'll assume the word is valid to avoid blocking gameplay
     return true;
   }

@@ -1,4 +1,4 @@
-import { logger } from './utils/logger.js';
+import { logger } from './utils/logger';
 
 /**
  * Register the service worker for production builds

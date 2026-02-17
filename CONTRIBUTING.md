@@ -36,23 +36,31 @@ This project and everyone participating in it is governed by our Code of Conduct
 
 ### Setting Up Development Environment
 
-1. Ensure you have a modern web browser
-2. Set up a local server (Python or Node.js)
-3. Install any development tools you prefer (e.g., VS Code, ESLint)
+1. Install [Bun](https://bun.sh/) and ensure `bun --version` works
+2. Install dependencies with `bun install`
+3. Copy env file with `cp .env.example .env`
+4. Start dev server with `bun run dev`
+5. Validate with `bun run lint` and `bun run build`
 
 ### Project Structure
 
 ```
 wordGameChallenge/
-├── index.html          # Main HTML file
-├── styles.css         # Styling
-├── js/
-│   ├── app.js         # Application entry point
-│   ├── WordGame.js    # Core game logic
-│   ├── apiHandler.js  # Word API integration
-│   ├── gameUtils.js   # Utility functions
-│   ├── modals.js      # Alert modal system
-│   └── uiHandler.js   # UI updates and rendering
+├── src/
+│   ├── index.html
+│   ├── scss/
+│   └── js/
+│       ├── WordGame.ts            # Orchestration layer
+│       ├── core/gameEngine.ts     # Pure guess evaluation rules
+│       ├── repositories/statsRepository.ts
+│       ├── components/StatsManager.ts
+│       ├── types/types.ts
+│       ├── types/interface.ts
+│       ├── uiHandler.ts
+│       ├── hintHandler.ts
+│       └── modals.ts
+├── docs/
+│   └── ARCHITECTURE.md
 ```
 
 ## Pull Request Process

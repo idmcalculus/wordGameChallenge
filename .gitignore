@@ -11,3 +11,9 @@ yarn.lock
 
 # build
 /dist
+
+# misc
+.DS_Store
+*.log
+.env
+/coverage

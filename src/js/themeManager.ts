@@ -1,24 +1,30 @@
+import type { ResolvedTheme, ThemePreference } from './types/types';
+
 const THEME_STORAGE_KEY = 'word-game-theme-preference';
-const DEFAULT_THEME = 'system';
-const SUPPORTED_THEMES = new Set(['system', 'light', 'dark']);
-const THEME_META_COLORS = {
+const DEFAULT_THEME: ThemePreference = 'system';
+const SUPPORTED_THEMES = new Set<ThemePreference>(['system', 'light', 'dark']);
+const THEME_META_COLORS: Record<ResolvedTheme, string> = {
   light: '#3b63a4',
   dark: '#0f1f33'
 };
 
-let systemThemeMediaQuery = null;
-let themeToggleButton = null;
+let systemThemeMediaQuery: MediaQueryList | null = null;
+let themeToggleButton: HTMLButtonElement | null = null;
 
-function getStoredThemePreference() {
+function isThemePreference(value: string | null): value is ThemePreference {
+  return value !== null && SUPPORTED_THEMES.has(value as ThemePreference);
+}
+
+function getStoredThemePreference(): ThemePreference {
   const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-  if (SUPPORTED_THEMES.has(storedTheme)) {
+  if (isThemePreference(storedTheme)) {
     return storedTheme;
   }
 
   return DEFAULT_THEME;
 }
 
-function resolveTheme(themePreference) {
+function resolveTheme(themePreference: ThemePreference): ResolvedTheme {
   if (themePreference === 'system') {
     return systemThemeMediaQuery?.matches ? 'dark' : 'light';
   }
@@ -26,8 +32,8 @@ function resolveTheme(themePreference) {
   return themePreference;
 }
 
-function updateThemeColorMeta(resolvedTheme) {
-  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+function updateThemeColorMeta(resolvedTheme: ResolvedTheme): void {
+  const themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
   if (!themeColorMeta) {
     return;
   }
@@ -35,14 +41,14 @@ function updateThemeColorMeta(resolvedTheme) {
   themeColorMeta.setAttribute('content', THEME_META_COLORS[resolvedTheme]);
 }
 
-function updateThemeToggleButton(resolvedTheme) {
+function updateThemeToggleButton(resolvedTheme: ResolvedTheme): void {
   if (!themeToggleButton) {
     return;
   }
 
-  const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
+  const nextTheme: ResolvedTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
   const icon = resolvedTheme === 'dark' ? '☀️' : '🌙';
-  const iconElement = themeToggleButton.querySelector('.theme-toggle__icon');
+  const iconElement = themeToggleButton.querySelector<HTMLElement>('.theme-toggle__icon');
 
   themeToggleButton.dataset.nextTheme = nextTheme;
   themeToggleButton.title = `Switch to ${nextTheme} theme`;
@@ -56,7 +62,7 @@ function updateThemeToggleButton(resolvedTheme) {
   }
 }
 
-function applyTheme(themePreference) {
+function applyTheme(themePreference: ThemePreference): void {
   const resolvedTheme = resolveTheme(themePreference);
 
   document.documentElement.setAttribute('data-theme', resolvedTheme);
@@ -65,15 +71,15 @@ function applyTheme(themePreference) {
   updateThemeToggleButton(resolvedTheme);
 }
 
-function handleThemeToggle() {
-  const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+function handleThemeToggle(): void {
+  const currentTheme: ResolvedTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const nextTheme: ResolvedTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
   localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
   applyTheme(nextTheme);
 }
 
-function handleSystemThemeChange() {
+function handleSystemThemeChange(): void {
   const currentPreference = getStoredThemePreference();
   if (currentPreference !== 'system') {
     return;
@@ -82,8 +88,8 @@ function handleSystemThemeChange() {
   applyTheme('system');
 }
 
-export function initializeThemeManager() {
-  themeToggleButton = document.getElementById('themeToggle');
+export function initializeThemeManager(): void {
+  themeToggleButton = document.getElementById('themeToggle') as HTMLButtonElement | null;
 
   systemThemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 

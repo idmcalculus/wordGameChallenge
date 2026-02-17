@@ -24,7 +24,7 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
 
 ## Tech Stack 🛠️
 
-- Vanilla JavaScript (ES6+)
+- Vanilla TypeScript (ESNext)
 - HTML5
 - CSS3
 - Vite for bundling and optimization
@@ -86,6 +86,11 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
    bun run lint:fix
    ```
 
+8. Type-check core game modules:
+   ```bash
+   bun run typecheck
+   ```
+
 9. Open your browser and navigate to:
    - `http://localhost:8080`
 
@@ -107,28 +112,41 @@ A modern, browser-based word guessing game built with vanilla JavaScript. Challe
 ```
 wordGameChallenge/
 ├── src/
-│   ├── index.html                  # Main HTML file
-│   ├── scss/                       # SCSS styling files
+│   ├── index.html                 # Main HTML file
+│   ├── scss/                      # SCSS styling files
 │   ├── js/
-│   │   ├── app.js                  # Application entry point
-│   │   ├── WordGame.js             # Core game logic
-│   │   ├── apiHandler.js           # Word API integration
-│   │   ├── gameUtils.js            # Utility functions
-│   │   ├── modals.js               # Alert modal system
-│   │   ├── uiHandler.js            # UI updates and rendering
-│   │   └── serviceWorkerRegistration.js  # PWA service worker registration
-│   └── assets/
-│       ├── icons/                  # PWA icons
-│       └── favicon.ico             # Favicon
-├── public/                         # Static assets served as-is
-├── dist/                           # Production build output
-├── vite.config.js                  # Vite configuration
-├── package.json                    # Dependencies and scripts
-├── .eslintrc.js                    # ESLint configuration
-├── .env                            # Environment variables (production)
-├── .env.example                    # Environment variables template
+│   │   ├── app.ts                 # Application entry point
+│   │   ├── WordGame.ts            # Game flow orchestration
+│   │   ├── apiHandler.ts          # Word API integration
+│   │   ├── uiHandler.ts           # Game UI rendering helpers
+│   │   ├── modals.ts              # Modal setup and alert handling
+│   │   ├── hintHandler.ts         # Hint button logic
+│   │   ├── themeManager.ts        # Theme toggle and system syncing
+│   │   ├── core/
+│   │   │   └── gameEngine.ts      # Pure guess evaluation rules
+│   │   ├── repositories/
+│   │   │   └── statsRepository.ts # Stats migration/persistence
+│   │   ├── components/
+│   │   │   └── StatsManager.ts    # Stats table/filter/sort/pagination
+│   │   ├── types/
+│   │   │   ├── types.ts           # Shared union/value types
+│   │   │   └── interface.ts       # Shared interfaces/contracts
+│   │   └── utils/                 # Timer, logger, error reporting, filters/sort
+├── public/                        # Static assets served as-is
+├── docs/
+│   └── ARCHITECTURE.md            # Module boundaries and runtime flow
+├── dist/                          # Production build output
+├── vite.config.js                 # Vite configuration
+├── package.json                   # Dependencies and scripts
+├── eslint.config.js               # ESLint configuration
+├── .env                           # Environment variables (production)
+├── .env.example                   # Environment variables template
 └── README.md
 ```
+
+## Architecture Notes
+
+- See `docs/ARCHITECTURE.md` for module responsibilities and contribution guidelines.
 
 ## Contributing 🤝
 
