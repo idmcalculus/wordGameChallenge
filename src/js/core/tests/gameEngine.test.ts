@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateGuess, LETTER_STATES } from './gameEngine';
+import { evaluateGuess, LETTER_STATES } from '../gameEngine';
 
 describe('evaluateGuess', () => {
   it('marks all letters as correct when guess matches target', () => {

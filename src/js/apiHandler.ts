@@ -1,6 +1,7 @@
 // API configuration from environment variables
 import { logger } from './utils/logger';
 import type { JsonValue } from './types/types';
+import { sanitizeWord } from './utils/inputSanitizer';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.datamuse.com';
 const API_TIMEOUT = Number.parseInt(import.meta.env.VITE_API_TIMEOUT || '5000', 10);
@@ -64,13 +65,17 @@ function normalizeDatamuseWords(payload: JsonValue): DatamuseWord[] {
  * @returns {Promise<string[]>} - Array of matching words
  */
 export async function fetchPossibleWords(pattern: string, wordLength: number): Promise<string[]> {
+  if (!/^\?+$/.test(pattern)) {
+    throw new Error('Invalid pattern supplied for word lookup');
+  }
+
   try {
     // Create AbortController for timeout handling
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
     
     // Fetch words that match our pattern and are common enough
-    const response = await fetch(`${API_URL}/words?sp=${pattern}&md=f&max=1000`, {
+    const response = await fetch(`${API_URL}/words?sp=${encodeURIComponent(pattern)}&md=f&max=1000`, {
       signal: controller.signal
     });
     
@@ -88,9 +93,11 @@ export async function fetchPossibleWords(pattern: string, wordLength: number): P
       .filter((wordObj) => {
         const freqTag = wordObj.tags?.[0] ?? '';
         const freq = parseFloat(freqTag.slice(2)) || 0; // freq tags look like 'f:1.23'
-        return wordObj.word.length === wordLength && freq > 0.5;
+        const sanitized = sanitizeWord(wordObj.word, wordLength);
+        return sanitized.length === wordLength && freq > 0.5;
       })
-      .map((wordObj) => wordObj.word.toLowerCase());
+      .map((wordObj) => sanitizeWord(wordObj.word, wordLength))
+      .filter((word) => word.length === wordLength);
 
     if (words.length === 0) {
       throw new Error(`No common words of length ${wordLength} found.`);
@@ -112,7 +119,8 @@ export async function fetchPossibleWords(pattern: string, wordLength: number): P
  * @returns {Promise<boolean>} - True if the word is valid, false otherwise
  */
 export async function validateWord(word: string): Promise<boolean> {
-  if (!word || word.trim() === '') {
+  const normalizedWord = sanitizeWord(word);
+  if (!normalizedWord) {
     return false;
   }
   
@@ -122,7 +130,7 @@ export async function validateWord(word: string): Promise<boolean> {
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
     
     // First try Datamuse API with exact spelling
-    const response = await fetch(`${API_URL}/words?sp=${word.toLowerCase()}&md=f&max=1`, {
+    const response = await fetch(`${API_URL}/words?sp=${encodeURIComponent(normalizedWord)}&md=f&max=1`, {
       signal: controller.signal
     });
     
@@ -136,17 +144,17 @@ export async function validateWord(word: string): Promise<boolean> {
     const data = normalizeDatamuseWords(await response.json() as JsonValue);
     
     // If we found an exact match with the same spelling, it's a valid word
-    if (data.length > 0 && data[0].word.toLowerCase() === word.toLowerCase()) {
+    if (data.length > 0 && sanitizeWord(data[0].word) === normalizedWord) {
       return true;
     }
     
     // If no exact match found with Datamuse, try backup validation with Free Dictionary API
-    return await validateWordWithFreeDictionary(word);
+    return await validateWordWithFreeDictionary(normalizedWord);
     
   } catch (error) {
-    logger.error(toError(error as Error | string | object | null | undefined), { source: 'validateWord.datamuse', word });
+    logger.error(toError(error as Error | string | object | null | undefined), { source: 'validateWord.datamuse', word: normalizedWord });
     // Fallback to Free Dictionary API if Datamuse fails
-    return await validateWordWithFreeDictionary(word);
+    return await validateWordWithFreeDictionary(normalizedWord);
   }
 }
 
@@ -162,7 +170,7 @@ async function validateWordWithFreeDictionary(word: string): Promise<boolean> {
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
     
     // Free Dictionary API returns 404 for non-existent words
-    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`, {
+    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`, {
       signal: controller.signal
     });
     

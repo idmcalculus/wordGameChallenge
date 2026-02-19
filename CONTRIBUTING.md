@@ -40,7 +40,11 @@ This project and everyone participating in it is governed by our Code of Conduct
 2. Install dependencies with `bun install`
 3. Copy env file with `cp .env.example .env`
 4. Start dev server with `bun run dev`
-5. Validate with `bun run lint` and `bun run build`
+5. Validate with:
+   - `bun run lint`
+   - `bun run typecheck`
+   - `bun run test:coverage`
+   - `bun run build`
 
 ### Project Structure
 
@@ -50,8 +54,13 @@ wordGameChallenge/
 │   ├── index.html
 │   ├── scss/
 │   └── js/
-│       ├── WordGame.ts            # Orchestration layer
+│       ├── controllers/
+│       │   ├── GameController.ts
+│       │   ├── BoardController.ts
+│       │   ├── KeyboardController.ts
+│       │   └── TimerController.ts
 │       ├── core/gameEngine.ts     # Pure guess evaluation rules
+│       ├── core/gameSession.ts    # In-memory gameplay session state
 │       ├── repositories/statsRepository.ts
 │       ├── components/StatsManager.ts
 │       ├── types/types.ts
@@ -79,14 +88,24 @@ wordGameChallenge/
 
 ## Coding Standards
 
-### JavaScript
+### TypeScript
 
-- Use ES6+ features where appropriate
+- Use strict TypeScript types and avoid `any`
 - Follow airbnb style guide
 - Use meaningful variable and function names
 - Add comments for complex logic
 - Keep functions small and focused
 - Use consistent spacing and indentation (2 spaces)
+
+### Testing and Coverage
+
+- Use unit tests for pure logic in `src/js/core/`, `src/js/repositories/`, and pure utility modules.
+- Use jsdom tests for UI behavior in controllers/components.
+- The repository enforces a `95%` coverage threshold on deterministic modules (core/repository/utils/api boundary), while UI tests are expected but not used as the hard coverage gate.
+- When changing stats behavior, add/update tests for:
+  - pagination (`20` initial rows, then `10` per click),
+  - `Load More` hiding when all rows are shown,
+  - filter/sort rerender behavior.
 
 ### CSS
 

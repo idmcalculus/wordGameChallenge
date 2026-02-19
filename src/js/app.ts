@@ -2,7 +2,7 @@
 import '../scss/main.scss';
 
 // Import game modules
-import WordGame from './WordGame';
+import GameController from './controllers/GameController';
 import { setupModals } from './modals';
 import { registerServiceWorker } from './serviceWorkerRegistration';
 import { initializeThemeManager } from './themeManager';
@@ -19,11 +19,17 @@ document.addEventListener('DOMContentLoaded', () => {
   window.clearWordGameClientErrors = clearCapturedErrors;
 
   initializeThemeManager();
-  const game = new WordGame();
-  window.game = game;
-  setupModals({
-    getGame: () => game
+  const game = new GameController();
+  const teardownModals = setupModals({
+    onOpenStats: () => {
+      game.displayStats();
+    }
   });
+
+  window.addEventListener('beforeunload', () => {
+    teardownModals();
+    game.destroy();
+  }, { once: true });
 });
 
 // Register service worker for offline functionality

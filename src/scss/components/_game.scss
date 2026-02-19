@@ -188,7 +188,7 @@
     transition: left v.$animation-duration-long v.$animation-smooth;
   }
   
-  &:hover {
+  &:hover:not(:disabled) {
     transform: translateY(-3px) scale(1.02);
     box-shadow: v.$shadow-lg, v.$shadow-glow;
     
@@ -197,8 +197,16 @@
     }
   }
   
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(-1px) scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.56;
+    cursor: not-allowed;
+    box-shadow: v.$shadow-sm;
+    transform: none;
+    pointer-events: none;
   }
 }
 

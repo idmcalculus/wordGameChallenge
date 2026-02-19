@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { SORT_DIRECTIONS, SORT_FIELDS } from '../constants/statConstants';
-import { compareValues, getNextSortDirection, getSortIndicatorClass, sortStats } from './sortUtils';
-import type { IndexedStatEntry } from '../types/interface';
-import type { SortField } from '../types/types';
+import { SORT_DIRECTIONS, SORT_FIELDS } from '../../constants/statConstants';
+import { compareValues, getNextSortDirection, getSortIndicatorClass, sortStats } from '../sortUtils';
+import type { IndexedStatEntry } from '../../types/interface';
+import type { SortField } from '../../types/types';
 
 const sampleStats: IndexedStatEntry[] = [
   {

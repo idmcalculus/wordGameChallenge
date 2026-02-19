@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fetchPossibleWords, validateWord } from './apiHandler';
-import type { JsonValue } from './types/types';
+import { fetchPossibleWords, validateWord } from '../apiHandler';
+import type { JsonValue } from '../types/types';
 
 const originalFetch = globalThis.fetch;
 type FetchImplementation = typeof fetch;
@@ -37,6 +37,10 @@ describe('apiHandler', () => {
 
     const words = await fetchPossibleWords('?????', 5);
     expect(words).toEqual(['adage', 'again']);
+  });
+
+  it('fetchPossibleWords rejects invalid lookup patterns', async () => {
+    await expect(fetchPossibleWords('abc??', 5)).rejects.toThrow('Invalid pattern supplied for word lookup');
   });
 
   it('fetchPossibleWords throws when no valid words are returned', async () => {

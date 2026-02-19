@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createGameStateMachine, GAME_STATES } from './gameStateMachine';
+import { createGameStateMachine, GAME_STATES } from '../gameStateMachine';
 
 describe('gameStateMachine', () => {
   it('supports valid transitions across a game lifecycle', () => {

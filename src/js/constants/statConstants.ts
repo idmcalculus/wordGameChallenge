@@ -18,7 +18,8 @@ export const SORT_FIELDS = {
 export const FILTER_TYPES = {
   WORD_LENGTH: 'WORD_LENGTH',
   TIME: 'TIME',
-  ATTEMPTS: 'ATTEMPTS'
+  ATTEMPTS: 'ATTEMPTS',
+  DATE: 'DATE'
 } as const;
 
 export const FILTER_RANGES = {
@@ -40,6 +41,14 @@ export const FILTER_RANGES = {
     { label: '1-2 attempts', min: 1, max: 2 },
     { label: '3-4 attempts', min: 3, max: 4 },
     { label: '5 attempts', min: 5, max: 5 }
+  ],
+  DATE: [
+    { label: 'This week', min: 0, max: 0 },
+    { label: 'Last week', min: 0, max: 0 },
+    { label: 'Last month', min: 0, max: 0 },
+    { label: 'Last 3 months', min: 0, max: 0 },
+    { label: 'Last 6 months', min: 0, max: 0 },
+    { label: 'All Time', min: 0, max: 0 }
   ]
 } as const satisfies Record<(typeof FILTER_TYPES)[keyof typeof FILTER_TYPES], readonly RangeDefinition[]>;
 

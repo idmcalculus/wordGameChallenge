@@ -23,7 +23,7 @@ $transition-duration: 0.3s;
   border: 1px solid var(--border-color);
   color: var(--text-color);
   display: block;
-  max-height: 600px;
+  max-height: clamp(540px, 76vh, 900px);
   overflow-y: auto;
   overflow-x: auto;
   scrollbar-width: thin;

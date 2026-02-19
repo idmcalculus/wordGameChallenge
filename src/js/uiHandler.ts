@@ -1,6 +1,7 @@
 import { resetHintButtons } from './hintHandler';
 import type { KeyboardKey, LetterState } from './types/types';
 import type { OnKeyboardInput } from './types/interface';
+import { sanitizeSingleLetter } from './utils/inputSanitizer';
 
 const KEYBOARD_LAYOUT: KeyboardKey[][] = [
   ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
@@ -157,16 +158,14 @@ export function createRow(wordLength: number, checkRowLetters: () => void): HTML
     newInputBox.spellcheck = false;
 
     newInputBox.addEventListener('input', () => {
-      if (newInputBox.value) {
-        newInputBox.value = newInputBox.value.toLowerCase();
-      }
-
-      if (!/^[a-z]$/i.test(newInputBox.value)) {
+      const sanitizedLetter = sanitizeSingleLetter(newInputBox.value);
+      newInputBox.value = sanitizedLetter;
+      if (!sanitizedLetter) {
         newInputBox.value = '';
         return;
       }
 
-      if (newInputBox.value && index < wordLength - 1) {
+      if (sanitizedLetter && index < wordLength - 1) {
         window.setTimeout(() => {
           const inputs = getInputs();
           const nextInput = inputs[index + 1];
@@ -271,13 +270,13 @@ export function updateDifficulty(wordLength: number): void {
   }
 
   if (wordLength <= 4) {
-    difficulty.innerHTML = 'Difficulty: Easy';
+    difficulty.textContent = 'Difficulty: Easy';
   } else if (wordLength <= 6) {
-    difficulty.innerHTML = 'Difficulty: Medium';
+    difficulty.textContent = 'Difficulty: Medium';
   } else if (wordLength <= 8) {
-    difficulty.innerHTML = 'Difficulty: Hard';
+    difficulty.textContent = 'Difficulty: Hard';
   } else {
-    difficulty.innerHTML = 'Difficulty: Very Hard';
+    difficulty.textContent = 'Difficulty: Very Hard';
   }
   difficulty.style.display = 'inline-flex';
 }

@@ -17,6 +17,11 @@ export interface GuessEvaluationResult {
   isWin: boolean;
 }
 
+export interface GuessHistoryEntry {
+  guess: string;
+  letterStates: LetterState[];
+}
+
 export interface StatEntry {
   word: string;
   time: number;
@@ -69,17 +74,49 @@ export interface GameStateMachine {
   getState(): GameState;
 }
 
-export interface ModalGameAccessor {
-  displayStats: () => void;
+export interface SetupModalsOptions {
+  onOpenStats?: () => void;
 }
 
-export interface SetupModalsOptions {
-  getGame?: () => ModalGameAccessor | null;
+export interface ModalTeardown {
+  (): void;
+}
+
+export type AlertVariant = 'success' | 'failure' | 'invalid';
+
+export interface AlertParagraph {
+  text: string;
+  emphasis?: string;
+}
+
+export interface AlertContent {
+  variant: AlertVariant;
+  icon: string;
+  title: string;
+  paragraphs: AlertParagraph[];
 }
 
 export interface ShowAlertOptions {
   isGameResult?: boolean;
   onClose?: () => void;
+}
+
+export interface GameSessionStartConfig {
+  targetWord: string;
+  wordLength: number;
+  startTime?: Date;
+}
+
+export interface GameSessionHintContext {
+  correctPositions: Record<number, string>;
+  usedLetters: Set<string>;
+  revealedLetters: string[];
+}
+
+export interface GameSessionGuessResult {
+  evaluation: GuessEvaluationResult;
+  attemptsUsed: number;
+  hasAttemptsRemaining: boolean;
 }
 
 export type HintProvider = () => void;
@@ -96,7 +133,6 @@ export interface HintButtonState {
 
 declare global {
   interface Window {
-    game?: ModalGameAccessor | null;
     getWordGameClientErrors?: () => CapturedErrorEntry[];
     clearWordGameClientErrors?: () => void;
   }

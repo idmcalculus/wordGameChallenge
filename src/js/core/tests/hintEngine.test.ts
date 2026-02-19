@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getAvailableLetterHints, getAvailablePositionHints, pickRandom } from './hintEngine';
+import { getAvailableLetterHints, getAvailablePositionHints, pickRandom } from '../hintEngine';
 
 describe('hintEngine', () => {
   it('returns duplicate-capable letters when not all occurrences are revealed', () => {

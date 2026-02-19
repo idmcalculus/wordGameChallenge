@@ -10,7 +10,7 @@ export type SortDirection = 'default' | 'ascending' | 'descending';
 
 export type SortField = 'serial' | 'word' | 'time' | 'attempts' | 'date' | 'wordLength';
 
-export type FilterType = 'WORD_LENGTH' | 'TIME' | 'ATTEMPTS';
+export type FilterType = 'WORD_LENGTH' | 'TIME' | 'ATTEMPTS' | 'DATE';
 
 export type HintType = 'letter' | 'position';
 

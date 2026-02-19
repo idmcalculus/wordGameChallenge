@@ -215,6 +215,27 @@
   }
 }
 
+@keyframes victoryModalPop {
+  0% {
+    transform: scale(0.76) translateY(14px);
+    opacity: 0.8;
+    filter: saturate(1.25) brightness(1.1);
+  }
+  35% {
+    transform: scale(1.08) translateY(-2px);
+    opacity: 1;
+    filter: saturate(1.2) brightness(1.05);
+  }
+  58% {
+    transform: scale(0.96) translateY(1px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    filter: saturate(1) brightness(1);
+  }
+}
+
 // Wiggle animation
 @keyframes wiggle {
   0%, 100% {
@@ -256,7 +277,7 @@
   100% { filter: hue-rotate(360deg); }
 }
 
-// Confetti animation
+// Legacy confetti fall animation
 @keyframes confettiFall {
   0% {
     transform: translateY(0) translateX(0) rotate(0deg);
@@ -268,7 +289,7 @@
   }
 }
 
-// Firework particle animation
+// Legacy firework particle animation
 @keyframes fireworkExplode {
   0% {
     transform: translate(0, 0) scale(1);
@@ -280,26 +301,80 @@
   }
 }
 
-// Confetti piece styling
-.confetti-piece {
-  position: fixed;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  animation: confettiFall linear forwards;
+@keyframes confettiPopCore {
+  0% {
+    opacity: 1;
+    transform: scale(0.18);
+  }
+  65% {
+    opacity: 0.52;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
 }
 
-// Firework particle styling
-.firework-particle {
+@keyframes confettiPopRing {
+  0% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.95);
+  }
+}
+
+.confetti-canvas {
   position: fixed;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  inset: 0;
   pointer-events: none;
   z-index: 9999;
-  animation: fireworkExplode 1s ease-out forwards;
+}
+
+.confetti-pop-flash {
+  position: fixed;
+  width: 130px;
+  height: 130px;
+  pointer-events: none;
+  z-index: 10000;
+  isolation: isolate;
+  filter: drop-shadow(0 0 26px rgba(255, 255, 255, 0.45));
+}
+
+.confetti-pop-core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 217, 126, 0.7) 27%, rgba(255, 122, 43, 0.32) 58%, rgba(255, 122, 43, 0) 100%);
+  animation: confettiPopCore 620ms cubic-bezier(0.2, 0.68, 0.18, 1) forwards;
+}
+
+.confetti-pop-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 237, 188, 0.85);
+  box-shadow: 0 0 22px rgba(255, 185, 109, 0.6);
+  animation: confettiPopRing 680ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+.confetti-pop-ring--inner {
+  width: 72px;
+  height: 72px;
+  animation-delay: 20ms;
+}
+
+.confetti-pop-ring--outer {
+  width: 112px;
+  height: 112px;
+  border-width: 2px;
+  opacity: 0.75;
+  animation-delay: 70ms;
 }
 
 // Utility classes for animations

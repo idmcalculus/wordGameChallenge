@@ -1,6 +1,6 @@
 # Word Game Challenge 🎮
 
-A modern, browser-based word guessing game built with vanilla JavaScript. Challenge yourself to guess words of varying lengths with real-time feedback and track your stats!
+A modern, browser-based word guessing game built with vanilla TypeScript. Challenge yourself to guess words of varying lengths with real-time feedback and track your stats!
 
 ## Features ✨
 
@@ -116,14 +116,19 @@ wordGameChallenge/
 │   ├── scss/                      # SCSS styling files
 │   ├── js/
 │   │   ├── app.ts                 # Application entry point
-│   │   ├── WordGame.ts            # Game flow orchestration
+│   │   ├── controllers/           # Game + UI controllers
+│   │   │   ├── GameController.ts  # Gameplay orchestration
+│   │   │   ├── BoardController.ts
+│   │   │   ├── KeyboardController.ts
+│   │   │   └── TimerController.ts
 │   │   ├── apiHandler.ts          # Word API integration
 │   │   ├── uiHandler.ts           # Game UI rendering helpers
 │   │   ├── modals.ts              # Modal setup and alert handling
 │   │   ├── hintHandler.ts         # Hint button logic
 │   │   ├── themeManager.ts        # Theme toggle and system syncing
 │   │   ├── core/
-│   │   │   └── gameEngine.ts      # Pure guess evaluation rules
+│   │   │   ├── gameEngine.ts      # Pure guess evaluation rules
+│   │   │   └── gameSession.ts     # Canonical in-memory gameplay state
 │   │   ├── repositories/
 │   │   │   └── statsRepository.ts # Stats migration/persistence
 │   │   ├── components/
@@ -147,6 +152,8 @@ wordGameChallenge/
 ## Architecture Notes
 
 - See `docs/ARCHITECTURE.md` for module responsibilities and contribution guidelines.
+- Stats table rendering is incremental for scale (20 initial rows, then 10-row append batches).
+- Test coverage gate (`95%`) targets deterministic core/data modules; UI behavior is validated with jsdom tests.
 
 ## Contributing 🤝
 

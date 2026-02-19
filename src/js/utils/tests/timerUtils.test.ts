@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { startTimer, stopTimer } from './timerUtils';
+import { startTimer, stopTimer } from '../timerUtils';
 
 interface TimerDisplayLike {
   style: {

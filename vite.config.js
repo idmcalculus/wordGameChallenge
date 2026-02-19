@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => {
         },
         output: {
           manualChunks: {
-            'game-logic': [resolve(__dirname, 'src/js/WordGame.ts')],
+            'game-logic': [resolve(__dirname, 'src/js/controllers/GameController.ts')],
             'ui-components': [
               resolve(__dirname, 'src/js/uiHandler.ts'),
               resolve(__dirname, 'src/js/modals.ts')
