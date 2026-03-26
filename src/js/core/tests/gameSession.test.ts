@@ -29,6 +29,10 @@ describe('GameSession', () => {
     const second = session.submitGuess('crown');
     expect(second.evaluation.isWin).toBe(true);
     expect(second.attemptsUsed).toBe(2);
+    expect(session.getGuessHistory()).toEqual([
+      expect.objectContaining({ guess: 'crane' }),
+      expect.objectContaining({ guess: 'crown' })
+    ]);
   });
 
   it('provides hint context and avoids invalid usage after clear', () => {
@@ -37,6 +41,7 @@ describe('GameSession', () => {
 
     session.submitGuess('ample');
     session.registerLetterHint('p');
+    expect(session.getHintCount()).toBe(1);
 
     const context = session.getHintContext();
     expect(context.usedLetters.has('a')).toBe(true);
@@ -47,6 +52,7 @@ describe('GameSession', () => {
     session.clear();
 
     expect(session.isActive()).toBe(false);
+    expect(session.getHintCount()).toBe(0);
     expect(() => session.submitGuess('apple')).toThrow('Game session is not active');
   });
 
@@ -107,6 +113,32 @@ describe('GameSession', () => {
     const afterHint = session.getKeyboardStates();
     expect(afterHint.c).toBe('correct');
     expect(afterHint['1']).toBeUndefined();
+  });
+
+  it('handles malformed internal hint-history entries without throwing', () => {
+    const session = new GameSession(5);
+    session.start({ targetWord: 'crown', wordLength: 5 });
+
+    const internal = session as unknown as {
+      guessHistory: Array<{
+        guess: string;
+        letterStates: Array<'correct' | 'contains' | 'notContains'>;
+      }>;
+      hintedLetters: string[];
+    };
+
+    internal.guessHistory = [
+      {
+        guess: ['c', '', 'o'] as unknown as string,
+        letterStates: ['correct', 'contains', 'contains']
+      }
+    ];
+    internal.hintedLetters = ['w'];
+
+    const context = session.getHintContext();
+    expect(context.correctPositions[0]).toBe('c');
+    expect(context.revealedLetters).toContain('o');
+    expect(context.usedLetters.has('w')).toBe(true);
   });
 
   it('rejects invalid session start payloads', () => {

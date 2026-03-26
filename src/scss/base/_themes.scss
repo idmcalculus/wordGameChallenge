@@ -119,6 +119,62 @@
   border-color: #ff9f45;
 }
 
+:root[data-theme='dark'] .puzzleProfile {
+  background: #11253b;
+  color: #e5effb;
+  border-color: rgba(167, 206, 218, 0.45);
+}
+
+:root[data-theme='dark'] .strategyCoach {
+  background: linear-gradient(160deg, rgba(17, 37, 59, 0.96), rgba(28, 48, 71, 0.88));
+  border-color: rgba(117, 162, 226, 0.38);
+  color: #e5effb;
+}
+
+:root[data-theme='dark'] .strategyCoach__eyebrow {
+  color: #9fc7ff;
+}
+
+:root[data-theme='dark'] .strategyCoach__count {
+  background: rgba(159, 199, 255, 0.14);
+  color: #d9ebff;
+}
+
+:root[data-theme='dark'] .strategyCoach__detail {
+  color: #c3d7ee;
+}
+
+:root[data-theme='dark'] .strategyCoach__chip {
+  background: rgba(255, 159, 69, 0.16);
+  border-color: rgba(255, 159, 69, 0.28);
+  color: #ffd3a8;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+:root[data-theme='dark'] .hint-button {
+  background: linear-gradient(145deg, rgba(20, 38, 59, 0.98), rgba(30, 50, 74, 0.92));
+  border-color: rgba(117, 162, 226, 0.34);
+  color: #e5effb;
+}
+
+:root[data-theme='dark'] .hint-button__meta {
+  background: rgba(159, 199, 255, 0.14);
+  color: #d9ebff;
+}
+
+:root[data-theme='dark'] .hint-button--position {
+  border-color: rgba(255, 159, 69, 0.26);
+}
+
+:root[data-theme='dark'] .hint-button__label {
+  color: #e5effb;
+}
+
+:root[data-theme='dark'] .hint-button--position .hint-button__meta {
+  background: rgba(255, 159, 69, 0.16);
+  color: #ffd3a8;
+}
+
 :root[data-theme='dark'] #alphabetContainer .alphabet-grid .keyboard-key {
   background: linear-gradient(135deg, #1c3047, #14263b);
   color: #dce9fb;

@@ -1,6 +1,7 @@
 // API configuration from environment variables
 import { logger } from './utils/logger';
 import type { JsonValue } from './types/types';
+import { isWordAllowedLocally } from './repositories/wordRepository';
 import { sanitizeWord } from './utils/inputSanitizer';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.datamuse.com';
@@ -9,6 +10,18 @@ const API_TIMEOUT = Number.parseInt(import.meta.env.VITE_API_TIMEOUT || '5000', 
 interface DatamuseWord {
   word: string;
   tags?: string[];
+}
+
+interface DictionaryDefinition {
+  definition: string;
+}
+
+interface DictionaryMeaning {
+  definitions?: DictionaryDefinition[];
+}
+
+interface DictionaryEntry {
+  meanings?: DictionaryMeaning[];
 }
 
 function toError(reason: Error | string | object | null | undefined): Error {
@@ -56,6 +69,67 @@ function normalizeDatamuseWords(payload: JsonValue): DatamuseWord[] {
     }
     return accumulator;
   }, []);
+}
+
+function normalizeDictionaryEntries(payload: JsonValue): DictionaryEntry[] {
+  if (!Array.isArray(payload)) {
+    return [];
+  }
+
+  return payload.reduce<DictionaryEntry[]>((entries, item) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      return entries;
+    }
+
+    const record = item as Record<string, JsonValue>;
+    const meanings = Array.isArray(record.meanings)
+      ? record.meanings.reduce<DictionaryMeaning[]>((meaningEntries, meaningValue) => {
+        if (!meaningValue || typeof meaningValue !== 'object' || Array.isArray(meaningValue)) {
+          return meaningEntries;
+        }
+
+        const meaningRecord = meaningValue as Record<string, JsonValue>;
+        const definitions = Array.isArray(meaningRecord.definitions)
+          ? meaningRecord.definitions.reduce<DictionaryDefinition[]>((definitionEntries, definitionValue) => {
+            if (!definitionValue || typeof definitionValue !== 'object' || Array.isArray(definitionValue)) {
+              return definitionEntries;
+            }
+
+            const definitionRecord = definitionValue as Record<string, JsonValue>;
+            if (typeof definitionRecord.definition !== 'string') {
+              return definitionEntries;
+            }
+
+            definitionEntries.push({ definition: definitionRecord.definition });
+            return definitionEntries;
+          }, [])
+          : [];
+
+        meaningEntries.push({ definitions });
+        return meaningEntries;
+      }, [])
+      : [];
+
+    entries.push({ meanings });
+    return entries;
+  }, []);
+}
+
+function extractDefinition(payload: JsonValue): string | null {
+  const entries = normalizeDictionaryEntries(payload);
+
+  for (const entry of entries) {
+    for (const meaning of entry.meanings ?? []) {
+      for (const definition of meaning.definitions ?? []) {
+        const normalizedDefinition = definition.definition.trim();
+        if (normalizedDefinition) {
+          return normalizedDefinition;
+        }
+      }
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -123,6 +197,10 @@ export async function validateWord(word: string): Promise<boolean> {
   if (!normalizedWord) {
     return false;
   }
+
+  if (await isWordAllowedLocally(normalizedWord)) {
+    return true;
+  }
   
   try {
     // Create AbortController for timeout handling
@@ -184,5 +262,35 @@ async function validateWordWithFreeDictionary(word: string): Promise<boolean> {
     logger.error(toError(error as Error | string | object | null | undefined), { source: 'validateWord.freeDictionary', word });
     // If both APIs fail, we'll assume the word is valid to avoid blocking gameplay
     return true;
+  }
+}
+
+export async function fetchWordMeaning(word: string): Promise<string | null> {
+  const normalizedWord = sanitizeWord(word);
+  if (!normalizedWord) {
+    return null;
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+  try {
+    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(normalizedWord)}`, {
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return extractDefinition(await response.json() as JsonValue);
+  } catch (error) {
+    logger.error(toError(error as Error | string | object | null | undefined), {
+      source: 'fetchWordMeaning',
+      word: normalizedWord
+    });
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }

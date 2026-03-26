@@ -1,9 +1,10 @@
-import { showAlert } from '../modals';
+import { showAlert, updateAlertContent } from '../modals';
 import {
   resetGameUI,
-  updateDifficulty
+  updateDifficulty,
+  updateStrategyInsights
 } from '../uiHandler';
-import { fetchPossibleWords, validateWord } from '../apiHandler';
+import { fetchPossibleWords, fetchWordMeaning, validateWord } from '../apiHandler';
 import {
   createHintButtonsContainer,
   resetHintButtons,
@@ -13,7 +14,11 @@ import {
 import { StatsManager } from '../components/StatsManager';
 import { logger } from '../utils/logger';
 import { addStat, loadStats } from '../repositories/statsRepository';
+import { getAnswerPoolByLength, pickCuratedAnswer } from '../repositories/wordRepository';
+import { assessPuzzleDifficulty } from '../core/difficultyEngine';
 import { pickRandom } from '../core/hintEngine';
+import { buildAbilityMetrics } from '../core/abilityMetrics';
+import { buildStrategyInsight } from '../core/strategyEngine';
 import { createGameStateMachine, GAME_STATES } from '../core/gameStateMachine';
 import { sanitizeSingleLetter, sanitizeWord } from '../utils/inputSanitizer';
 import { GameSession } from '../core/gameSession';
@@ -21,7 +26,14 @@ import { BoardController } from './BoardController';
 import { KeyboardController } from './KeyboardController';
 import { TimerController } from './TimerController';
 import type { GameState } from '../types/types';
-import type { GameStateMachine, StatEntry } from '../types/interface';
+import type {
+  GameStateMachine,
+  PuzzleDifficultyInfo,
+  StatEntry,
+  StrategyInsight,
+  WordRepositoryEntry,
+  AlertContent
+} from '../types/interface';
 
 class GameController {
   private possibleWords: string[];
@@ -36,6 +48,12 @@ class GameController {
   private gameState: GameState;
   private stats: StatEntry[];
   private statsManager: StatsManager | null;
+  private currentDifficulty: PuzzleDifficultyInfo | null;
+  private currentStrategyInsight: StrategyInsight | null;
+  private currentWordMeaning: string | null | undefined;
+  private currentWordMeaningLookup: Promise<string | null> | null;
+  private currentWordMeaningRequestId: number;
+  private currentWordMeaningWord: string;
   private readonly session: GameSession;
   private readonly boardController: BoardController;
   private readonly keyboardController: KeyboardController;
@@ -54,6 +72,12 @@ class GameController {
     this.gameState = this.gameStateMachine.getState();
     this.stats = loadStats();
     this.statsManager = null;
+    this.currentDifficulty = null;
+    this.currentStrategyInsight = null;
+    this.currentWordMeaning = undefined;
+    this.currentWordMeaningLookup = null;
+    this.currentWordMeaningRequestId = 0;
+    this.currentWordMeaningWord = '';
 
     this.session = new GameSession(this.maximumAttempts);
     this.boardController = new BoardController();
@@ -66,26 +90,27 @@ class GameController {
   /**
    * Provides a hint for a letter that exists in the word (may not be in correct position)
    */
-  getLetterHint(): void {
+  getLetterHint(): boolean {
     if (!this.session.isActive() || !this.boardController.getCurrentRow() || this.gameState !== GAME_STATES.RUNNING) {
-      return;
+      return false;
     }
 
     const hintLetter = pickRandom(this.session.getAvailableLetterHints());
     if (!hintLetter) {
-      return;
+      return false;
     }
 
     this.session.registerLetterHint(hintLetter, 'contains');
     this.updateAlphabetContainer(hintLetter, 'contains');
+    return true;
   }
 
   /**
    * Provides a hint for a letter in its correct position.
    */
-  getPositionHint(): void {
+  getPositionHint(): boolean {
     if (!this.session.isActive() || !this.boardController.getCurrentRow() || this.gameState !== GAME_STATES.RUNNING) {
-      return;
+      return false;
     }
 
     const inputs = this.getCurrentRowInputs();
@@ -93,18 +118,26 @@ class GameController {
     const targetPosition = pickRandom(this.session.getAvailablePositionHints(currentRowLetters));
 
     if (targetPosition === null) {
-      return;
+      return false;
     }
 
     const targetInput = inputs[targetPosition];
     if (!targetInput) {
-      return;
+      return false;
     }
 
     const targetWord = this.session.getTargetWord();
-    targetInput.value = targetWord[targetPosition] ?? '';
+    const targetLetter = targetWord[targetPosition] ?? '';
+    if (!targetLetter) {
+      return false;
+    }
+
+    targetInput.value = targetLetter;
     targetInput.classList.add('hint-provided');
+    this.session.registerLetterHint(targetLetter, 'correct');
+    this.updateAlphabetContainer(targetLetter, 'correct');
     window.setTimeout(() => targetInput.classList.remove('hint-provided'), 2000);
+    return true;
   }
 
   private detectTouchDevice(): boolean {
@@ -144,11 +177,78 @@ class GameController {
     startGameButton.disabled = !isValidWordLength;
   }
 
+  private clearDifficultyDisplay(): void {
+    const difficulty = document.getElementById('difficulty');
+    const puzzleProfile = document.getElementById('puzzleProfile');
+
+    if (difficulty) {
+      difficulty.style.display = 'none';
+      difficulty.removeAttribute('title');
+    }
+
+    if (puzzleProfile) {
+      puzzleProfile.textContent = '';
+      puzzleProfile.style.display = 'none';
+      puzzleProfile.removeAttribute('title');
+    }
+  }
+
+  private clearStrategyDisplay(): void {
+    this.currentStrategyInsight = null;
+    updateStrategyInsights(null);
+  }
+
+  private resetWordMeaningState(): void {
+    this.currentWordMeaning = undefined;
+    this.currentWordMeaningLookup = null;
+    this.currentWordMeaningWord = '';
+    this.currentWordMeaningRequestId += 1;
+  }
+
+  private prefetchWordMeaning(word: string): void {
+    const normalizedWord = sanitizeWord(word);
+    if (!normalizedWord) {
+      this.resetWordMeaningState();
+      return;
+    }
+
+    const requestId = this.currentWordMeaningRequestId + 1;
+    this.currentWordMeaningRequestId = requestId;
+    this.currentWordMeaning = undefined;
+    this.currentWordMeaningWord = normalizedWord;
+
+    const lookup = fetchWordMeaning(normalizedWord);
+    this.currentWordMeaningLookup = lookup;
+
+    void lookup.then((meaning) => {
+      if (this.currentWordMeaningRequestId !== requestId || this.currentWordMeaningWord !== normalizedWord) {
+        return;
+      }
+
+      this.currentWordMeaning = meaning;
+    });
+  }
+
+  private refreshStrategyInsights(): void {
+    if (!this.session.isActive() || this.wordLength < 3 || this.possibleWords.length === 0) {
+      this.clearStrategyDisplay();
+      return;
+    }
+
+    this.currentStrategyInsight = buildStrategyInsight(
+      this.possibleWords,
+      this.session.getGuessHistory(),
+      this.wordLength
+    );
+    updateStrategyInsights(this.currentStrategyInsight);
+  }
+
   private syncGameUiForState(): void {
     const startButton = document.getElementById('startGame');
     const wordLengthContainer = document.querySelector<HTMLElement>('.wordLengthInputContainer');
     const resetButton = document.getElementById('resetGame');
     const difficulty = document.getElementById('difficulty');
+    const puzzleProfile = document.getElementById('puzzleProfile');
 
     if (!startButton || !wordLengthContainer || !resetButton || !difficulty) {
       return;
@@ -159,6 +259,9 @@ class GameController {
       wordLengthContainer.style.display = 'block';
       resetButton.style.display = 'none';
       difficulty.style.display = 'none';
+      if (puzzleProfile) {
+        puzzleProfile.style.display = 'none';
+      }
       this.updateStartGameButtonState();
       return;
     }
@@ -166,7 +269,10 @@ class GameController {
     startButton.style.display = 'none';
     wordLengthContainer.style.display = 'none';
     resetButton.style.display = 'block';
-    difficulty.style.display = this.wordLength ? 'inline-flex' : 'none';
+    difficulty.style.display = this.currentDifficulty ? 'inline-flex' : 'none';
+    if (puzzleProfile) {
+      puzzleProfile.style.display = this.currentDifficulty ? 'block' : 'none';
+    }
   }
 
   private transitionGameState(nextState: GameState): boolean {
@@ -264,6 +370,46 @@ class GameController {
     return new Error(String(error));
   }
 
+  private async resolvePuzzleEntry(wordLength: number): Promise<WordRepositoryEntry> {
+    const curatedPool = await getAnswerPoolByLength(wordLength);
+    if (curatedPool.length > 0) {
+      this.possibleWords = curatedPool.map((entry) => entry.word);
+
+      const curatedSelection = await pickCuratedAnswer(wordLength);
+      if (curatedSelection) {
+        return curatedSelection;
+      }
+    }
+
+    const pattern = '?'.repeat(wordLength);
+    const fetchedWords = await fetchPossibleWords(pattern, wordLength);
+    const sanitizedWords = fetchedWords
+      .map((word) => sanitizeWord(word, wordLength))
+      .filter((word) => word.length === wordLength);
+
+    this.possibleWords = [...new Set(sanitizedWords)];
+
+    if (!this.possibleWords.length) {
+      throw new Error(`No valid words available for length ${wordLength}`);
+    }
+
+    const randomIndex = Math.min(
+      this.possibleWords.length - 1,
+      Math.max(0, Math.floor(Math.random() * this.possibleWords.length))
+    );
+    const targetWord = this.possibleWords[randomIndex] ?? '';
+    if (!targetWord) {
+      throw new Error(`No valid words available for length ${wordLength}`);
+    }
+
+    return {
+      word: targetWord,
+      wordLength,
+      familiarity: 'standard',
+      ...assessPuzzleDifficulty(targetWord, 'standard')
+    };
+  }
+
   private init(): void {
     const wordLengthInput = document.getElementById('wordLengthInput') as HTMLInputElement | null;
     const startGameButton = document.getElementById('startGame');
@@ -331,6 +477,10 @@ class GameController {
     this.stopActiveTimer();
     this.hideMainPlayAgainButton();
     this.isVirtualInputMode = false;
+    this.currentDifficulty = null;
+    this.resetWordMeaningState();
+    this.clearDifficultyDisplay();
+    this.clearStrategyDisplay();
 
     this.rowCount = 0;
 
@@ -358,32 +508,24 @@ class GameController {
       return;
     }
 
-    updateDifficulty(this.wordLength);
-
-    const pattern = '?'.repeat(this.wordLength);
-
     try {
-      this.possibleWords = await fetchPossibleWords(pattern, this.wordLength);
-      const sanitizedWords = this.possibleWords
-        .map((word) => sanitizeWord(word, this.wordLength))
-        .filter((word) => word.length === this.wordLength);
-      this.possibleWords = [...new Set(sanitizedWords)];
+      const puzzleEntry = await this.resolvePuzzleEntry(this.wordLength);
+      this.currentDifficulty = puzzleEntry;
+      updateDifficulty(puzzleEntry);
 
-      if (!this.possibleWords.length) {
-        throw new Error(`No valid words available for length ${this.wordLength}`);
-      }
-
-      const targetWord = this.possibleWords[Math.floor(Math.random() * this.possibleWords.length)] ?? '';
       this.session.start({
-        targetWord,
+        targetWord: puzzleEntry.word,
         wordLength: this.wordLength,
         startTime: new Date()
       });
+      this.prefetchWordMeaning(puzzleEntry.word);
 
       const startedAt = this.session.getStartTime();
       if (startedAt) {
         this.timerController.start(startedAt);
       }
+
+      this.refreshStrategyInsights();
 
       this.createAlphabetContainer();
       this.keyboardController.show();
@@ -391,6 +533,9 @@ class GameController {
     } catch (error) {
       logger.error(this.normalizeError(error as Error | string | object | null | undefined), { source: 'GameController.play' });
       this.stopActiveTimer();
+      this.currentDifficulty = null;
+      this.clearDifficultyDisplay();
+      this.clearStrategyDisplay();
       this.transitionGameState(GAME_STATES.IDLE);
       showAlert(
         {
@@ -419,7 +564,8 @@ class GameController {
       this.wordLength,
       this.getLetterHint.bind(this),
       this.getPositionHint.bind(this),
-      () => this.rowCount
+      () => this.rowCount,
+      this.currentDifficulty?.label ?? 'Medium'
     );
   }
 
@@ -639,6 +785,7 @@ class GameController {
       }
 
       this.boardController.disableInputs(inputs);
+      this.refreshStrategyInsights();
 
       window.setTimeout(() => {
         if (evaluation.isWin) {
@@ -677,6 +824,67 @@ class GameController {
     return this.boardController.isCurrentRowComplete();
   }
 
+  private buildMeaningParagraph(meaning: string | null, isLoading = false): { text: string } {
+    if (isLoading) {
+      return { text: 'Meaning: looking it up...' };
+    }
+
+    if (meaning) {
+      return { text: `Meaning: ${meaning}` };
+    }
+
+    return { text: 'Meaning: unavailable right now.' };
+  }
+
+  private getResolvedMeaningForWord(word: string): string | null | undefined {
+    const normalizedWord = sanitizeWord(word);
+    if (!normalizedWord || this.currentWordMeaningWord !== normalizedWord) {
+      return undefined;
+    }
+
+    return this.currentWordMeaning;
+  }
+
+  private enrichResultAlertWithMeaning(word: string, title: string, alertContent: AlertContent): void {
+    const normalizedWord = sanitizeWord(word);
+    if (!normalizedWord) {
+      return;
+    }
+
+    const pendingLookup = this.currentWordMeaningWord === normalizedWord
+      ? this.currentWordMeaningLookup
+      : null;
+
+    if (!pendingLookup) {
+      this.prefetchWordMeaning(normalizedWord);
+    }
+
+    const meaningLookup = this.currentWordMeaningWord === normalizedWord
+      ? this.currentWordMeaningLookup
+      : null;
+
+    if (!meaningLookup) {
+      return;
+    }
+
+    void meaningLookup.then((meaning) => {
+      if (this.currentWordMeaningWord !== normalizedWord) {
+        return;
+      }
+
+      updateAlertContent(
+        {
+          ...alertContent,
+          paragraphs: [
+            ...alertContent.paragraphs.slice(0, -1),
+            this.buildMeaningParagraph(meaning)
+          ]
+        },
+        title
+      );
+    });
+  }
+
   private gameWon(): void {
     this.stopActiveTimer();
     this.transitionGameState(GAME_STATES.WON);
@@ -684,27 +892,36 @@ class GameController {
     const timeTaken = this.session.getElapsedSeconds();
     const attemptsUsed = this.session.getAttemptsUsed();
     const solvedWord = this.session.getTargetWord();
+    const abilityMetrics = buildAbilityMetrics(this.session.getGuessHistory(), this.session.getHintCount());
 
     this.stats = addStat(this.stats, {
       time: timeTaken,
       word: solvedWord,
       wordLength: this.wordLength,
       attempts: attemptsUsed,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
+      difficultyLabel: this.currentDifficulty?.label ?? 'Unknown',
+      ...abilityMetrics
     });
 
     this.displayStats();
 
+    const prefetchedMeaning = this.getResolvedMeaningForWord(solvedWord);
+    const alertContent: AlertContent = {
+      variant: 'success',
+      icon: '🎉',
+      title: 'Congratulations!',
+      paragraphs: [
+        { text: `Well done! You solved it in ${timeTaken} seconds with ${attemptsUsed} attempts.` },
+        { text: 'The word was: ', emphasis: solvedWord },
+        prefetchedMeaning === undefined
+          ? this.buildMeaningParagraph(null, true)
+          : this.buildMeaningParagraph(prefetchedMeaning)
+      ]
+    };
+
     showAlert(
-      {
-        variant: 'success',
-        icon: '🎉',
-        title: 'Congratulations!',
-        paragraphs: [
-          { text: `Well done! You solved it in ${timeTaken} seconds with ${attemptsUsed} attempts.` },
-          { text: 'The word was: ', emphasis: solvedWord }
-        ]
-      },
+      alertContent,
       () => {
         this.playAgain();
       },
@@ -719,6 +936,10 @@ class GameController {
         onClose: () => this.handleGameResultModalClose()
       }
     );
+
+    if (prefetchedMeaning === undefined) {
+      this.enrichResultAlertWithMeaning(solvedWord, alertContent.title, alertContent);
+    }
   }
 
   private gameLost(): void {
@@ -727,16 +948,22 @@ class GameController {
 
     const solvedWord = this.session.getTargetWord();
 
+    const prefetchedMeaning = this.getResolvedMeaningForWord(solvedWord);
+    const alertContent: AlertContent = {
+      variant: 'failure',
+      icon: '😕',
+      title: 'Game Over',
+      paragraphs: [
+        { text: 'Sorry, you\'ve reached the maximum number of attempts.' },
+        { text: 'The word was: ', emphasis: solvedWord },
+        prefetchedMeaning === undefined
+          ? this.buildMeaningParagraph(null, true)
+          : this.buildMeaningParagraph(prefetchedMeaning)
+      ]
+    };
+
     showAlert(
-      {
-        variant: 'failure',
-        icon: '😕',
-        title: 'Game Over',
-        paragraphs: [
-          { text: 'Sorry, you\'ve reached the maximum number of attempts.' },
-          { text: 'The word was: ', emphasis: solvedWord }
-        ]
-      },
+      alertContent,
       () => {
         this.playAgain();
       },
@@ -751,6 +978,10 @@ class GameController {
         onClose: () => this.handleGameResultModalClose()
       }
     );
+
+    if (prefetchedMeaning === undefined) {
+      this.enrichResultAlertWithMeaning(solvedWord, alertContent.title, alertContent);
+    }
   }
 
   displayStats(): void {
@@ -786,6 +1017,10 @@ class GameController {
     resetHintButtons();
     this.keyboardController.clear();
     this.destroyStatsManager();
+    this.currentDifficulty = null;
+    this.resetWordMeaningState();
+    this.clearDifficultyDisplay();
+    this.clearStrategyDisplay();
 
     this.rowCount = 0;
     this.possibleWords = [];
@@ -816,6 +1051,9 @@ class GameController {
     this.rowCount = 0;
     this.wordLength = 0;
     this.possibleWords = [];
+    this.currentDifficulty = null;
+    this.resetWordMeaningState();
+    this.clearStrategyDisplay();
 
     this.session.clear();
     this.timerController.hide();
@@ -830,6 +1068,10 @@ class GameController {
     this.boardController.clear();
     this.keyboardController.clear();
     this.isVirtualInputMode = false;
+    this.currentDifficulty = null;
+    this.resetWordMeaningState();
+    this.clearDifficultyDisplay();
+    this.clearStrategyDisplay();
   }
 
   private destroyStatsManager(): void {

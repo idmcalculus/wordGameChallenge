@@ -12,7 +12,6 @@ describe('hintHandler', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     document.body.innerHTML = '<div class="actionButtons includesHintButtons"></div>';
-    vi.spyOn(window, 'alert').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -22,320 +21,332 @@ describe('hintHandler', () => {
     vi.restoreAllMocks();
   });
 
-  it('creates hint buttons and triggers letter hint with cooldown', () => {
-    const getLetterHint = vi.fn();
-    const getPositionHint = vi.fn();
+  function getButtons() {
+    return {
+      letterButton: document.getElementById('letterHintButton') as HTMLButtonElement | null,
+      positionButton: document.getElementById('positionHintButton') as HTMLButtonElement | null
+    };
+  }
+
+  it('creates direct reveal buttons with remaining-use metadata', () => {
+    createHintButtonsContainer(4, vi.fn(() => true), vi.fn(() => true), () => 1);
+
+    const { letterButton, positionButton } = getButtons();
+    expect(letterButton && positionButton).toBeTruthy();
+    if (!letterButton || !positionButton) {
+      return;
+    }
+
+    expect(letterButton.textContent).toContain('Letter Reveal');
+    expect(positionButton.textContent).toContain('Position Reveal');
+    expect(document.getElementById('letterHintMeta')?.textContent).toContain('4 reveals left');
+    expect(document.getElementById('positionHintMeta')?.textContent).toContain('1 position left');
+  });
+
+  it('throws when hint button container is missing', () => {
+    document.body.innerHTML = '';
+    expect(() => createHintButtonsContainer(4, vi.fn(() => true), vi.fn(() => true), () => 1))
+      .toThrow('Hint buttons container not found');
+  });
+
+  it('uses letter reveal directly and applies row lock plus cooldown', () => {
+    const getLetterHint = vi.fn(() => true);
     let rowNumber = 1;
 
-    createHintButtonsContainer(4, getLetterHint, getPositionHint, () => rowNumber);
+    createHintButtonsContainer(4, getLetterHint, vi.fn(() => true), () => rowNumber);
 
-    const letterButton = document.getElementById('letterHintButton') as HTMLButtonElement | null;
-    const positionButton = document.getElementById('positionHintButton') as HTMLButtonElement | null;
-    expect(letterButton).toBeTruthy();
-    expect(positionButton).toBeTruthy();
+    const { letterButton, positionButton } = getButtons();
+    expect(letterButton && positionButton).toBeTruthy();
     if (!letterButton || !positionButton) {
       return;
     }
 
     letterButton.click();
+
     expect(getLetterHint).toHaveBeenCalledTimes(1);
     expect(letterButton.classList.contains('cooldown')).toBe(true);
-    expect(positionButton.classList.contains('inactive-hint')).toBe(true);
+    expect(positionButton.disabled).toBe(true);
+    expect(document.getElementById('positionHintMeta')?.textContent).toContain('One reveal per row');
+
+    rowNumber = 2;
+    updateCurrentRow(2);
+    expect(positionButton.disabled).toBe(false);
+    expect(letterButton.disabled).toBe(true);
+    expect(document.getElementById('letterHintMeta')?.textContent).toContain('Cooldown');
 
     vi.advanceTimersByTime(5000);
     expect(letterButton.disabled).toBe(false);
     expect(letterButton.classList.contains('cooldown')).toBe(false);
   });
 
-  it('throws when hint button container is missing', () => {
-    document.body.innerHTML = '';
-    expect(() => createHintButtonsContainer(4, vi.fn(), vi.fn(), () => 1)).toThrow('Hint buttons container not found');
-  });
+  it('uses position reveal directly and applies the longer cooldown', () => {
+    const getPositionHint = vi.fn(() => true);
+    let rowNumber = 1;
 
-  it('blocks mixed hint types in the same row and alerts user', () => {
-    const getLetterHint = vi.fn();
-    const getPositionHint = vi.fn();
+    createHintButtonsContainer(8, vi.fn(() => true), getPositionHint, () => rowNumber, 'Easy');
 
-    createHintButtonsContainer(4, getLetterHint, getPositionHint, () => 1);
-
-    const letterButton = document.getElementById('letterHintButton') as HTMLButtonElement | null;
-    const positionButton = document.getElementById('positionHintButton') as HTMLButtonElement | null;
-    expect(letterButton && positionButton).toBeTruthy();
-    if (!letterButton || !positionButton) {
-      return;
-    }
-
-    positionButton.click();
-    letterButton.click();
-
-    expect(getPositionHint).toHaveBeenCalledTimes(1);
-    expect(getLetterHint).toHaveBeenCalledTimes(0);
-    expect(window.alert).toHaveBeenCalledTimes(1);
-  });
-
-  it('blocks mixed hint types in reverse order and uses numeric row input mode', () => {
-    const getLetterHint = vi.fn();
-    const getPositionHint = vi.fn();
-
-    createHintButtonsContainer(4, getLetterHint, getPositionHint, 1);
-
-    const letterButton = document.getElementById('letterHintButton') as HTMLButtonElement | null;
-    const positionButton = document.getElementById('positionHintButton') as HTMLButtonElement | null;
-    expect(letterButton && positionButton).toBeTruthy();
-    if (!letterButton || !positionButton) {
-      return;
-    }
-
-    letterButton.click();
-    positionButton.click();
-
-    expect(getLetterHint).toHaveBeenCalledTimes(1);
-    expect(getPositionHint).toHaveBeenCalledTimes(0);
-    expect(window.alert).toHaveBeenCalledTimes(1);
-  });
-
-  it('applies position-hint cooldown and updates cooldown progress', () => {
-    const getLetterHint = vi.fn();
-    const getPositionHint = vi.fn();
-
-    createHintButtonsContainer(4, getLetterHint, getPositionHint, () => 1);
-
-    const positionButton = document.getElementById('positionHintButton') as HTMLButtonElement | null;
+    const { positionButton } = getButtons();
     expect(positionButton).toBeTruthy();
     if (!positionButton) {
       return;
     }
 
     positionButton.click();
+
     expect(getPositionHint).toHaveBeenCalledTimes(1);
     expect(positionButton.disabled).toBe(true);
     expect(positionButton.classList.contains('cooldown')).toBe(true);
 
     vi.advanceTimersByTime(1000);
-    const progress = positionButton.querySelector<HTMLElement>('.cooldown-progress');
-    expect(progress).toBeTruthy();
-    expect(progress?.style.width).not.toBe('');
+    expect(document.getElementById('positionHintMeta')?.textContent).toContain('Cooldown 44s');
 
-    vi.advanceTimersByTime(60000);
-    expect(positionButton.disabled).toBe(false);
-  });
-
-  it('returns early when hint buttons are already disabled before click', () => {
-    const getLetterHint = vi.fn();
-    const getPositionHint = vi.fn();
-
-    createHintButtonsContainer(3, getLetterHint, getPositionHint, () => 1);
-
-    const letterButton = document.getElementById('letterHintButton') as HTMLButtonElement | null;
-    const positionButton = document.getElementById('positionHintButton') as HTMLButtonElement | null;
-    expect(letterButton && positionButton).toBeTruthy();
-    if (!letterButton || !positionButton) {
-      return;
-    }
-
-    letterButton.disabled = true;
-    positionButton.disabled = true;
-    letterButton.click();
-    positionButton.click();
-
-    expect(getLetterHint).not.toHaveBeenCalled();
-    expect(getPositionHint).not.toHaveBeenCalled();
-  });
-
-  it('disables both buttons when max hints are reached', () => {
-    const getLetterHint = vi.fn();
-    const getPositionHint = vi.fn();
-
-    createHintButtonsContainer(1, getLetterHint, getPositionHint, () => 1);
-
-    const letterButton = document.getElementById('letterHintButton') as HTMLButtonElement | null;
-    const positionButton = document.getElementById('positionHintButton') as HTMLButtonElement | null;
-    expect(letterButton && positionButton).toBeTruthy();
-    if (!letterButton || !positionButton) {
-      return;
-    }
-
-    letterButton.click();
-
-    expect(letterButton.disabled).toBe(true);
-    expect(positionButton.disabled).toBe(true);
-    expect(letterButton.classList.contains('inactive-hint')).toBe(true);
-    expect(positionButton.classList.contains('inactive-hint')).toBe(true);
-  });
-
-  it('resets visual inactive state on row change and explicit reset', () => {
-    const getLetterHint = vi.fn();
-    const getPositionHint = vi.fn();
-    let row = 1;
-
-    createHintButtonsContainer(4, getLetterHint, getPositionHint, () => row);
-    const letterButton = document.getElementById('letterHintButton') as HTMLButtonElement | null;
-    const positionButton = document.getElementById('positionHintButton') as HTMLButtonElement | null;
-    expect(letterButton && positionButton).toBeTruthy();
-    if (!letterButton || !positionButton) {
-      return;
-    }
-
-    letterButton.click();
-    expect(positionButton.classList.contains('inactive-hint')).toBe(true);
-
-    row = 2;
+    rowNumber = 2;
     updateCurrentRow(2);
-    // The used button remains disabled during cooldown, while the other one is re-enabled.
-    expect(letterButton.disabled).toBe(true);
+    vi.advanceTimersByTime(45000);
     expect(positionButton.disabled).toBe(false);
-
-    vi.advanceTimersByTime(5000);
-    expect(letterButton.disabled).toBe(false);
-
-    letterButton.classList.add('inactive-hint');
-    positionButton.classList.add('inactive-hint');
-    resetHintButtonStates();
-    expect(letterButton.classList.contains('inactive-hint')).toBe(false);
-    expect(positionButton.classList.contains('inactive-hint')).toBe(false);
+    expect(positionButton.classList.contains('cooldown')).toBe(false);
   });
 
-  it('retains disabled state when hints are exhausted and ignores same-row updates', () => {
-    const getLetterHint = vi.fn();
-    const getPositionHint = vi.fn();
-    let row = 1;
+  it('locks position reveal until the configured row on harder puzzles', () => {
+    let rowNumber = 1;
+    const getPositionHint = vi.fn(() => true);
 
-    createHintButtonsContainer(1, getLetterHint, getPositionHint, () => row);
-    const letterButton = document.getElementById('letterHintButton') as HTMLButtonElement | null;
-    const positionButton = document.getElementById('positionHintButton') as HTMLButtonElement | null;
-    expect(letterButton && positionButton).toBeTruthy();
-    if (!letterButton || !positionButton) {
+    createHintButtonsContainer(8, vi.fn(() => true), getPositionHint, () => rowNumber, 'Very Hard');
+
+    const { positionButton } = getButtons();
+    expect(positionButton).toBeTruthy();
+    if (!positionButton) {
       return;
     }
 
-    letterButton.click();
-    expect(letterButton.disabled).toBe(true);
     expect(positionButton.disabled).toBe(true);
+    expect(document.getElementById('positionHintMeta')?.textContent).toContain('Unlocks row 3');
 
-    // No-op update for same row should preserve disabled state.
-    updateCurrentRow(1);
-    expect(letterButton.disabled).toBe(true);
-    expect(positionButton.disabled).toBe(true);
-
-    // Different row still remains disabled because all hints are used.
-    row = 2;
+    rowNumber = 2;
     updateCurrentRow(2);
-    expect(letterButton.disabled).toBe(true);
-    expect(positionButton.disabled).toBe(true);
-  });
-
-  it('handles zero word-length hints by disabling buttons immediately', () => {
-    const getLetterHint = vi.fn();
-    const getPositionHint = vi.fn();
-
-    createHintButtonsContainer(0, getLetterHint, getPositionHint, () => 1);
-    const letterButton = document.getElementById('letterHintButton') as HTMLButtonElement | null;
-    const positionButton = document.getElementById('positionHintButton') as HTMLButtonElement | null;
-    expect(letterButton && positionButton).toBeTruthy();
-    if (!letterButton || !positionButton) {
-      return;
-    }
-
-    letterButton.click();
-    expect(letterButton.disabled).toBe(true);
     expect(positionButton.disabled).toBe(true);
 
-    resetHintButtons();
-    expect(() => updateCurrentRow(3)).not.toThrow();
-  });
-
-  it('re-enables non-cooldown buttons when row changes', () => {
-    const getLetterHint = vi.fn();
-    const getPositionHint = vi.fn();
-    let row = 1;
-
-    createHintButtonsContainer(5, getLetterHint, getPositionHint, () => row);
-    const letterButton = document.getElementById('letterHintButton') as HTMLButtonElement | null;
-    const positionButton = document.getElementById('positionHintButton') as HTMLButtonElement | null;
-    expect(letterButton && positionButton).toBeTruthy();
-    if (!letterButton || !positionButton) {
-      return;
-    }
-
-    letterButton.classList.add('inactive-hint');
-    positionButton.classList.add('inactive-hint');
-    letterButton.disabled = true;
-    positionButton.disabled = true;
-
-    row = 2;
-    updateCurrentRow(2);
-
-    expect(letterButton.disabled).toBe(false);
+    rowNumber = 3;
+    updateCurrentRow(3);
     expect(positionButton.disabled).toBe(false);
-    expect(letterButton.classList.contains('inactive-hint')).toBe(false);
-    expect(positionButton.classList.contains('inactive-hint')).toBe(false);
-  });
-
-  it('covers disabled-click guards, row-change sync, and cooldown cleanup branches', () => {
-    const getLetterHint = vi.fn();
-    const getPositionHint = vi.fn();
-    let row = 1;
-
-    createHintButtonsContainer(3, getLetterHint, getPositionHint, () => row);
-    const letterButton = document.getElementById('letterHintButton') as HTMLButtonElement | null;
-    const positionButton = document.getElementById('positionHintButton') as HTMLButtonElement | null;
-    expect(letterButton && positionButton).toBeTruthy();
-    if (!letterButton || !positionButton) {
-      return;
-    }
-
-    // Force execution into "disabled" guards via dispatched click events.
-    letterButton.disabled = true;
-    positionButton.disabled = true;
-    letterButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    positionButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    expect(getLetterHint).not.toHaveBeenCalled();
-    expect(getPositionHint).not.toHaveBeenCalled();
-
-    // Row change branches for both buttons.
-    letterButton.disabled = false;
-    positionButton.disabled = false;
-    row = 2;
-    letterButton.click();
-    expect(getLetterHint).toHaveBeenCalledTimes(1);
-
-    // Remove progress node before cooldown completes to cover safe-remove branch.
-    const progress = letterButton.querySelector<HTMLElement>('.cooldown-progress');
-    progress?.remove();
-    vi.advanceTimersByTime(5000);
-
-    resetHintButtonStates();
-  });
-
-  it('covers position max-hint return paths and metadata fallback parsing', () => {
-    const getLetterHint = vi.fn();
-    const getPositionHint = vi.fn();
-    let row = 1;
-
-    createHintButtonsContainer(1, getLetterHint, getPositionHint, () => row);
-    const letterButton = document.getElementById('letterHintButton') as HTMLButtonElement | null;
-    const positionButton = document.getElementById('positionHintButton') as HTMLButtonElement | null;
-    expect(letterButton && positionButton).toBeTruthy();
-    if (!letterButton || !positionButton) {
-      return;
-    }
 
     positionButton.click();
     expect(getPositionHint).toHaveBeenCalledTimes(1);
+    expect(document.getElementById('positionHintMeta')?.textContent).toContain('Used on this row');
 
-    // Re-enable manually to pass disabled guard and hit max-hint guard.
-    positionButton.disabled = false;
-    positionButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    rowNumber = 4;
+    updateCurrentRow(4);
+    expect(document.getElementById('positionHintMeta')?.textContent).toContain('Position limit reached');
+  });
 
-    // Force non-finite usesLeft parsing branch.
-    letterButton.dataset.usesLeft = 'NaN';
-    positionButton.classList.add('cooldown');
-    positionButton.disabled = true;
-    row = 2;
-    updateCurrentRow(2);
-    expect(positionButton.disabled).toBe(true);
+  it('uses minute-based cooldown labels for very hard position reveals', () => {
+    let rowNumber = 3;
+
+    createHintButtonsContainer(8, vi.fn(() => true), vi.fn(() => true), () => rowNumber, 'Very Hard');
+
+    const { positionButton } = getButtons();
+    expect(positionButton).toBeTruthy();
+    if (!positionButton) {
+      return;
+    }
+
+    positionButton.click();
+    vi.advanceTimersByTime(1000);
+    expect(document.getElementById('positionHintMeta')?.textContent).toContain('Cooldown 2m');
+  });
+
+  it('ignores stale reveal clicks after the hint policy has been reset', () => {
+    const getLetterHint = vi.fn(() => true);
+
+    createHintButtonsContainer(4, getLetterHint, vi.fn(() => true), () => 1);
+
+    const { letterButton } = getButtons();
+    expect(letterButton).toBeTruthy();
+    if (!letterButton) {
+      return;
+    }
 
     resetHintButtons();
+    expect(() => letterButton.click()).not.toThrow();
+    expect(getLetterHint).not.toHaveBeenCalled();
+  });
+
+  it('caps position reveals by difficulty even when total reveals remain', () => {
+    let rowNumber = 1;
+
+    createHintButtonsContainer(8, vi.fn(() => true), vi.fn(() => true), () => rowNumber, 'Easy');
+
+    const { positionButton } = getButtons();
+    expect(positionButton).toBeTruthy();
+    if (!positionButton) {
+      return;
+    }
+
+    positionButton.click();
+    vi.advanceTimersByTime(45000);
+    rowNumber = 2;
+    updateCurrentRow(2);
+    expect(positionButton.disabled).toBe(false);
+    expect(document.getElementById('positionHintMeta')?.textContent).toContain('1 position left');
+
+    positionButton.click();
+    vi.advanceTimersByTime(45000);
+    rowNumber = 3;
+    updateCurrentRow(3);
+    expect(positionButton.disabled).toBe(true);
+    expect(document.getElementById('positionHintMeta')?.textContent).toContain('Position limit reached');
+  });
+
+  it('does not spend a reveal when the provider cannot produce one', () => {
+    const getLetterHint = vi.fn(() => false);
+
+    createHintButtonsContainer(3, getLetterHint, vi.fn(() => true), () => 1);
+
+    const { letterButton, positionButton } = getButtons();
+    expect(letterButton && positionButton).toBeTruthy();
+    if (!letterButton || !positionButton) {
+      return;
+    }
+
+    letterButton.click();
+
+    expect(getLetterHint).toHaveBeenCalledTimes(1);
+    expect(letterButton.disabled).toBe(false);
+    expect(letterButton.classList.contains('cooldown')).toBe(false);
+    expect(positionButton.disabled).toBe(false);
+    expect(document.getElementById('letterHintMeta')?.textContent).toContain('3 reveals left');
+  });
+
+  it('uses the latest row number from the getter before applying a reveal', () => {
+    const getLetterHint = vi.fn(() => true);
+    let rowNumber = 1;
+
+    createHintButtonsContainer(4, getLetterHint, vi.fn(() => true), () => rowNumber);
+
+    const { letterButton } = getButtons();
+    expect(letterButton).toBeTruthy();
+    if (!letterButton) {
+      return;
+    }
+
+    rowNumber = 2;
+    letterButton.click();
+
+    expect(getLetterHint).toHaveBeenCalledTimes(1);
+    expect(document.getElementById('letterHintMeta')?.textContent).toContain('Used on this row');
+  });
+
+  it('defends against stale disabled state and same-row updates', () => {
+    const getLetterHint = vi.fn(() => true);
+    const getPositionHint = vi.fn(() => true);
+
+    createHintButtonsContainer(2, getLetterHint, getPositionHint, () => 1);
+
+    const { letterButton, positionButton } = getButtons();
+    expect(letterButton && positionButton).toBeTruthy();
+    if (!letterButton || !positionButton) {
+      return;
+    }
+
+    letterButton.disabled = true;
+    letterButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(getLetterHint).not.toHaveBeenCalled();
+
+    letterButton.disabled = false;
+    letterButton.click();
+    expect(getLetterHint).toHaveBeenCalledTimes(1);
+
+    updateCurrentRow(1);
+    expect(positionButton.disabled).toBe(true);
+
+    positionButton.disabled = false;
+    positionButton.classList.remove('inactive-hint');
+    positionButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(getPositionHint).not.toHaveBeenCalled();
+  });
+
+  it('disables both buttons permanently once all reveals are spent', () => {
+    let rowNumber = 1;
+
+    createHintButtonsContainer(1, vi.fn(() => true), vi.fn(() => true), () => rowNumber);
+
+    const { letterButton, positionButton } = getButtons();
+    expect(letterButton && positionButton).toBeTruthy();
+    if (!letterButton || !positionButton) {
+      return;
+    }
+
+    letterButton.click();
+    expect(letterButton.disabled).toBe(true);
+    expect(positionButton.disabled).toBe(true);
+    expect(document.getElementById('letterHintMeta')?.textContent).toContain('No reveals left');
+
+    rowNumber = 2;
+    updateCurrentRow(2);
+    expect(letterButton.disabled).toBe(true);
+    expect(positionButton.disabled).toBe(true);
+  });
+
+  it('handles zero word length and invalid cooldown metadata safely', () => {
+    createHintButtonsContainer(0, vi.fn(() => true), vi.fn(() => true), () => 1);
+
+    const { letterButton, positionButton } = getButtons();
+    expect(letterButton && positionButton).toBeTruthy();
+    if (!letterButton || !positionButton) {
+      return;
+    }
+
+    expect(letterButton.disabled).toBe(true);
+    expect(positionButton.disabled).toBe(true);
+
+    letterButton.classList.add('cooldown');
+    letterButton.dataset.cooldownStartTime = 'invalid';
+    letterButton.dataset.cooldownTime = 'invalid';
+    resetHintButtonStates();
+
+    expect(letterButton.disabled).toBe(true);
+  });
+
+  it('clears row-specific visual state and survives missing nodes', () => {
+    createHintButtonsContainer(4, vi.fn(() => true), vi.fn(() => true), () => 1);
+
+    const { letterButton } = getButtons();
+    expect(letterButton).toBeTruthy();
+    if (!letterButton) {
+      return;
+    }
+
+    letterButton.click();
+    document.getElementById('letterHintMeta')?.remove();
+    resetHintButtonStates();
+    expect(() => updateCurrentRow(2)).not.toThrow();
+
+    resetHintButtons();
+    expect(() => resetHintButtonStates()).not.toThrow();
+    expect(() => updateCurrentRow(3)).not.toThrow();
+  });
+
+  it('supports numeric row input mode and replaces stale cooldown progress safely', () => {
+    createHintButtonsContainer(4, vi.fn(() => true), vi.fn(() => true), 1);
+
+    const { letterButton, positionButton } = getButtons();
+    expect(letterButton && positionButton).toBeTruthy();
+    if (!letterButton || !positionButton) {
+      return;
+    }
+
+    letterButton.click();
+    vi.advanceTimersByTime(5000);
+    updateCurrentRow(2);
+
+    const staleProgress = document.createElement('div');
+    staleProgress.className = 'cooldown-progress';
+    letterButton.appendChild(staleProgress);
+    letterButton.click();
+
+    expect(letterButton.querySelectorAll('.cooldown-progress')).toHaveLength(1);
+
+    positionButton.remove();
     expect(() => resetHintButtonStates()).not.toThrow();
   });
 });

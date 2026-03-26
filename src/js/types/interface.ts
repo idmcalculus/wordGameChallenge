@@ -1,13 +1,16 @@
 /* eslint-disable no-unused-vars */
 import type {
+  DifficultyLabel,
   FilterType,
   GameState,
   HintType,
   KeyboardKey,
   JsonObject,
   LetterState,
+  StatDifficultyLabel,
   SortDirection,
-  SortField
+  SortField,
+  WordFamiliarity
 } from './types';
 
 export interface GuessEvaluationResult {
@@ -17,21 +20,71 @@ export interface GuessEvaluationResult {
   isWin: boolean;
 }
 
+export interface PuzzleDifficultyInfo {
+  label: DifficultyLabel;
+  score: number;
+  summary: string;
+  guidance: string;
+}
+
+export interface StrategyInsight {
+  remainingCandidateCount: number;
+  previousCandidateCount: number | null;
+  topUntriedLetters: string[];
+  duplicateLetterStillPossible: boolean;
+  freshLettersInLastGuess: number;
+  reusedEliminatedLettersInLastGuess: number;
+  coachMessage: string;
+  coachDetail: string;
+}
+
+export interface WordDifficultyAnalysis extends PuzzleDifficultyInfo {
+  hasDuplicateLetters: boolean;
+  rareLetterCount: number;
+  uniqueLetterCount: number;
+  ambiguityFamilySize: number;
+}
+
+export interface WordRepositoryEntry extends WordDifficultyAnalysis {
+  word: string;
+  wordLength: number;
+  familiarity: WordFamiliarity;
+}
+
 export interface GuessHistoryEntry {
   guess: string;
   letterStates: LetterState[];
 }
 
-export interface StatEntry {
+export interface AbilityMetrics {
+  hintsUsed: number;
+  solvedWithoutHints: boolean;
+  averageFreshLettersPerGuess: number;
+  averageEliminatedLetterReusePerGuess: number;
+}
+
+export interface StatEntry extends AbilityMetrics {
   word: string;
   time: number;
   attempts: number;
   wordLength: number;
   date: string;
+  difficultyLabel: StatDifficultyLabel;
 }
 
 export interface IndexedStatEntry extends StatEntry {
   __originalIndex: number;
+}
+
+export interface StatsSummary {
+  totalWins: number;
+  noHintWins: number;
+  noHintWinRate: number;
+  totalHintsUsed: number;
+  trackedFreshLetterWins: number;
+  averageHintsUsed: number;
+  averageFreshLettersPerGuess: number;
+  averageEliminatedLetterReusePerGuess: number;
 }
 
 export interface RangeDefinition {
@@ -119,7 +172,15 @@ export interface GameSessionGuessResult {
   hasAttemptsRemaining: boolean;
 }
 
-export type HintProvider = () => void;
+export interface HintPolicy {
+  totalRevealLimit: number;
+  letterCooldownMs: number;
+  positionCooldownMs: number;
+  maxPositionReveals: number;
+  minRowForPositionReveal: number;
+}
+
+export type HintProvider = () => boolean;
 
 export type GetRowNumber = () => number;
 

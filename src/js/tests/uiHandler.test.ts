@@ -6,7 +6,8 @@ import {
   createRow,
   resetGameUI,
   updateAlphabetContainer,
-  updateDifficulty
+  updateDifficulty,
+  updateStrategyInsights
 } from '../uiHandler';
 
 describe('uiHandler', () => {
@@ -19,6 +20,13 @@ describe('uiHandler', () => {
       <div class="wordLengthInputContainer" style="display:none"></div>
       <input id="wordLengthInput" value="7" />
       <div id="difficulty" style="display:block">Difficulty:</div>
+      <div id="puzzleProfile" style="display:block">Profile</div>
+      <section id="strategyCoach" style="display:block">
+        <div id="strategyCoachCount"></div>
+        <p id="strategyCoachMessage"></p>
+        <p id="strategyCoachDetail"></p>
+        <div id="strategyCoachLetters"></div>
+      </section>
       <button id="resetGame" style="display:block"></button>
       <button id="playAgainMain" style="display:block"></button>
       <div class="actionButtons includesHintButtons">
@@ -123,6 +131,9 @@ describe('uiHandler', () => {
     expect((document.getElementById('wordLengthInput') as HTMLInputElement | null)?.value).toBe('');
     expect((document.getElementById('startGame') as HTMLButtonElement | null)?.style.display).toBe('block');
     expect(document.getElementById('difficulty')?.style.display).toBe('none');
+    expect(document.getElementById('puzzleProfile')?.style.display).toBe('none');
+    expect(document.getElementById('strategyCoach')?.style.display).toBe('none');
+    expect(document.getElementById('strategyCoachLetters')?.innerHTML).toBe('');
     expect(document.getElementById('resetGame')?.style.display).toBe('none');
     expect(document.getElementById('playAgainMain')?.style.display).toBe('none');
     expect(document.getElementById('letterHintButton')).toBeNull();
@@ -142,6 +153,46 @@ describe('uiHandler', () => {
     updateDifficulty(10);
     expect(difficulty?.textContent).toBe('Difficulty: Very Hard');
     expect(difficulty?.style.display).toBe('inline-flex');
+    expect(document.getElementById('puzzleProfile')?.style.display).toBe('none');
+  });
+
+  it('renders metadata-driven difficulty guidance when provided', () => {
+    updateDifficulty({
+      label: 'Hard',
+      score: 4,
+      summary: 'repeat letters possible • one less-common letter',
+      guidance: 'Do not assume every clue maps to a new letter.'
+    });
+
+    expect(document.getElementById('difficulty')?.textContent).toBe('Difficulty: Hard');
+    expect(document.getElementById('difficulty')?.getAttribute('title')).toContain('repeat letters possible');
+    expect(document.getElementById('puzzleProfile')?.textContent).toContain('Do not assume');
+    expect(document.getElementById('puzzleProfile')?.style.display).toBe('block');
+    expect(document.getElementById('puzzleProfile')?.getAttribute('title')).toContain('Profile:');
+  });
+
+  it('renders and clears strategy insights', () => {
+    updateStrategyInsights({
+      remainingCandidateCount: 12,
+      previousCandidateCount: 48,
+      topUntriedLetters: ['a', 'e', 'r'],
+      duplicateLetterStillPossible: true,
+      freshLettersInLastGuess: 4,
+      reusedEliminatedLettersInLastGuess: 0,
+      coachMessage: 'Strong coverage. That guess cut the local pool from 48 to 12.',
+      coachDetail: 'Pool change: 48 to 12 • Best new letters: A, E, R • Duplicate letters remain plausible'
+    });
+
+    expect(document.getElementById('strategyCoach')?.style.display).toBe('block');
+    expect(document.getElementById('strategyCoachCount')?.textContent).toContain('12 local answers left');
+    expect(document.getElementById('strategyCoachMessage')?.textContent).toContain('cut the local pool');
+    expect(document.getElementById('strategyCoachDetail')?.textContent).toContain('Best new letters');
+    expect(document.querySelectorAll('.strategyCoach__chip')).toHaveLength(3);
+
+    updateStrategyInsights(null);
+
+    expect(document.getElementById('strategyCoach')?.style.display).toBe('none');
+    expect(document.getElementById('strategyCoachLetters')?.innerHTML).toBe('');
   });
 
   it('ignores alphabet updates for unknown letters and missing difficulty element', () => {
@@ -152,6 +203,8 @@ describe('uiHandler', () => {
 
     document.getElementById('difficulty')?.remove();
     expect(() => updateDifficulty(5)).not.toThrow();
+    document.getElementById('strategyCoach')?.remove();
+    expect(() => updateStrategyInsights(null)).not.toThrow();
   });
 
   it('handles keyboard keydown activation and all letter status variants', () => {

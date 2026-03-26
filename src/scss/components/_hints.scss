@@ -1,122 +1,97 @@
 @use '../abstracts/variables' as v;
-@use '../abstracts/mixins' as m;
-@use 'sass:color';
 
 .hint-button {
   position: relative;
-  padding: v.$spacing-medium v.$spacing-xlarge;
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 188px;
+  padding: 12px 18px;
+  border: 1px solid rgba(v.$color-primary, 0.22);
   border-radius: v.$border-radius-medium;
-  font-size: v.$font-size-base;
-  font-weight: v.$font-weight-bold;
-  cursor: pointer;
-  transition: all v.$animation-duration-medium v.$animation-smooth;
-  overflow: hidden;
-  min-width: 160px;
+  background:
+    linear-gradient(135deg, rgba(v.$color-white, 0.97), rgba(v.$color-accent, 0.14));
+  color: v.$color-primary-dark;
   box-shadow: v.$shadow-base;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(v.$color-white, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width v.$animation-duration-medium, height v.$animation-duration-medium;
-  }
-  
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform v.$animation-duration-medium v.$animation-smooth,
+    box-shadow v.$animation-duration-medium v.$animation-smooth,
+    border-color v.$animation-duration-medium v.$animation-smooth;
+
   &:hover:not(:disabled) {
-    transform: translateY(-3px) scale(1.03);
+    transform: translateY(-2px);
     box-shadow: v.$shadow-md;
-    
-    &::before {
-      width: 300px;
-      height: 300px;
-    }
   }
-  
-  &:active:not(:disabled) {
-    transform: translateY(-1px) scale(0.98);
-  }
-  
+
   &:disabled {
-    opacity: 0.6;
     cursor: not-allowed;
     transform: none;
   }
-  
+
   &.cooldown {
-    background: linear-gradient(135deg, v.$color-grey-dark, v.$color-grey);
-    animation: breathe 2s ease-in-out infinite;
+    box-shadow: inset 0 0 0 1px rgba(v.$color-primary, 0.12), v.$shadow-sm;
   }
 }
 
-.letter-hint {
-  background: v.$gradient-primary;
-  color: v.$color-white;
-  
-  &:hover:not(:disabled) {
-    box-shadow: v.$shadow-lg, v.$shadow-glow;
-  }
-  
-  &:disabled {
-    background: linear-gradient(135deg, 
-      color.adjust(v.$color-primary, $lightness: 20%), 
-      color.adjust(v.$color-primary-dark, $lightness: 20%));
-  }
+.hint-button--letter {
+  border-color: rgba(v.$color-primary, 0.24);
 }
 
-.position-hint {
-  background: v.$gradient-secondary;
-  color: v.$color-white;
-  
-  &:hover:not(:disabled) {
-    box-shadow: v.$shadow-lg, 0 0 20px rgba(v.$color-secondary, 0.35);
-  }
-  
-  &:disabled {
-    background: linear-gradient(135deg, 
-      color.adjust(v.$color-secondary, $lightness: 20%), 
-      color.adjust(v.$color-secondary-dark, $lightness: 20%));
-  }
+.hint-button--position {
+  border-color: rgba(v.$color-secondary, 0.24);
+}
+
+.hint-button__label {
+  color: v.$color-text;
+  font-size: 0.95rem;
+  font-weight: v.$font-weight-semibold;
+}
+
+.hint-button__meta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(v.$color-primary, 0.12);
+  color: rgba(v.$color-text, 0.8);
+  font-size: 0.79rem;
+  font-weight: v.$font-weight-medium;
+  white-space: nowrap;
+}
+
+.hint-button--position .hint-button__meta {
+  background: rgba(v.$color-secondary, 0.12);
 }
 
 .inactive-hint {
-  opacity: 0.5;
-  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
   pointer-events: none;
 }
 
-// Progress bar for cooldown with gradient
 .cooldown-progress {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 5px;
-  background: v.$gradient-success;
+  inset: auto auto 0 0;
+  height: 4px;
   width: 0%;
-  transition: width 0.05s linear;
-  box-shadow: 0 0 10px rgba(v.$color-success, 0.5);
   border-radius: 0 0 v.$border-radius-medium v.$border-radius-medium;
+  background: v.$gradient-success;
+  transition: width 0.05s linear;
+  box-shadow: 0 0 10px rgba(v.$color-success, 0.45);
 }
 
-// Style for inputs that received hints
 .hint-provided {
   animation: highlight-hint v.$animation-duration-extra-long ease-in-out;
 }
 
-// Hint buttons container
 .includesHintButtons {
   animation: slideInFromBottom v.$animation-duration-medium v.$animation-smooth 0.3s both;
-  
+
   .hint-button {
-    @for $i from 1 through 5 {
-      &:nth-child(#{$i}) {
-        animation: pop v.$animation-duration-medium v.$animation-bounce #{$i * 0.1}s both;
-      }
-    }
+    animation: pop v.$animation-duration-medium v.$animation-bounce 0.1s both;
   }
 }

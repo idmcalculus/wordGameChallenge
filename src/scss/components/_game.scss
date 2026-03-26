@@ -309,6 +309,104 @@
   }
 }
 
+.puzzleProfile {
+  display: none;
+  width: min(100%, 600px);
+  margin: 6px auto 0;
+  padding: 10px 16px;
+  border-radius: v.$border-radius-medium;
+  background: rgba(v.$color-white, 0.9);
+  border: 1px solid rgba(v.$color-secondary, 0.24);
+  box-shadow: v.$shadow-sm;
+  color: v.$color-text;
+  font-size: 0.96rem;
+  font-weight: v.$font-weight-medium;
+  line-height: 1.35;
+  text-align: center;
+  animation: pop v.$animation-duration-medium v.$animation-bounce;
+}
+
+.strategyCoach {
+  display: none;
+  width: min(100%, 600px);
+  margin: 10px auto 0;
+  padding: 14px 16px;
+  border-radius: v.$border-radius-medium;
+  background:
+    linear-gradient(135deg, rgba(v.$color-white, 0.96), rgba(v.$color-accent, 0.12));
+  border: 1px solid rgba(v.$color-primary, 0.22);
+  box-shadow: v.$shadow-sm;
+  color: v.$color-text;
+  text-align: left;
+  animation: pop v.$animation-duration-medium v.$animation-bounce;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$spacing-small;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  &__eyebrow {
+    font-size: 0.78rem;
+    font-weight: v.$font-weight-bold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(v.$color-primary-dark, 0.78);
+  }
+
+  &__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(v.$color-primary, 0.12);
+    color: v.$color-primary-dark;
+    font-size: 0.84rem;
+    font-weight: v.$font-weight-semibold;
+  }
+
+  &__message {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: v.$font-weight-semibold;
+    line-height: 1.4;
+  }
+
+  &__detail {
+    margin: 6px 0 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: color.scale(v.$color-text, $lightness: 8%);
+  }
+
+  &__letters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: rgba(v.$color-secondary, 0.16);
+    border: 1px solid rgba(v.$color-secondary, 0.24);
+    color: v.$color-secondary;
+    font-weight: v.$font-weight-bold;
+    letter-spacing: 0.04em;
+    box-shadow: inset 0 1px 0 rgba(v.$color-white, 0.35);
+  }
+}
+
 // Word rows with card styling
 .wordRow {
   border: none;

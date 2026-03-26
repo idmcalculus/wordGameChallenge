@@ -1,6 +1,6 @@
 import { resetHintButtons } from './hintHandler';
 import type { KeyboardKey, LetterState } from './types/types';
-import type { OnKeyboardInput } from './types/interface';
+import type { OnKeyboardInput, PuzzleDifficultyInfo, StrategyInsight } from './types/interface';
 import { sanitizeSingleLetter } from './utils/inputSanitizer';
 
 const KEYBOARD_LAYOUT: KeyboardKey[][] = [
@@ -228,6 +228,12 @@ export function resetGameUI(): void {
   const wordLengthInput = document.getElementById('wordLengthInput') as HTMLInputElement | null;
   const alphabetContainer = document.getElementById('alphabetContainer');
   const difficulty = document.getElementById('difficulty');
+  const puzzleProfile = document.getElementById('puzzleProfile');
+  const strategyCoach = document.getElementById('strategyCoach');
+  const strategyCoachCount = document.getElementById('strategyCoachCount');
+  const strategyCoachMessage = document.getElementById('strategyCoachMessage');
+  const strategyCoachDetail = document.getElementById('strategyCoachDetail');
+  const strategyCoachLetters = document.getElementById('strategyCoachLetters');
   const resetGameButton = document.getElementById('resetGame');
   const playAgainMainButton = document.getElementById('playAgainMain');
 
@@ -249,6 +255,27 @@ export function resetGameUI(): void {
   }
   if (difficulty) {
     difficulty.style.display = 'none';
+    difficulty.removeAttribute('title');
+  }
+  if (puzzleProfile) {
+    puzzleProfile.textContent = '';
+    puzzleProfile.style.display = 'none';
+    puzzleProfile.removeAttribute('title');
+  }
+  if (strategyCoach) {
+    strategyCoach.style.display = 'none';
+  }
+  if (strategyCoachCount) {
+    strategyCoachCount.textContent = '';
+  }
+  if (strategyCoachMessage) {
+    strategyCoachMessage.textContent = '';
+  }
+  if (strategyCoachDetail) {
+    strategyCoachDetail.textContent = '';
+  }
+  if (strategyCoachLetters) {
+    strategyCoachLetters.innerHTML = '';
   }
   if (resetGameButton) {
     resetGameButton.style.display = 'none';
@@ -263,20 +290,76 @@ export function resetGameUI(): void {
 /**
  * Updates the displayed difficulty level based on the word length.
  */
-export function updateDifficulty(wordLength: number): void {
+export function updateDifficulty(wordLength: number): void;
+export function updateDifficulty(difficultyInfo: PuzzleDifficultyInfo): void;
+export function updateDifficulty(value: number | PuzzleDifficultyInfo): void {
   const difficulty = document.getElementById('difficulty');
+  const puzzleProfile = document.getElementById('puzzleProfile');
   if (!difficulty) {
     return;
   }
 
-  if (wordLength <= 4) {
-    difficulty.textContent = 'Difficulty: Easy';
-  } else if (wordLength <= 6) {
-    difficulty.textContent = 'Difficulty: Medium';
-  } else if (wordLength <= 8) {
-    difficulty.textContent = 'Difficulty: Hard';
+  if (typeof value === 'number') {
+    if (value <= 4) {
+      difficulty.textContent = 'Difficulty: Easy';
+    } else if (value <= 6) {
+      difficulty.textContent = 'Difficulty: Medium';
+    } else if (value <= 8) {
+      difficulty.textContent = 'Difficulty: Hard';
+    } else {
+      difficulty.textContent = 'Difficulty: Very Hard';
+    }
+
+    if (puzzleProfile) {
+      puzzleProfile.textContent = '';
+      puzzleProfile.style.display = 'none';
+      puzzleProfile.removeAttribute('title');
+    }
   } else {
-    difficulty.textContent = 'Difficulty: Very Hard';
+    difficulty.textContent = `Difficulty: ${value.label}`;
+    difficulty.title = value.summary;
+
+    if (puzzleProfile) {
+      puzzleProfile.textContent = value.guidance;
+      puzzleProfile.title = `Profile: ${value.summary}`;
+      puzzleProfile.style.display = 'block';
+    }
   }
+
   difficulty.style.display = 'inline-flex';
+}
+
+export function updateStrategyInsights(insight: StrategyInsight | null): void {
+  const strategyCoach = document.getElementById('strategyCoach');
+  const strategyCoachCount = document.getElementById('strategyCoachCount');
+  const strategyCoachMessage = document.getElementById('strategyCoachMessage');
+  const strategyCoachDetail = document.getElementById('strategyCoachDetail');
+  const strategyCoachLetters = document.getElementById('strategyCoachLetters');
+
+  if (!strategyCoach || !strategyCoachCount || !strategyCoachMessage || !strategyCoachDetail || !strategyCoachLetters) {
+    return;
+  }
+
+  if (!insight) {
+    strategyCoach.style.display = 'none';
+    strategyCoachCount.textContent = '';
+    strategyCoachMessage.textContent = '';
+    strategyCoachDetail.textContent = '';
+    strategyCoachLetters.innerHTML = '';
+    return;
+  }
+
+  strategyCoachCount.textContent = `${insight.remainingCandidateCount} local answer${insight.remainingCandidateCount === 1 ? '' : 's'} left`;
+  strategyCoachMessage.textContent = insight.coachMessage;
+  strategyCoachDetail.textContent = insight.coachDetail;
+  strategyCoachLetters.innerHTML = '';
+
+  insight.topUntriedLetters.forEach((letter) => {
+    const chip = document.createElement('span');
+    chip.className = 'strategyCoach__chip';
+    chip.textContent = letter.toUpperCase();
+    strategyCoachLetters.appendChild(chip);
+  });
+
+  strategyCoach.style.display = 'block';
 }

@@ -23,6 +23,10 @@ function toNumber(value: JsonValue | undefined, fallback = 0): number {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function toNonNegativeNumber(value: JsonValue | undefined, fallback = 0): number {
+  return Math.max(0, toNumber(value, fallback));
+}
+
 function normalizeDate(value: JsonValue | undefined): string {
   const parsed = new Date(String(value ?? ''));
   return Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
@@ -34,6 +38,34 @@ function normalizeWord(value: JsonValue | undefined): string {
 
 function isJsonObject(value: JsonValue): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function normalizeDifficultyLabel(value: JsonValue | undefined): StatEntry['difficultyLabel'] {
+  switch (value) {
+  case 'Easy':
+  case 'Medium':
+  case 'Hard':
+  case 'Very Hard':
+    return value;
+  default:
+    return 'Unknown';
+  }
+}
+
+function normalizeBoolean(value: JsonValue | undefined, fallback: boolean): boolean {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (value === 'true') {
+    return true;
+  }
+
+  if (value === 'false') {
+    return false;
+  }
+
+  return fallback;
 }
 
 function normalizeStat(statLike: JsonValue): StatEntry | null {
@@ -49,13 +81,19 @@ function normalizeStat(statLike: JsonValue): StatEntry | null {
   const time = toNumber(statLike.time ?? statLike.score, 0);
   const attempts = toNumber(statLike.attempts, 0);
   const wordLength = toNumber(statLike.wordLength ?? word.length, word.length);
+  const hintsUsed = toNonNegativeNumber(statLike.hintsUsed, 0);
 
   return {
     word,
     time,
     attempts,
     wordLength,
-    date: normalizeDate(statLike.date)
+    date: normalizeDate(statLike.date),
+    difficultyLabel: normalizeDifficultyLabel(statLike.difficultyLabel),
+    hintsUsed,
+    solvedWithoutHints: normalizeBoolean(statLike.solvedWithoutHints, hintsUsed === 0),
+    averageFreshLettersPerGuess: toNonNegativeNumber(statLike.averageFreshLettersPerGuess, 0),
+    averageEliminatedLetterReusePerGuess: toNonNegativeNumber(statLike.averageEliminatedLetterReusePerGuess, 0)
   };
 }
 

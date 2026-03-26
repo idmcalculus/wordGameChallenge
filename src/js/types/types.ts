@@ -2,6 +2,12 @@ export type LetterState = 'correct' | 'contains' | 'notContains';
 
 export type GameState = 'idle' | 'running' | 'won' | 'lost';
 
+export type DifficultyLabel = 'Easy' | 'Medium' | 'Hard' | 'Very Hard';
+
+export type StatDifficultyLabel = DifficultyLabel | 'Unknown';
+
+export type WordFamiliarity = 'common' | 'standard' | 'stretch';
+
 export type ThemePreference = 'system' | 'light' | 'dark';
 
 export type ResolvedTheme = Exclude<ThemePreference, 'system'>;

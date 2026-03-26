@@ -3,6 +3,23 @@ import { FILTER_TYPES } from '../../constants/statConstants';
 import { applyFilters, getAvailableFilters, loadFilterPreferences, saveFilterPreferences } from '../filterUtils';
 import type { ActiveFilters, IndexedStatEntry } from '../../types/interface';
 
+function createStat(index: number, overrides: Partial<IndexedStatEntry> = {}): IndexedStatEntry {
+  return {
+    __originalIndex: index,
+    word: `word${index}`,
+    time: 10,
+    attempts: 2,
+    wordLength: 4,
+    date: '2026-02-17T12:00:00.000Z',
+    difficultyLabel: 'Medium',
+    hintsUsed: 0,
+    solvedWithoutHints: true,
+    averageFreshLettersPerGuess: 3,
+    averageEliminatedLetterReusePerGuess: 0,
+    ...overrides
+  };
+}
+
 function createMockLocalStorage(): Storage {
   let store: Record<string, string> = {};
 
@@ -56,59 +73,18 @@ function buildStats(referenceDate = new Date()): IndexedStatEntry[] {
   const olderThanSixMonthsDate = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - 8, 20, 10, 0, 0, 0);
 
   return [
-    {
-      __originalIndex: 0,
-      word: 'fur',
-      time: 19,
-      attempts: 5,
-      wordLength: 3,
-      date: toIso(thisWeekDate)
-    },
-    {
-      __originalIndex: 1,
-      word: 'adage',
-      time: 27,
-      attempts: 3,
-      wordLength: 5,
-      date: toIso(lastWeekDate)
-    },
-    {
-      __originalIndex: 2,
-      word: 'jaguar',
-      time: 190,
-      attempts: 2,
-      wordLength: 6,
-      date: toIso(lastMonthDate)
-    },
-    {
-      __originalIndex: 3,
-      word: 'amber',
-      time: 73,
-      attempts: 4,
-      wordLength: 5,
-      date: toIso(withinLastThreeMonthsDate)
-    },
-    {
-      __originalIndex: 4,
-      word: 'mango',
-      time: 120,
-      attempts: 2,
-      wordLength: 5,
-      date: toIso(withinLastSixMonthsDate)
-    },
-    {
-      __originalIndex: 5,
-      word: 'planet',
-      time: 280,
-      attempts: 1,
-      wordLength: 6,
-      date: toIso(olderThanSixMonthsDate)
-    }
+    createStat(0, { word: 'fur', time: 19, attempts: 5, wordLength: 3, date: toIso(thisWeekDate) }),
+    createStat(1, { word: 'adage', time: 27, attempts: 3, wordLength: 5, date: toIso(lastWeekDate) }),
+    createStat(2, { word: 'jaguar', time: 190, attempts: 2, wordLength: 6, date: toIso(lastMonthDate) }),
+    createStat(3, { word: 'amber', time: 73, attempts: 4, wordLength: 5, date: toIso(withinLastThreeMonthsDate) }),
+    createStat(4, { word: 'mango', time: 120, attempts: 2, wordLength: 5, date: toIso(withinLastSixMonthsDate) }),
+    createStat(5, { word: 'planet', time: 280, attempts: 1, wordLength: 6, date: toIso(olderThanSixMonthsDate) })
   ];
 }
 
 describe('filterUtils', () => {
-  const stats = buildStats(new Date('2026-02-17T12:00:00.000Z'));
+  const referenceDate = new Date('2026-02-17T12:00:00.000Z');
+  const stats = buildStats(referenceDate);
 
   beforeEach(() => {
     globalThis.localStorage = createMockLocalStorage();
@@ -185,33 +161,32 @@ describe('filterUtils', () => {
   });
 
   it('filters by date ranges correctly', () => {
-    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [0] }).map((entry) => entry.word)).toEqual(['fur']);
-    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [1] }).map((entry) => entry.word)).toEqual(['adage']);
-    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [2] }).map((entry) => entry.word)).toEqual(['jaguar']);
-    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [3] }).map((entry) => entry.word)).toEqual(['jaguar', 'amber']);
-    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [4] }).map((entry) => entry.word))
+    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [0] }, referenceDate).map((entry) => entry.word)).toEqual(['fur']);
+    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [1] }, referenceDate).map((entry) => entry.word)).toEqual(['adage']);
+    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [2] }, referenceDate).map((entry) => entry.word)).toEqual(['jaguar']);
+    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [3] }, referenceDate).map((entry) => entry.word)).toEqual(['jaguar', 'amber']);
+    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [4] }, referenceDate).map((entry) => entry.word))
       .toEqual(['jaguar', 'amber', 'mango']);
-    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [5] })).toHaveLength(stats.length);
+    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [5] }, referenceDate)).toHaveLength(stats.length);
   });
 
   it('handles invalid date values and invalid date filter indexes safely', () => {
     const malformedDateStats: IndexedStatEntry[] = [
-      {
-        __originalIndex: 0,
+      createStat(0, {
         word: 'melt',
         time: 42,
         attempts: 2,
         wordLength: 4,
         date: 'not-a-date'
-      }
+      })
     ];
 
-    expect(applyFilters(malformedDateStats, { [FILTER_TYPES.DATE]: [0] })).toEqual([]);
-    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [999] })).toEqual([]);
+    expect(applyFilters(malformedDateStats, { [FILTER_TYPES.DATE]: [0] }, referenceDate)).toEqual([]);
+    expect(applyFilters(stats, { [FILTER_TYPES.DATE]: [999] }, referenceDate)).toEqual([]);
   });
 
   it('calculates available filters from stats', () => {
-    const available = getAvailableFilters(stats);
+    const available = getAvailableFilters(stats, referenceDate);
 
     expect(Array.from(available[FILTER_TYPES.WORD_LENGTH].values())).toEqual([0, 1]);
     expect(Array.from(available[FILTER_TYPES.TIME].values())).toEqual([0, 4, 2, 3, 5]);

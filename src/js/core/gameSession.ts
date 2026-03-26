@@ -115,6 +115,17 @@ export class GameSession {
     return { ...this.keyboardStates };
   }
 
+  getHintCount(): number {
+    return this.hintedLetters.length;
+  }
+
+  getGuessHistory(): GuessHistoryEntry[] {
+    return this.guessHistory.map((entry) => ({
+      guess: entry.guess,
+      letterStates: [...entry.letterStates]
+    }));
+  }
+
   submitGuess(guessWord: string): GameSessionGuessResult {
     if (!this.isActive()) {
       throw new Error('Game session is not active');

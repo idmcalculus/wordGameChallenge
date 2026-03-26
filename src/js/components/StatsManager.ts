@@ -6,6 +6,7 @@ import {
   SORT_DIRECTIONS,
   SORT_FIELDS
 } from '../constants/statConstants';
+import { buildStatsSummary } from '../core/abilityMetrics';
 import { applyFilters, loadFilterPreferences, saveFilterPreferences } from '../utils/filterUtils';
 import { getNextSortDirection, getSortIndicatorClass, sortStats } from '../utils/sortUtils';
 import type { ActiveFilters, IndexedStatEntry, SortState } from '../types/interface';
@@ -112,6 +113,7 @@ export class StatsManager {
   }
 
   private createStatsTable(): void {
+    const summarySection = this.createSummarySection();
     const table = document.createElement('div');
     table.classList.add('stats-table');
 
@@ -140,9 +142,76 @@ export class StatsManager {
     const filterPanel = this.createFilterPanel();
 
     this.container.innerHTML = '';
+    this.container.appendChild(summarySection);
     this.container.appendChild(filterPanel);
     this.container.appendChild(table);
     this.container.appendChild(loadMoreContainer);
+  }
+
+  private createSummarySection(): HTMLElement {
+    const summary = buildStatsSummary(this.originalStats);
+    const section = document.createElement('section');
+    section.classList.add('stats-summary');
+    section.setAttribute('aria-label', 'Ability summary');
+
+    const roundedFreshLetters = Math.max(1, Math.round(summary.averageFreshLettersPerGuess));
+    const roundedReuse = Math.round(summary.averageEliminatedLetterReusePerGuess);
+    const winLabel = `${summary.totalWins} win${summary.totalWins === 1 ? '' : 's'}`;
+
+    const cards = [
+      {
+        label: 'Clean Wins',
+        value: `${summary.noHintWins}/${summary.totalWins}`,
+        detail: `${summary.noHintWinRate}% solved without reveals`
+      },
+      {
+        label: 'Fresh Letters',
+        value: summary.trackedFreshLetterWins > 0 ? `${roundedFreshLetters} letters` : 'Pending',
+        detail: summary.trackedFreshLetterWins > 0
+          ? `Typical guess introduced about ${roundedFreshLetters} new letters`
+          : 'Finish a newly tracked win to see this stat'
+      },
+      {
+        label: 'Dead-Letter Reuse',
+        value: roundedReuse <= 0 ? 'Low' : roundedReuse === 1 ? 'Steady' : 'High',
+        detail: roundedReuse <= 0
+          ? 'You rarely reuse letters that were already eliminated'
+          : roundedReuse === 1
+            ? 'Most guesses reuse about one eliminated letter'
+            : 'Several guesses are reusing eliminated letters'
+      },
+      {
+        label: 'Hint Usage',
+        value: `${summary.totalHintsUsed} in ${summary.totalWins}`,
+        detail: summary.totalHintsUsed === 0
+          ? `No hints used across ${winLabel}`
+          : `${summary.totalHintsUsed} hint${summary.totalHintsUsed === 1 ? '' : 's'} used in ${winLabel}`
+      }
+    ];
+
+    cards.forEach(({ label, value, detail }) => {
+      const card = document.createElement('article');
+      card.classList.add('stats-summary-card');
+
+      const heading = document.createElement('p');
+      heading.classList.add('stats-summary-card__label');
+      heading.textContent = label;
+
+      const metric = document.createElement('strong');
+      metric.classList.add('stats-summary-card__value');
+      metric.textContent = value;
+
+      const caption = document.createElement('p');
+      caption.classList.add('stats-summary-card__detail');
+      caption.textContent = detail;
+
+      card.appendChild(heading);
+      card.appendChild(metric);
+      card.appendChild(caption);
+      section.appendChild(card);
+    });
+
+    return section;
   }
 
   private createHeader(): HTMLDivElement {

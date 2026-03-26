@@ -4,18 +4,26 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { StatsManager } from './StatsManager';
 import type { IndexedStatEntry } from '../types/interface';
 
+function createStat(index: number, overrides: Partial<IndexedStatEntry> = {}): IndexedStatEntry {
+  const row = index + 1;
+  return {
+    word: `word${String(row).padStart(2, '0')}`,
+    time: row * 3,
+    attempts: ((row - 1) % 5) + 1,
+    wordLength: 4,
+    date: `2026-02-${String(((row - 1) % 28) + 1).padStart(2, '0')}T09:30:00.000Z`,
+    difficultyLabel: 'Medium',
+    hintsUsed: row % 3,
+    solvedWithoutHints: row % 3 === 0,
+    averageFreshLettersPerGuess: 3.25,
+    averageEliminatedLetterReusePerGuess: 0.5,
+    __originalIndex: index,
+    ...overrides
+  };
+}
+
 function buildStats(count: number): IndexedStatEntry[] {
-  return Array.from({ length: count }, (_, index) => {
-    const row = index + 1;
-    return {
-      word: `word${String(row).padStart(2, '0')}`,
-      time: row * 3,
-      attempts: ((row - 1) % 5) + 1,
-      wordLength: 4,
-      date: `2026-02-${String(((row - 1) % 28) + 1).padStart(2, '0')}T09:30:00.000Z`,
-      __originalIndex: index
-    };
-  });
+  return Array.from({ length: count }, (_, index) => createStat(index));
 }
 
 function getRenderedRows(container: HTMLElement): HTMLDivElement[] {
@@ -55,6 +63,64 @@ describe('StatsManager', () => {
     loadMoreButton?.click();
     expect(getRenderedRows(container)).toHaveLength(23);
     expect(loadMoreContainer?.style.display).toBe('none');
+
+    manager.destroy();
+  });
+
+  it('renders ability summary cards above the table', () => {
+    const container = document.getElementById('stats-root');
+    expect(container).toBeTruthy();
+    if (!container) {
+      return;
+    }
+
+    const manager = new StatsManager(container, [
+      createStat(0, {
+        hintsUsed: 0,
+        solvedWithoutHints: true,
+        averageFreshLettersPerGuess: 4,
+        averageEliminatedLetterReusePerGuess: 0.25
+      }),
+      createStat(1, {
+        hintsUsed: 2,
+        solvedWithoutHints: false,
+        averageFreshLettersPerGuess: 3,
+        averageEliminatedLetterReusePerGuess: 1
+      })
+    ]);
+    vi.runAllTimers();
+
+    const cards = container.querySelectorAll('.stats-summary-card');
+    expect(cards).toHaveLength(4);
+    expect(container.textContent).toContain('Clean Wins');
+    expect(container.textContent).toContain('1/2');
+    expect(container.textContent).toContain('50% solved without reveals');
+    expect(container.textContent).toContain('4 letters');
+    expect(container.textContent).toContain('2 hints used in 2 wins');
+
+    manager.destroy();
+  });
+
+  it('shows pending fresh-letter data and no-hint copy for legacy-style clean wins', () => {
+    const container = document.getElementById('stats-root');
+    expect(container).toBeTruthy();
+    if (!container) {
+      return;
+    }
+
+    const manager = new StatsManager(container, [
+      createStat(0, {
+        hintsUsed: 0,
+        solvedWithoutHints: true,
+        averageFreshLettersPerGuess: 0,
+        averageEliminatedLetterReusePerGuess: 0
+      })
+    ]);
+    vi.runAllTimers();
+
+    expect(container.textContent).toContain('Pending');
+    expect(container.textContent).toContain('No hints used across 1 win');
+    expect(container.textContent).toContain('Low');
 
     manager.destroy();
   });
@@ -121,22 +187,20 @@ describe('StatsManager', () => {
     older.setMonth(older.getMonth() - 8);
 
     const stats: IndexedStatEntry[] = [
-      {
+      createStat(0, {
         word: 'fresh',
         time: 12,
         attempts: 2,
         wordLength: 5,
-        date: now.toISOString(),
-        __originalIndex: 0
-      },
-      {
+        date: now.toISOString()
+      }),
+      createStat(1, {
         word: 'older',
         time: 65,
         attempts: 4,
         wordLength: 5,
-        date: older.toISOString(),
-        __originalIndex: 1
-      }
+        date: older.toISOString()
+      })
     ];
 
     const manager = new StatsManager(container, stats);
@@ -218,30 +282,27 @@ describe('StatsManager', () => {
     }
 
     const stats: IndexedStatEntry[] = [
-      {
+      createStat(0, {
         word: 'first',
         time: 20,
         attempts: 1,
         wordLength: 5,
-        date: '2026-02-01T09:00:00.000Z',
-        __originalIndex: 0
-      },
-      {
+        date: '2026-02-01T09:00:00.000Z'
+      }),
+      createStat(1, {
         word: 'second',
         time: 75,
         attempts: 3,
         wordLength: 6,
-        date: '2026-02-02T09:00:00.000Z',
-        __originalIndex: 1
-      },
-      {
+        date: '2026-02-02T09:00:00.000Z'
+      }),
+      createStat(2, {
         word: 'third',
         time: 190,
         attempts: 3,
         wordLength: 5,
-        date: '2026-02-03T09:00:00.000Z',
-        __originalIndex: 2
-      }
+        date: '2026-02-03T09:00:00.000Z'
+      })
     ];
 
     const manager = new StatsManager(container, stats);
@@ -295,6 +356,55 @@ describe('StatsManager', () => {
     expect(getRenderedRows(container)).toHaveLength(1);
     expect(container.querySelector('.stats-body')?.textContent).toContain('second');
     expect(container.querySelector('.filter-panel-summary')?.textContent).toBe('3 filters active');
+
+    manager.destroy();
+  });
+
+  it('removes active filter chips through their click handlers', () => {
+    const container = document.getElementById('stats-root');
+    expect(container).toBeTruthy();
+    if (!container) {
+      return;
+    }
+
+    const manager = new StatsManager(container, buildStats(6));
+    vi.runAllTimers();
+
+    const toggleButton = container.querySelector<HTMLButtonElement>('.filter-panel-toggle');
+    toggleButton?.click();
+
+    const wordLengthMin = container.querySelector<HTMLInputElement>(
+      '.filter-section[data-filter-type="WORD_LENGTH"] .filter-range-input-min'
+    );
+    const wordLengthMax = container.querySelector<HTMLInputElement>(
+      '.filter-section[data-filter-type="WORD_LENGTH"] .filter-range-input-max'
+    );
+    const timeOption = container.querySelector<HTMLInputElement>(
+      '.filter-section[data-filter-type="TIME"] .filter-multi-checkbox[data-filter-index="0"]'
+    );
+
+    expect(wordLengthMin && wordLengthMax && timeOption).toBeTruthy();
+    if (!wordLengthMin || !wordLengthMax || !timeOption) {
+      return;
+    }
+
+    wordLengthMin.value = '4';
+    wordLengthMin.dispatchEvent(new Event('input'));
+    wordLengthMax.value = '4';
+    wordLengthMax.dispatchEvent(new Event('input'));
+    timeOption.checked = true;
+    timeOption.dispatchEvent(new Event('change'));
+    vi.runAllTimers();
+
+    const rangeRemove = container.querySelector<HTMLElement>('.remove-filter[data-filter-index="-1"]');
+    const optionRemove = Array.from(container.querySelectorAll<HTMLElement>('.remove-filter'))
+      .find((element) => element.dataset.filterIndex === '0');
+
+    rangeRemove?.click();
+    optionRemove?.click();
+    vi.runAllTimers();
+
+    expect(container.querySelectorAll('.active-filter')).toHaveLength(0);
 
     manager.destroy();
   });

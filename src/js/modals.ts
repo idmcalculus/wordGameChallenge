@@ -353,3 +353,22 @@ export function showAlert(
     alertButtonsContainer.style.justifyContent = tryAgainCb ? 'space-between' : 'center';
   }
 }
+
+export function updateAlertContent(content: AlertContent, expectedTitle?: string): boolean {
+  const alertMessage = document.getElementById('alertMessage');
+  const alertModal = document.getElementById('alertModal');
+
+  if (!alertMessage || !alertModal || alertModal.style.display !== 'flex') {
+    return false;
+  }
+
+  if (expectedTitle) {
+    const currentTitle = alertMessage.querySelector('h3')?.textContent;
+    if (currentTitle !== expectedTitle) {
+      return false;
+    }
+  }
+
+  renderAlertMessage(alertMessage, content);
+  return true;
+}

@@ -5,9 +5,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => {
   return {
     showAlert: vi.fn(),
+    updateAlertContent: vi.fn(),
     resetGameUI: vi.fn(),
     updateDifficulty: vi.fn(),
+    updateStrategyInsights: vi.fn(),
+    getAnswerPoolByLength: vi.fn(),
+    pickCuratedAnswer: vi.fn(),
     fetchPossibleWords: vi.fn<(...args: unknown[]) => Promise<string[]>>(),
+    fetchWordMeaning: vi.fn<(...args: unknown[]) => Promise<string | null>>(),
     validateWord: vi.fn<(...args: unknown[]) => Promise<boolean>>(),
     createHintButtonsContainer: vi.fn(),
     resetHintButtons: vi.fn(),
@@ -15,8 +20,20 @@ const mocks = vi.hoisted(() => {
     updateCurrentRow: vi.fn(),
     loggerError: vi.fn(),
     loggerWarn: vi.fn(),
+    buildStrategyInsight: vi.fn(),
     addStat: vi.fn(),
-    loadStats: vi.fn<() => Array<{ word: string; time: number; attempts: number; wordLength: number; date: string }>>(),
+    loadStats: vi.fn<() => Array<{
+      word: string;
+      time: number;
+      attempts: number;
+      wordLength: number;
+      date: string;
+      difficultyLabel: 'Easy' | 'Medium' | 'Hard' | 'Very Hard' | 'Unknown';
+      hintsUsed: number;
+      solvedWithoutHints: boolean;
+      averageFreshLettersPerGuess: number;
+      averageEliminatedLetterReusePerGuess: number;
+    }>>(),
     pickRandom: vi.fn(),
     sanitizeSingleLetter: vi.fn<(value: string) => string>(),
     sanitizeWord: vi.fn<(value: string, wordLength: number) => string>(),
@@ -45,8 +62,10 @@ const mocks = vi.hoisted(() => {
     sessionStartTime: new Date('2026-01-01T00:00:00.000Z') as Date | null,
     sessionElapsedSeconds: 22,
     sessionAttemptsUsed: 3,
+    sessionHintCount: 0,
     sessionAvailableLetterHints: ['a', 'p'],
     sessionAvailablePositionHints: [1],
+    sessionGuessHistory: [] as Array<{ guess: string; letterStates: Array<'correct' | 'contains' | 'notContains'> }>,
     sessionSubmitGuess: vi.fn(),
     sessionRegisterLetterHint: vi.fn(),
     sessionClear: vi.fn()
@@ -56,6 +75,9 @@ const mocks = vi.hoisted(() => {
 vi.mock('../../modals', () => ({
   showAlert: (...args: unknown[]): void => {
     mocks.showAlert(...args);
+  },
+  updateAlertContent: (...args: unknown[]): boolean => {
+    return mocks.updateAlertContent(...args);
   }
 }));
 
@@ -63,13 +85,22 @@ vi.mock('../../uiHandler', () => ({
   resetGameUI: (): void => {
     mocks.resetGameUI();
   },
-  updateDifficulty: (wordLength: number): void => {
-    mocks.updateDifficulty(wordLength);
+  updateDifficulty: (value: unknown): void => {
+    mocks.updateDifficulty(value);
+  },
+  updateStrategyInsights: (value: unknown): void => {
+    mocks.updateStrategyInsights(value);
   }
+}));
+
+vi.mock('../../repositories/wordRepository', () => ({
+  getAnswerPoolByLength: (...args: unknown[]): unknown => mocks.getAnswerPoolByLength(...args),
+  pickCuratedAnswer: (...args: unknown[]): unknown => mocks.pickCuratedAnswer(...args)
 }));
 
 vi.mock('../../apiHandler', () => ({
   fetchPossibleWords: (...args: unknown[]): Promise<string[]> => mocks.fetchPossibleWords(...args),
+  fetchWordMeaning: (...args: unknown[]): Promise<string | null> => mocks.fetchWordMeaning(...args),
   validateWord: (...args: unknown[]): Promise<boolean> => mocks.validateWord(...args)
 }));
 
@@ -108,16 +139,42 @@ vi.mock('../../utils/logger', () => ({
 }));
 
 vi.mock('../../repositories/statsRepository', () => ({
-  addStat: (...args: unknown[]): Array<{ word: string; time: number; attempts: number; wordLength: number; date: string }> => {
+  addStat: (...args: unknown[]): Array<{
+    word: string;
+    time: number;
+    attempts: number;
+    wordLength: number;
+    date: string;
+    difficultyLabel: 'Easy' | 'Medium' | 'Hard' | 'Very Hard' | 'Unknown';
+    hintsUsed: number;
+    solvedWithoutHints: boolean;
+    averageFreshLettersPerGuess: number;
+    averageEliminatedLetterReusePerGuess: number;
+  }> => {
     return mocks.addStat(...args);
   },
-  loadStats: (): Array<{ word: string; time: number; attempts: number; wordLength: number; date: string }> => {
+  loadStats: (): Array<{
+    word: string;
+    time: number;
+    attempts: number;
+    wordLength: number;
+    date: string;
+    difficultyLabel: 'Easy' | 'Medium' | 'Hard' | 'Very Hard' | 'Unknown';
+    hintsUsed: number;
+    solvedWithoutHints: boolean;
+    averageFreshLettersPerGuess: number;
+    averageEliminatedLetterReusePerGuess: number;
+  }> => {
     return mocks.loadStats();
   }
 }));
 
 vi.mock('../../core/hintEngine', () => ({
   pickRandom: (...args: unknown[]): unknown => mocks.pickRandom(...args)
+}));
+
+vi.mock('../../core/strategyEngine', () => ({
+  buildStrategyInsight: (...args: unknown[]): unknown => mocks.buildStrategyInsight(...args)
 }));
 
 vi.mock('../../utils/inputSanitizer', () => ({
@@ -299,13 +356,64 @@ vi.mock('../../core/gameSession', () => ({
       return mocks.sessionAttemptsUsed;
     }
 
+    getHintCount(): number {
+      return mocks.sessionHintCount;
+    }
+
+    getGuessHistory(): Array<{ guess: string; letterStates: Array<'correct' | 'contains' | 'notContains'> }> {
+      return mocks.sessionGuessHistory.map((entry) => ({
+        guess: entry.guess,
+        letterStates: [...entry.letterStates]
+      }));
+    }
+
     clear(): void {
       mocks.sessionClear();
     }
   }
 }));
 
+async function waitForAssertion(assertion: () => void, attempts = 10): Promise<void> {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      assertion();
+      return;
+    } catch {
+      await Promise.resolve();
+    }
+  }
+
+  assertion();
+}
+
 import GameController from '../GameController';
+
+function createWordEntry(word: string) {
+  return {
+    word,
+    wordLength: word.length,
+    familiarity: 'common',
+    label: 'Easy',
+    score: 1,
+    summary: 'all letters are unique • common vocabulary',
+    guidance: 'Use early guesses to cover as many fresh letters as possible.',
+    hasDuplicateLetters: false,
+    rareLetterCount: 0,
+    uniqueLetterCount: new Set(word).size,
+    ambiguityFamilySize: 1
+  };
+}
+
+function getDefaultWordForLength(wordLength: number): string {
+  if (wordLength === 3) return 'sun';
+  if (wordLength === 4) return 'apex';
+  if (wordLength === 5) return 'crown';
+  if (wordLength === 6) return 'planet';
+  if (wordLength === 7) return 'journey';
+  if (wordLength === 8) return 'mountain';
+  if (wordLength === 9) return 'adventure';
+  return 'basketball';
+}
 
 function setupDom(): void {
   document.body.innerHTML = `
@@ -316,6 +424,7 @@ function setupDom(): void {
     <button id="playAgainMain" type="button"></button>
     <div id="timerDisplay"></div>
     <div id="difficulty"></div>
+    <div id="puzzleProfile"></div>
     <div id="statsList"></div>
     <div class="wrapper"></div>
   `;
@@ -323,9 +432,14 @@ function setupDom(): void {
 
 function resetMockState(): void {
   mocks.showAlert.mockReset();
+  mocks.updateAlertContent.mockReset();
   mocks.resetGameUI.mockReset();
   mocks.updateDifficulty.mockReset();
+  mocks.updateStrategyInsights.mockReset();
+  mocks.getAnswerPoolByLength.mockReset();
+  mocks.pickCuratedAnswer.mockReset();
   mocks.fetchPossibleWords.mockReset();
+  mocks.fetchWordMeaning.mockReset();
   mocks.validateWord.mockReset();
   mocks.createHintButtonsContainer.mockReset();
   mocks.resetHintButtons.mockReset();
@@ -333,6 +447,7 @@ function resetMockState(): void {
   mocks.updateCurrentRow.mockReset();
   mocks.loggerError.mockReset();
   mocks.loggerWarn.mockReset();
+  mocks.buildStrategyInsight.mockReset();
   mocks.addStat.mockReset();
   mocks.loadStats.mockReset();
   mocks.pickRandom.mockReset();
@@ -367,11 +482,22 @@ function resetMockState(): void {
   mocks.sessionStartTime = new Date('2026-01-01T00:00:00.000Z');
   mocks.sessionElapsedSeconds = 22;
   mocks.sessionAttemptsUsed = 3;
+  mocks.sessionHintCount = 0;
   mocks.sessionAvailableLetterHints = ['a', 'p'];
   mocks.sessionAvailablePositionHints = [1];
+  mocks.sessionGuessHistory = [];
   mocks.loadStats.mockReturnValue([]);
   mocks.addStat.mockImplementation((stats: unknown[], stat: unknown) => [...stats, stat] as Array<{
-    word: string; time: number; attempts: number; wordLength: number; date: string;
+    word: string;
+    time: number;
+    attempts: number;
+    wordLength: number;
+    date: string;
+    difficultyLabel: 'Easy' | 'Medium' | 'Hard' | 'Very Hard' | 'Unknown';
+    hintsUsed: number;
+    solvedWithoutHints: boolean;
+    averageFreshLettersPerGuess: number;
+    averageEliminatedLetterReusePerGuess: number;
   }>);
   mocks.pickRandom.mockImplementation((values: unknown[]) => values[0] ?? null);
   mocks.sanitizeSingleLetter.mockImplementation((value: string) => {
@@ -381,8 +507,26 @@ function resetMockState(): void {
   mocks.sanitizeWord.mockImplementation((value: string, wordLength: number) =>
     value.toLowerCase().replace(/[^a-z]/g, '').slice(0, wordLength)
   );
+  mocks.getAnswerPoolByLength.mockImplementation((wordLength: number) => {
+    return [createWordEntry(getDefaultWordForLength(wordLength))];
+  });
+  mocks.pickCuratedAnswer.mockImplementation((wordLength: number) => {
+    return createWordEntry(getDefaultWordForLength(wordLength));
+  });
+  mocks.buildStrategyInsight.mockReturnValue({
+    remainingCandidateCount: 1,
+    previousCandidateCount: null,
+    topUntriedLetters: ['a', 'e', 'r'],
+    duplicateLetterStillPossible: false,
+    freshLettersInLastGuess: 0,
+    reusedEliminatedLettersInLastGuess: 0,
+    coachMessage: 'Open with broad coverage.',
+    coachDetail: 'Local answers left: 1'
+  });
   mocks.fetchPossibleWords.mockResolvedValue(['apex', 'ally']);
+  mocks.fetchWordMeaning.mockResolvedValue('A point or peak.');
   mocks.validateWord.mockResolvedValue(true);
+  mocks.updateAlertContent.mockReturnValue(true);
   mocks.sessionSubmitGuess.mockReturnValue({
     evaluation: {
       letterStates: ['correct', 'correct', 'correct', 'correct'],
@@ -409,13 +553,29 @@ describe('GameController', () => {
 
     await controller.play();
 
-    expect(mocks.updateDifficulty).toHaveBeenCalledWith(3);
-    expect(mocks.fetchPossibleWords).toHaveBeenCalledWith('???', 3);
+    expect(mocks.pickCuratedAnswer).toHaveBeenCalledWith(3);
+    expect(mocks.updateDifficulty).toHaveBeenCalledWith(expect.objectContaining({
+      word: 'sun',
+      label: 'Easy'
+    }));
+    expect(mocks.fetchPossibleWords).not.toHaveBeenCalled();
+    expect(mocks.fetchWordMeaning).toHaveBeenCalledWith('sun');
+    expect(mocks.buildStrategyInsight).toHaveBeenCalledWith(['sun'], [], 3);
+    expect(mocks.updateStrategyInsights).toHaveBeenCalledWith(expect.objectContaining({
+      remainingCandidateCount: 1
+    }));
     expect(mocks.keyboardCreate).toHaveBeenCalledTimes(1);
     expect(mocks.keyboardShow).toHaveBeenCalledTimes(1);
     expect(mocks.boardCreateRow).toHaveBeenCalledTimes(1);
     expect(mocks.timerStart).toHaveBeenCalledTimes(1);
     expect(mocks.createHintButtonsContainer).toHaveBeenCalledTimes(1);
+    expect(mocks.createHintButtonsContainer).toHaveBeenCalledWith(
+      3,
+      expect.any(Function),
+      expect.any(Function),
+      expect.any(Function),
+      'Easy'
+    );
     expect(document.getElementById('gameHeader')?.textContent).toContain('3 letter word');
   });
 
@@ -435,6 +595,8 @@ describe('GameController', () => {
 
   it('handles play failure when no words are returned', async () => {
     const controller = new GameController();
+    mocks.getAnswerPoolByLength.mockReturnValue([]);
+    mocks.pickCuratedAnswer.mockReturnValue(null);
     mocks.fetchPossibleWords.mockResolvedValue([]);
 
     await controller.play();
@@ -507,6 +669,7 @@ describe('GameController', () => {
   it('handles winning outcome and updates stats flow', async () => {
     const controller = new GameController();
     await controller.play();
+    await Promise.resolve();
 
     const instance = controller as unknown as {
       gameState: string;
@@ -525,16 +688,34 @@ describe('GameController', () => {
       },
       hasAttemptsRemaining: true
     });
+    mocks.sessionGuessHistory = [
+      {
+        guess: 'ace',
+        letterStates: ['correct', 'contains', 'notContains']
+      }
+    ];
+    mocks.sessionHintCount = 1;
 
     await instance.checkRowLetters();
     vi.advanceTimersByTime(120);
-    expect(mocks.addStat).toHaveBeenCalled();
+    expect(mocks.addStat).toHaveBeenCalledWith([], expect.objectContaining({
+      word: 'sun',
+      difficultyLabel: 'Easy',
+      hintsUsed: 1,
+      solvedWithoutHints: false,
+      averageFreshLettersPerGuess: 3,
+      averageEliminatedLetterReusePerGuess: 0
+    }));
+    const winAlert = mocks.showAlert.mock.calls.find((call) => call[0]?.title === 'Congratulations!');
+    expect(winAlert?.[0]?.paragraphs.at(-1)?.text).toBe('Meaning: A point or peak.');
+    expect(mocks.updateAlertContent).not.toHaveBeenCalled();
     expect(mocks.showAlert.mock.calls.some((call) => call[0]?.title === 'Congratulations!')).toBe(true);
   });
 
   it('handles losing outcome and shows game over alert', async () => {
     const controller = new GameController();
     await controller.play();
+    await Promise.resolve();
 
     const instance = controller as unknown as {
       gameState: string;
@@ -555,15 +736,65 @@ describe('GameController', () => {
     });
     await instance.checkRowLetters();
     vi.advanceTimersByTime(120);
+    const lossAlert = mocks.showAlert.mock.calls.find((call) => call[0]?.title === 'Game Over');
+    expect(lossAlert?.[0]?.paragraphs.at(-1)?.text).toBe('Meaning: A point or peak.');
+    expect(mocks.updateAlertContent).not.toHaveBeenCalled();
     expect(mocks.showAlert.mock.calls.some((call) => call[0]?.title === 'Game Over')).toBe(true);
+  });
+
+  it('reuses the in-flight prefetched meaning and updates the result modal once it resolves', async () => {
+    let resolveMeaning: ((value: string | null) => void) | null = null;
+    mocks.fetchWordMeaning.mockImplementation(() => new Promise((resolve) => {
+      resolveMeaning = resolve;
+    }));
+
+    const controller = new GameController();
+    await controller.play();
+
+    const instance = controller as unknown as {
+      gameState: string;
+      checkRowLetters: () => Promise<void>;
+    };
+    instance.gameState = 'running';
+    mocks.boardInputs.forEach((input) => {
+      input.value = 'z';
+    });
+
+    mocks.sessionSubmitGuess.mockReturnValue({
+      evaluation: {
+        letterStates: ['notContains', 'notContains', 'notContains'],
+        keyboardStates: { z: 'notContains' },
+        isWin: false
+      },
+      hasAttemptsRemaining: false
+    });
+
+    await instance.checkRowLetters();
+    vi.advanceTimersByTime(120);
+
+    const lossAlert = mocks.showAlert.mock.calls.find((call) => call[0]?.title === 'Game Over');
+    expect(lossAlert?.[0]?.paragraphs.at(-1)?.text).toBe('Meaning: looking it up...');
+    expect(mocks.updateAlertContent).not.toHaveBeenCalled();
+
+    expect(resolveMeaning).toBeTypeOf('function');
+    const settleMeaning = resolveMeaning as unknown as (value: string | null) => void;
+    settleMeaning('A point or peak.');
+    await Promise.resolve();
+
+    expect(mocks.updateAlertContent).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Game Over',
+      paragraphs: expect.arrayContaining([
+        expect.objectContaining({ text: 'Meaning: A point or peak.' })
+      ])
+    }), 'Game Over');
   });
 
   it('covers hint generation branches for letter and position hints', async () => {
     const controller = new GameController();
     const instance = controller as unknown as {
       gameState: string;
-      getLetterHint: () => void;
-      getPositionHint: () => void;
+      getLetterHint: () => boolean;
+      getPositionHint: () => boolean;
     };
 
     // Inactive session or missing row should no-op.
@@ -582,29 +813,31 @@ describe('GameController', () => {
 
     // No hint available.
     mocks.pickRandom.mockReturnValueOnce(null);
-    instance.getLetterHint();
+    expect(instance.getLetterHint()).toBe(false);
     expect(mocks.sessionRegisterLetterHint).not.toHaveBeenCalled();
 
     // Letter hint available.
     mocks.pickRandom.mockReturnValueOnce('p');
-    instance.getLetterHint();
+    expect(instance.getLetterHint()).toBe(true);
     expect(mocks.sessionRegisterLetterHint).toHaveBeenCalledWith('p', 'contains');
     expect(mocks.keyboardUpdate).toHaveBeenCalledWith('p', 'contains');
 
     // Position hint unavailable.
     mocks.pickRandom.mockReturnValueOnce(null);
-    instance.getPositionHint();
+    expect(instance.getPositionHint()).toBe(false);
 
     // Position hint points to missing input.
     mocks.pickRandom.mockReturnValueOnce(99);
-    instance.getPositionHint();
+    expect(instance.getPositionHint()).toBe(false);
 
     // Position hint applies successfully and clears temporary class.
     mocks.sessionTargetWord = 'ape';
     mocks.pickRandom.mockReturnValueOnce(1);
-    instance.getPositionHint();
+    expect(instance.getPositionHint()).toBe(true);
     expect(mocks.boardInputs[1]?.value).toBe('p');
     expect(mocks.boardInputs[1]?.classList.contains('hint-provided')).toBe(true);
+    expect(mocks.sessionRegisterLetterHint).toHaveBeenCalledWith('p', 'correct');
+    expect(mocks.keyboardUpdate).toHaveBeenCalledWith('p', 'correct');
     vi.advanceTimersByTime(2000);
     expect(mocks.boardInputs[1]?.classList.contains('hint-provided')).toBe(false);
   });
@@ -708,18 +941,29 @@ describe('GameController', () => {
       input.value = 'a';
     });
     mocks.validateWord.mockResolvedValue(true);
-    mocks.sessionSubmitGuess.mockReturnValue({
-      evaluation: {
-        letterStates: ['contains', 'contains', 'contains'],
-        keyboardStates: { a: 'contains' },
-        isWin: false
-      },
-      hasAttemptsRemaining: true
+    mocks.sessionSubmitGuess.mockImplementation(() => {
+      mocks.sessionGuessHistory = [{
+        guess: 'aaa',
+        letterStates: ['contains', 'contains', 'contains']
+      }];
+
+      return {
+        evaluation: {
+          letterStates: ['contains', 'contains', 'contains'],
+          keyboardStates: { a: 'contains' },
+          isWin: false
+        },
+        hasAttemptsRemaining: true
+      };
     });
 
     await instance.checkRowLetters();
     vi.advanceTimersByTime(120);
 
+    expect(mocks.buildStrategyInsight).toHaveBeenLastCalledWith(['sun'], mocks.sessionGuessHistory, 3);
+    expect(mocks.updateStrategyInsights).toHaveBeenLastCalledWith(expect.objectContaining({
+      remainingCandidateCount: 1
+    }));
     expect(mocks.resetHintButtonStates).toHaveBeenCalled();
     expect(mocks.boardCreateRow.mock.calls.length).toBeGreaterThan(1);
   });
@@ -840,6 +1084,7 @@ describe('GameController', () => {
       updateStartGameButtonState: () => void;
       syncGameUiForState: () => void;
       normalizeError: (value: Error | string | object | null | undefined) => Error;
+      buildMeaningParagraph: (meaning: string | null, isLoading?: boolean) => { text: string };
       showMainPlayAgainButton: () => void;
       hideMainPlayAgainButton: () => void;
       destroyStatsManager: () => void;
@@ -857,12 +1102,59 @@ describe('GameController', () => {
     expect(fromObject).toBeInstanceOf(Error);
     expect(fromString.message).toBe('broken');
     expect(fromError.message).toBe('boom');
+    expect(instance.buildMeaningParagraph(null).text).toBe('Meaning: unavailable right now.');
 
     document.getElementById('playAgainMain')?.remove();
     expect(() => instance.showMainPlayAgainButton()).not.toThrow();
     expect(() => instance.hideMainPlayAgainButton()).not.toThrow();
 
     expect(() => instance.destroyStatsManager()).not.toThrow();
+  });
+
+  it('covers word-meaning helper guards, fallback prefetching, and stale lookup updates', async () => {
+    const controller = new GameController();
+    const instance = controller as unknown as {
+      currentWordMeaning: string | null | undefined;
+      currentWordMeaningLookup: Promise<string | null> | null;
+      currentWordMeaningWord: string;
+      getResolvedMeaningForWord: (word: string) => string | null | undefined;
+      enrichResultAlertWithMeaning: (word: string, title: string, alertContent: { title: string; paragraphs: Array<{ text: string }> }) => void;
+      prefetchWordMeaning: (word: string) => void;
+    };
+
+    expect(instance.getResolvedMeaningForWord('')).toBeUndefined();
+
+    instance.currentWordMeaningWord = 'crown';
+    instance.currentWordMeaning = null;
+    expect(instance.getResolvedMeaningForWord('other')).toBeUndefined();
+    expect(instance.getResolvedMeaningForWord('crown')).toBeNull();
+
+    const prefetchSpy = vi.spyOn(instance, 'prefetchWordMeaning').mockImplementation(() => {});
+    instance.currentWordMeaningLookup = null;
+    instance.currentWordMeaningWord = '';
+
+    instance.enrichResultAlertWithMeaning('', 'Game Over', {
+      title: 'Game Over',
+      paragraphs: [{ text: 'Meaning: looking it up...' }]
+    });
+    instance.enrichResultAlertWithMeaning('crown', 'Game Over', {
+      title: 'Game Over',
+      paragraphs: [{ text: 'Meaning: looking it up...' }]
+    });
+    expect(prefetchSpy).toHaveBeenCalledWith('crown');
+    expect(mocks.updateAlertContent).not.toHaveBeenCalled();
+
+    prefetchSpy.mockRestore();
+
+    instance.currentWordMeaningWord = 'crown';
+    instance.currentWordMeaningLookup = Promise.resolve('A point or peak.');
+    instance.enrichResultAlertWithMeaning('crown', 'Game Over', {
+      title: 'Game Over',
+      paragraphs: [{ text: 'Meaning: looking it up...' }]
+    });
+    instance.currentWordMeaningWord = 'other';
+    await Promise.resolve();
+    expect(mocks.updateAlertContent).not.toHaveBeenCalled();
   });
 
   it('handles input blur and click-driven event handlers end-to-end', async () => {
@@ -886,9 +1178,9 @@ describe('GameController', () => {
 
     wordLengthInput.value = '4';
     startButton.click();
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(mocks.boardCreateRow).toHaveBeenCalled();
+    await waitForAssertion(() => {
+      expect(mocks.boardCreateRow).toHaveBeenCalled();
+    });
 
     resetButton.click();
     expect(mocks.resetGameUI).toHaveBeenCalled();
@@ -916,6 +1208,8 @@ describe('GameController', () => {
     if (wordLengthInput) {
       wordLengthInput.value = '4';
     }
+    mocks.getAnswerPoolByLength.mockReturnValueOnce([]);
+    mocks.pickCuratedAnswer.mockReturnValueOnce(null);
     mocks.fetchPossibleWords.mockRejectedValueOnce(new Error('network fail'));
     await controller.play();
     const startFailAlert = mocks.showAlert.mock.calls.at(-1) ?? [];
@@ -1115,16 +1409,23 @@ describe('GameController', () => {
       <button id="resetGame" type="button"></button>
       <div id="timerDisplay"></div>
       <div id="difficulty"></div>
+      <div id="puzzleProfile"></div>
       <div id="statsList"></div>
       <div class="wrapper"></div>
     `;
     resetMockState();
     const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(1);
+    mocks.getAnswerPoolByLength.mockImplementation(() => []);
+    mocks.pickCuratedAnswer.mockImplementation(() => null);
     mocks.fetchPossibleWords.mockResolvedValueOnce(['ally']);
     const controller = new GameController();
+    const wordLengthInput = document.getElementById('wordLengthInput') as HTMLInputElement | null;
+    if (wordLengthInput) {
+      wordLengthInput.value = '4';
+    }
     await controller.play();
 
-    expect(mocks.sessionTargetWord).toBe('');
+    expect(mocks.sessionTargetWord).toBe('ally');
 
     const instance = controller as unknown as {
       gameState: string;

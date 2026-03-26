@@ -164,7 +164,11 @@ function getFilterEntries(activeFilters: ActiveFilters): Array<[FilterType, numb
  * @param {Object} activeFilters - The active filters to apply
  * @returns {Array<Object>} - The filtered stats
  */
-export const applyFilters = <T extends IndexedStatEntry>(stats: T[], activeFilters: ActiveFilters): T[] => {
+export const applyFilters = <T extends IndexedStatEntry>(
+  stats: T[],
+  activeFilters: ActiveFilters,
+  referenceDate = new Date()
+): T[] => {
   if (Object.keys(activeFilters).length === 0) {
     return stats;
   }
@@ -180,7 +184,7 @@ export const applyFilters = <T extends IndexedStatEntry>(stats: T[], activeFilte
       }
 
       if (filterType === FILTER_TYPES.DATE) {
-        return selectedRanges.some((rangeIndex) => isDateFilterMatch(stat.date, rangeIndex));
+        return selectedRanges.some((rangeIndex) => isDateFilterMatch(stat.date, rangeIndex, referenceDate));
       }
 
       if (filterType === FILTER_TYPES.WORD_LENGTH) {
@@ -216,15 +220,16 @@ export const applyFilters = <T extends IndexedStatEntry>(stats: T[], activeFilte
  * @param {Array<Object>} stats - The stats to analyze for available filters
  * @returns {Object} - An object containing available filters
  */
-export const getAvailableFilters = (stats: IndexedStatEntry[]): Record<FilterType, Set<number>> => {
+export const getAvailableFilters = (
+  stats: IndexedStatEntry[],
+  referenceDate = new Date()
+): Record<FilterType, Set<number>> => {
   const available = {
     [FILTER_TYPES.WORD_LENGTH]: new Set<number>(),
     [FILTER_TYPES.TIME]: new Set<number>(),
     [FILTER_TYPES.ATTEMPTS]: new Set<number>(),
     [FILTER_TYPES.DATE]: new Set<number>()
   };
-
-  const referenceDate = new Date();
 
   stats.forEach((stat) => {
     // Word Length

@@ -397,6 +397,63 @@ describe('modals', () => {
     expect(loggerErrorMock).toHaveBeenCalled();
   });
 
+  it('updates alert content in place only when the expected title still matches', async () => {
+    const { setupModals, showAlert, updateAlertContent } = await import('../modals');
+    setupModals();
+
+    showAlert(
+      {
+        variant: 'failure',
+        icon: '⚠️',
+        title: 'Game Over',
+        paragraphs: [{ text: 'Meaning: looking it up...' }]
+      },
+      null,
+      null
+    );
+
+    expect(updateAlertContent(
+      {
+        variant: 'failure',
+        icon: '⚠️',
+        title: 'Game Over',
+        paragraphs: [{ text: 'Meaning: To stop or end something.' }]
+      },
+      'Game Over'
+    )).toBe(true);
+    expect(document.getElementById('alertMessage')?.textContent).toContain('Meaning: To stop or end something.');
+
+    expect(updateAlertContent(
+      {
+        variant: 'failure',
+        icon: '⚠️',
+        title: 'Game Over',
+        paragraphs: [{ text: 'Meaning: Updated without title guard.' }]
+      }
+    )).toBe(true);
+    expect(document.getElementById('alertMessage')?.textContent).toContain('Meaning: Updated without title guard.');
+
+    expect(updateAlertContent(
+      {
+        variant: 'failure',
+        icon: '⚠️',
+        title: 'Different',
+        paragraphs: [{ text: 'No update' }]
+      },
+      'Congratulations!'
+    )).toBe(false);
+
+    document.getElementById('alertModal')!.style.display = 'none';
+    expect(updateAlertContent(
+      {
+        variant: 'failure',
+        icon: '⚠️',
+        title: 'Game Over',
+        paragraphs: [{ text: 'Still hidden' }]
+      }
+    )).toBe(false);
+  });
+
   it('covers setup branch without about modal elements and callback-null button handlers', async () => {
     buildModalDom();
     document.getElementById('aboutBtn')?.remove();

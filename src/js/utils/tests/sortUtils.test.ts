@@ -4,31 +4,45 @@ import { compareValues, getNextSortDirection, getSortIndicatorClass, sortStats }
 import type { IndexedStatEntry } from '../../types/interface';
 import type { SortField } from '../../types/types';
 
+function createStat(index: number, overrides: Partial<IndexedStatEntry> = {}): IndexedStatEntry {
+  return {
+    __originalIndex: index,
+    word: `word${index}`,
+    time: 10,
+    attempts: 2,
+    wordLength: 4,
+    date: '2026-01-01T00:00:00.000Z',
+    difficultyLabel: 'Medium',
+    hintsUsed: 0,
+    solvedWithoutHints: true,
+    averageFreshLettersPerGuess: 3,
+    averageEliminatedLetterReusePerGuess: 0,
+    ...overrides
+  };
+}
+
 const sampleStats: IndexedStatEntry[] = [
-  {
-    __originalIndex: 0,
+  createStat(0, {
     word: 'zeta',
     time: 40,
     attempts: 4,
     wordLength: 4,
     date: '2026-01-02T10:00:00.000Z'
-  },
-  {
-    __originalIndex: 1,
+  }),
+  createStat(1, {
     word: 'alpha',
     time: 20,
     attempts: 2,
     wordLength: 5,
     date: '2026-01-01T10:00:00.000Z'
-  },
-  {
-    __originalIndex: 2,
+  }),
+  createStat(2, {
     word: 'beta',
     time: 20,
     attempts: 3,
     wordLength: 4,
     date: '2026-01-03T10:00:00.000Z'
-  }
+  })
 ];
 
 describe('sortUtils', () => {

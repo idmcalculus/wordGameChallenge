@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fetchPossibleWords, validateWord } from '../apiHandler';
+import { fetchPossibleWords, fetchWordMeaning, validateWord } from '../apiHandler';
 import type { JsonValue } from '../types/types';
 
 const originalFetch = globalThis.fetch;
@@ -89,19 +89,25 @@ describe('apiHandler', () => {
     expect(await validateWord('   ')).toBe(false);
   });
 
+  it('validateWord returns true for locally curated words without fetching', async () => {
+    const result = await validateWord('CROWN');
+    expect(result).toBe(true);
+    expect(globalThis.fetch).toBe(originalFetch);
+  });
+
   it('validateWord returns true when Datamuse exact match exists', async () => {
     setFetchMock(async () => createJsonResponse([
-      { word: 'crown', tags: ['f:1.2'] }
+      { word: 'quell', tags: ['f:1.2'] }
     ]));
 
-    const result = await validateWord('CROWN');
+    const result = await validateWord('QUELL');
     expect(result).toBe(true);
     expect(vi.mocked(globalThis.fetch).mock.calls).toHaveLength(1);
   });
 
   it('validateWord falls back to Free Dictionary when Datamuse has no exact match', async () => {
     const responses: Response[] = [
-      createJsonResponse([{ word: 'crowns', tags: ['f:1.2'] }]),
+      createJsonResponse([{ word: 'quells', tags: ['f:1.2'] }]),
       createJsonResponse([{ meaning: 'ok' }], 200)
     ];
 
@@ -112,7 +118,7 @@ describe('apiHandler', () => {
       return response;
     });
 
-    const result = await validateWord('crown');
+    const result = await validateWord('quell');
     expect(result).toBe(true);
     expect(vi.mocked(globalThis.fetch).mock.calls).toHaveLength(2);
   });
@@ -130,7 +136,7 @@ describe('apiHandler', () => {
       return response;
     });
 
-    const result = await validateWord('crown');
+    const result = await validateWord('quell');
     expect(result).toBe(false);
   });
 
@@ -147,7 +153,7 @@ describe('apiHandler', () => {
       return response;
     });
 
-    const result = await validateWord('crown');
+    const result = await validateWord('quell');
     expect(result).toBe(false);
   });
 
@@ -161,7 +167,7 @@ describe('apiHandler', () => {
       return createJsonResponse({ title: 'Not found' }, 404);
     });
 
-    const result = await validateWord('crown');
+    const result = await validateWord('quell');
     expect(result).toBe(false);
   });
 
@@ -172,8 +178,79 @@ describe('apiHandler', () => {
       throw new Error(`Network failure ${callIndex}`);
     });
 
-    const result = await validateWord('crown');
+    const result = await validateWord('quell');
     expect(result).toBe(true);
     expect(vi.mocked(globalThis.fetch).mock.calls).toHaveLength(2);
+  });
+
+  it('fetchWordMeaning returns the first available definition', async () => {
+    setFetchMock(async () => createJsonResponse([
+      {
+        meanings: [
+          {
+            definitions: [
+              { definition: 'To quiet or suppress something.' }
+            ]
+          }
+        ]
+      }
+    ]));
+
+    await expect(fetchWordMeaning('QUELL')).resolves.toBe('To quiet or suppress something.');
+  });
+
+  it('fetchWordMeaning skips malformed dictionary records until it finds a usable definition', async () => {
+    setFetchMock(async () => createJsonResponse([
+      null,
+      { meanings: 'bad-data' },
+      {
+        meanings: [
+          null,
+          { definitions: 'wrong-shape' },
+          {
+            definitions: [
+              null,
+              { definition: 42 },
+              { definition: '   ' }
+            ]
+          },
+          {
+            definitions: [
+              { definition: 'A calm or settled state.' }
+            ]
+          }
+        ]
+      }
+    ]));
+
+    await expect(fetchWordMeaning('calm')).resolves.toBe('A calm or settled state.');
+  });
+
+  it('fetchWordMeaning returns null for blank words, missing definitions, and fetch failures', async () => {
+    expect(await fetchWordMeaning('   ')).toBeNull();
+
+    setFetchMock(async () => createJsonResponse({ title: 'No Definitions Found' }, 404));
+    expect(await fetchWordMeaning('quell')).toBeNull();
+
+    setFetchMock(async () => createJsonResponse({ meanings: [] }));
+    expect(await fetchWordMeaning('quell')).toBeNull();
+
+    setFetchMock(async () => createJsonResponse([
+      {
+        meanings: [
+          {
+            definitions: [
+              { definition: '   ' }
+            ]
+          }
+        ]
+      }
+    ]));
+    expect(await fetchWordMeaning('quell')).toBeNull();
+
+    setFetchMock(async () => {
+      throw new Error('dictionary unavailable');
+    });
+    expect(await fetchWordMeaning('quell')).toBeNull();
   });
 });
